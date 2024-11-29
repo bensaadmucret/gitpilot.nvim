@@ -10,26 +10,27 @@ return {
     
     -- Menu principal
     menu = {
-        commit = " Créer un commit",
-        branch = " Gérer les branches",
-        rebase = " Assistant de rebase",
-        conflict = " Résoudre les conflits",
-        stash = " Gérer les stash",
-        history = " Voir l'historique",
-        search = " 🔍 Rechercher"
+        commit = "📝 Créer un commit",
+        branch = "🌿 Gérer les branches",
+        rebase = "🔄 Assistant de rebase",
+        conflict = "🚧 Résoudre les conflits",
+        stash = "📦 Gérer les stash",
+        history = "📜 Voir l'historique",
+        search = "🔍 Rechercher",
+        tags = "🏷️ Gérer les tags"
     },
     
     -- Commit assistant
     commit = {
         type = {
             title = "Type de modification :",
-            feat = " Nouvelle fonctionnalité",
-            fix = " Correction de bug",
-            docs = " Documentation",
-            style = " Style du code",
-            refactor = " Refactoring",
-            test = " Tests",
-            chore = " Maintenance"
+            feat = "✨ Nouvelle fonctionnalité",
+            fix = "🐛 Correction de bug",
+            docs = "📚 Documentation",
+            style = "💎 Style du code",
+            refactor = "♻️ Refactoring",
+            test = "🧪 Tests",
+            chore = "🔧 Maintenance"
         },
         files = {
             select = "Sélectionnez les fichiers à inclure :",
@@ -41,7 +42,7 @@ return {
         message = {
             prompt = "Message du commit :",
             hint = "Décrivez brièvement vos changements",
-            warning = " Le message est trop court",
+            warning = "⚠️ Le message est trop court",
             template = "{type}: {description}"
         }
     },
@@ -85,54 +86,48 @@ return {
         }
     },
 
+    -- Gestion des tags
+    tag = {
+        create = "➕ Créer un tag",
+        delete = "❌ Supprimer un tag",
+        push = "⬆️ Pousser les tags",
+        name = {
+            prompt = "Nom du tag :",
+            invalid = "Nom de tag invalide"
+        },
+        message = {
+            prompt = "Message du tag (optionnel) :"
+        },
+        exists = "Ce tag existe déjà",
+        none = "Aucun tag trouvé",
+        created = "Tag créé avec succès",
+        deleted = "Tag supprimé avec succès",
+        pushed = "Tags poussés avec succès",
+        error = {
+            create = "Erreur lors de la création du tag",
+            delete = "Erreur lors de la suppression du tag",
+            push = "Erreur lors de l'envoi des tags"
+        }
+    },
+
     -- Rebase assistant
     rebase = {
-        intro = "Assistant de rebase interactif",
-        warning = " Cette opération va modifier l'historique",
+        intro = "Assistant de Rebase Interactif",
+        warning = "⚠️ Cette opération va modifier l'historique",
         backup = "Une sauvegarde sera créée automatiquement",
         options = {
-            pick = " Garder le commit",
-            reword = " Modifier le message",
-            edit = " Modifier le commit",
-            squash = " Fusionner avec le précédent",
-            drop = " Supprimer le commit"
+            pick = "pick - utiliser le commit",
+            reword = "reword - modifier le message",
+            edit = "edit - modifier le commit",
+            squash = "squash - fusionner avec le précédent",
+            fixup = "fixup - fusionner sans le message",
+            drop = "drop - supprimer le commit"
         },
-        help = {
-            pick = "Utilise le commit tel quel",
-            reword = "Utilise le commit mais modifie son message",
-            edit = "Marque le commit pour modification",
-            squash = "Fusionne avec le commit précédent",
-            drop = "Supprime le commit"
-        },
-        title = " Rebase Interactif - Organisez vos commits",
-        help_title = " Guide d'utilisation",
-        action = {
-            pick = "Conserver le commit",
-            reword = "Modifier le message du commit",
-            edit = "Modifier le contenu du commit",
-            squash = "Fusionner avec le commit précédent (garde les deux messages)",
-            fixup = "Fusionner avec le commit précédent (garde uniquement le message précédent)",
-            drop = "Supprimer ce commit"
-        },
-        help_move = "↑/↓ (j/k) : Naviguer | J/K : Déplacer le commit",
-        help_start = "ENTRÉE : Démarrer le rebase | P : Prévisualiser les changements",
-        help_cancel = "q/ESC : Annuler",
-        no_commits = " Aucun commit à réorganiser",
-        started = " Rebase interactif démarré",
-        preview = " Prévisualisation des changements",
-        conflicts = {
-            title = " Conflits détectés - Résolution nécessaire",
-            actions = "Actions disponibles :",
-            no_conflicts = " Aucun conflit à résoudre",
-            ours = "Garder NOS modifications",
-            theirs = "Garder LEURS modifications",
-            add = "Marquer comme résolu",
-            continue = "Continuer le rebase",
-            skip = "Ignorer ce commit",
-            abort = "Abandonner le rebase"
-        },
-        conflicts_resolved = " Conflit résolu pour %s",
-        conflicts_done = " Tous les conflits sont résolus !"
+        success = "Rebase terminé avec succès",
+        error = "Erreur pendant le rebase",
+        abort = "Rebase annulé",
+        continue = "Continuer le rebase",
+        no_commits = "Aucun commit à rebase"
     },
 
     -- Résolution de conflits
@@ -150,12 +145,22 @@ return {
 
     -- Gestionnaire de stash
     stash = {
-        create = "Créer un stash",
-        apply = "Appliquer un stash",
-        pop = "Récupérer et supprimer un stash",
-        drop = "Supprimer un stash",
-        list = "Liste des stash",
-        empty = "Aucun stash disponible"
+        create = "➕ Créer un stash",
+        apply = "📥 Appliquer un stash",
+        drop = "❌ Supprimer un stash",
+        message = {
+            prompt = "Message du stash (optionnel) :"
+        },
+        no_changes = "Aucun changement à stasher",
+        none = "Aucun stash trouvé",
+        created = "Stash créé avec succès",
+        applied = "Stash appliqué avec succès",
+        dropped = "Stash supprimé avec succès",
+        error = {
+            create = "Erreur lors de la création du stash",
+            apply = "Erreur lors de l'application du stash",
+            drop = "Erreur lors de la suppression du stash"
+        }
     },
 
     -- Menu de recherche
