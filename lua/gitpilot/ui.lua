@@ -108,42 +108,13 @@ local function show_menu(title, items)
 end
 
 -- Menu principal
-M.show_main_menu = function()
-    show_menu("GitPilot - " .. i18n.t("menu.main"), {
-        {
-            label = i18n.t("menu.commits"),
-            action = function() M.show_commits_menu() end
-        },
-        {
-            label = i18n.t("menu.branches"),
-            action = function() M.show_branches_menu() end
-        },
-        {
-            label = i18n.t("menu.remotes"),
-            action = function() M.show_remotes_menu() end
-        },
-        {
-            label = i18n.t("menu.tags"),
-            action = function() M.show_tags_menu() end
-        },
-        {
-            label = i18n.t("menu.stash"),
-            action = function() M.show_stash_menu() end
-        },
-        {
-            label = i18n.t("menu.search"),
-            action = function() require('gitpilot.features.search').show_menu() end
-        },
-        {
-            label = i18n.t("menu.rebase"),
-            action = function() require('gitpilot.features.rebase').start_rebase() end
-        }
-    })
+M.show_main_menu = function(items)
+    show_menu("GitPilot - " .. i18n.t("menu.main"), items)
 end
 
 -- Menu des commits
 M.show_commits_menu = function()
-    show_menu(i18n.t("menu.commits"), {
+    M.show_main_menu({
         {
             label = i18n.t("menu.create_commit"),
             action = function() require('gitpilot.features.commit').create_commit() end
@@ -161,7 +132,7 @@ end
 
 -- Menu des branches
 M.show_branches_menu = function()
-    show_menu(i18n.t("menu.branches"), {
+    M.show_main_menu({
         {
             label = i18n.t("menu.create_branch"),
             action = function() require('gitpilot.features.branch').create_branch() end
@@ -183,7 +154,7 @@ end
 
 -- Menu des remotes
 M.show_remotes_menu = function()
-    show_menu(i18n.t("menu.remotes"), {
+    M.show_main_menu({
         {
             label = i18n.t("menu.add_remote"),
             action = function() require('gitpilot.features.remote').add_remote() end
@@ -205,7 +176,7 @@ end
 
 -- Menu des tags
 M.show_tags_menu = function()
-    show_menu(i18n.t("menu.tags"), {
+    M.show_main_menu({
         {
             label = i18n.t("menu.create_tag"),
             action = function() require('gitpilot.features.tags').create_tag() end
@@ -223,7 +194,7 @@ end
 
 -- Menu du stash
 M.show_stash_menu = function()
-    show_menu(i18n.t("menu.stash"), {
+    M.show_main_menu({
         {
             label = i18n.t("menu.create_stash"),
             action = function() require('gitpilot.features.stash').create_stash() end
