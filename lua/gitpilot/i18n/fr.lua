@@ -165,7 +165,7 @@ return {
 
     -- Menu de recherche
     search = {
-        commits = "🔍 Rechercher des commits",
+        commits = "🔍 Rechercher dans les commits",
         files = "📁 Rechercher des fichiers",
         author = "👤 Rechercher par auteur",
         branches = "🌿 Rechercher des branches",
