@@ -1,68 +1,129 @@
 local M = {}
 local config = {}
-local i18n = require('gitpilot.i18n')
 local utils = require('gitpilot.utils')
 
 M.setup = function(opts)
     config = opts
 end
 
--- Fonction utilitaire pour obtenir la liste des branches
+-- Obtenir la liste des branches
 local function get_branches()
     local output = utils.git_command('branch')
     local branches = {}
     for line in output:gmatch("[^\r\n]+") do
-        -- Enlever les espaces et le marqueur de branche courante (*)
         local branch = line:gsub("^%s*%*?%s*", "")
         table.insert(branches, branch)
     end
     return branches
 end
 
--- Fonction utilitaire pour obtenir la branche courante
+-- Obtenir la branche courante
 local function get_current_branch()
     local output = utils.git_command('branch --show-current')
     return output:gsub("%s+", "")
 end
 
--- Fonction pour créer une nouvelle fenêtre flottante
-local function create_float_window(title, content)
+-- Créer une fenêtre flottante
+local function create_float_window()
     local width = 60
-    local height = #content + 4
-    local row = math.floor((vim.o.lines - height) / 2)
-    local col = math.floor((vim.o.columns - width) / 2)
+    local height = 20
+    local bufnr = vim.api.nvim_create_buf(false, true)
     
-    local buf = vim.api.nvim_create_buf(false, true)
-    local win = vim.api.nvim_open_win(buf, true, {
+    local win = vim.api.nvim_open_win(bufnr, true, {
         relative = 'editor',
-        row = row,
-        col = col,
         width = width,
         height = height,
+        row = (vim.o.lines - height) / 2,
+        col = (vim.o.columns - width) / 2,
         style = 'minimal',
         border = 'rounded'
     })
     
-    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {title, string.rep('-', width - 2)})
-    vim.api.nvim_buf_set_lines(buf, 2, -1, false, content)
-    vim.api.nvim_buf_set_option(buf, 'modifiable', false)
-    
-    return buf, win
+    return bufnr, win
 end
 
--- Fonction pour demander une confirmation
-local function confirm(message, callback)
-    local content = {
-        message,
-        "",
-        "Appuyez sur 'y' pour confirmer ou 'n' pour annuler"
+-- Afficher un menu de sélection
+local function show_selection_menu(title, items, callback)
+    local bufnr, win = create_float_window()
+    
+    -- Préparer les lignes
+    local lines = {title, string.rep("-", 40)}
+    for i, item in ipairs(items) do
+        table.insert(lines, string.format("%d. %s", i, item))
+    end
+    
+    -- Configurer le buffer
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
+    vim.api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
+    
+    -- Options pour les mappings
+    local opts = {
+        buffer = bufnr,
+        nowait = true,
+        silent = true
     }
     
-    local buf, win = create_float_window("Confirmation", content)
+    -- Mappings pour fermer
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
     
-    local opts = {buffer = buf, noremap = true, silent = true}
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
     
+    -- Navigation
+    vim.keymap.set('n', 'j', 'j', opts)
+    vim.keymap.set('n', 'k', 'k', opts)
+    
+    -- Sélection par numéro
+    for i = 1, #items do
+        vim.keymap.set('n', tostring(i), function()
+            vim.api.nvim_win_close(win, true)
+            callback(items[i])
+        end, opts)
+    end
+    
+    -- Sélection avec Enter
+    vim.keymap.set('n', '<CR>', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        local selection = cursor[1] - 2
+        
+        if selection > 0 and selection <= #items then
+            vim.api.nvim_win_close(win, true)
+            callback(items[selection])
+        end
+    end, opts)
+end
+
+-- Demander une confirmation
+local function confirm(message, callback)
+    local bufnr, win = create_float_window()
+    
+    -- Préparer les lignes
+    local lines = {
+        "Confirmation",
+        string.rep("-", 40),
+        message,
+        "",
+        "y - Confirmer",
+        "n - Annuler"
+    }
+    
+    -- Configurer le buffer
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
+    vim.api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
+    
+    -- Options pour les mappings
+    local opts = {
+        buffer = bufnr,
+        nowait = true,
+        silent = true
+    }
+    
+    -- Mappings
     vim.keymap.set('n', 'y', function()
         vim.api.nvim_win_close(win, true)
         callback(true)
@@ -79,75 +140,42 @@ local function confirm(message, callback)
     end, opts)
 end
 
--- Fonction pour demander un input
+-- Demander un input
 local function prompt_input(title, callback)
-    local content = {
-        "Entrez votre texte ci-dessous :",
+    local bufnr, win = create_float_window()
+    
+    -- Préparer les lignes
+    local lines = {
+        title,
+        string.rep("-", 40),
         ""
     }
     
-    local buf, win = create_float_window(title, content)
-    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+    -- Configurer le buffer
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+    vim.api.nvim_buf_set_option(bufnr, 'modifiable', true)
     
-    -- Activer le mode insertion
+    -- Placer le curseur sur la ligne d'input
+    vim.api.nvim_win_set_cursor(win, {3, 0})
     vim.cmd('startinsert')
     
-    -- Gérer la validation
+    -- Options pour les mappings
+    local opts = {
+        buffer = bufnr,
+        nowait = true,
+        silent = true
+    }
+    
+    -- Mapping pour valider
     vim.keymap.set('i', '<CR>', function()
-        local lines = vim.api.nvim_buf_get_lines(buf, 2, 3, false)
+        local lines = vim.api.nvim_buf_get_lines(bufnr, 2, 3, false)
         local input = lines[1]
         vim.api.nvim_win_close(win, true)
         callback(input)
-    end, {buffer = buf, noremap = true})
+    end, opts)
     
-    -- Gérer l'annulation
+    -- Mapping pour annuler
     vim.keymap.set('i', '<Esc>', function()
-        vim.api.nvim_win_close(win, true)
-        callback(nil)
-    end, {buffer = buf, noremap = true})
-end
-
--- Fonction pour afficher une liste sélectionnable
-local function show_selectable_list(title, items, callback)
-    local content = {}
-    for i, item in ipairs(items) do
-        table.insert(content, string.format("%d. %s", i, item))
-    end
-    
-    local buf, win = create_float_window(title, content)
-    
-    local opts = {buffer = buf, noremap = true, silent = true}
-    
-    -- Navigation
-    vim.keymap.set('n', 'j', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        if cursor[1] < #items then
-            vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
-        end
-    end, opts)
-    
-    vim.keymap.set('n', 'k', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        if cursor[1] > 1 then
-            vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
-        end
-    end, opts)
-    
-    -- Sélection
-    vim.keymap.set('n', '<CR>', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        local selection = items[cursor[1]]
-        vim.api.nvim_win_close(win, true)
-        callback(selection)
-    end, opts)
-    
-    -- Annulation
-    vim.keymap.set('n', '<Esc>', function()
-        vim.api.nvim_win_close(win, true)
-        callback(nil)
-    end, opts)
-    
-    vim.keymap.set('n', 'q', function()
         vim.api.nvim_win_close(win, true)
         callback(nil)
     end, opts)
@@ -156,12 +184,12 @@ end
 -- Créer une nouvelle branche
 M.create_branch = function()
     prompt_input("Nouvelle Branche", function(branch_name)
-        if branch_name then
+        if branch_name and branch_name ~= "" then
             local success, err = utils.git_command_with_error('checkout -b ' .. branch_name)
             if success then
-                vim.notify("Branche '" .. branch_name .. "' créée avec succès", vim.log.levels.INFO)
+                vim.notify("Branche créée : " .. branch_name, vim.log.levels.INFO)
             else
-                vim.notify("Erreur lors de la création de la branche: " .. err, vim.log.levels.ERROR)
+                vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
             end
         end
     end)
@@ -170,13 +198,13 @@ end
 -- Changer de branche
 M.switch_branch = function()
     local branches = get_branches()
-    show_selectable_list("Changer de Branche", branches, function(branch)
+    show_selection_menu("Changer de Branche", branches, function(branch)
         if branch then
             local success, err = utils.git_command_with_error('checkout ' .. branch)
             if success then
-                vim.notify("Changement vers la branche '" .. branch .. "'", vim.log.levels.INFO)
+                vim.notify("Changé vers la branche : " .. branch, vim.log.levels.INFO)
             else
-                vim.notify("Erreur lors du changement de branche: " .. err, vim.log.levels.ERROR)
+                vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
             end
         end
     end)
@@ -184,8 +212,8 @@ end
 
 -- Fusionner une branche
 M.merge_branch = function()
-    local current = get_current_branch()
     local branches = get_branches()
+    local current = get_current_branch()
     
     -- Filtrer la branche courante
     local merge_branches = {}
@@ -195,15 +223,15 @@ M.merge_branch = function()
         end
     end
     
-    show_selectable_list("Fusionner une Branche", merge_branches, function(branch)
+    show_selection_menu("Fusionner une Branche", merge_branches, function(branch)
         if branch then
-            confirm("Voulez-vous fusionner la branche '" .. branch .. "' dans '" .. current .. "' ?", function(confirmed)
+            confirm("Fusionner " .. branch .. " dans " .. current .. " ?", function(confirmed)
                 if confirmed then
                     local success, err = utils.git_command_with_error('merge ' .. branch)
                     if success then
-                        vim.notify("Fusion de la branche '" .. branch .. "' réussie", vim.log.levels.INFO)
+                        vim.notify("Fusion réussie de : " .. branch, vim.log.levels.INFO)
                     else
-                        vim.notify("Erreur lors de la fusion: " .. err, vim.log.levels.ERROR)
+                        vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
                     end
                 end
             end)
@@ -213,8 +241,8 @@ end
 
 -- Supprimer une branche
 M.delete_branch = function()
-    local current = get_current_branch()
     local branches = get_branches()
+    local current = get_current_branch()
     
     -- Filtrer la branche courante
     local delete_branches = {}
@@ -224,15 +252,15 @@ M.delete_branch = function()
         end
     end
     
-    show_selectable_list("Supprimer une Branche", delete_branches, function(branch)
+    show_selection_menu("Supprimer une Branche", delete_branches, function(branch)
         if branch then
-            confirm("Êtes-vous sûr de vouloir supprimer la branche '" .. branch .. "' ?", function(confirmed)
+            confirm("Supprimer la branche " .. branch .. " ?", function(confirmed)
                 if confirmed then
-                    local success, err = utils.git_command_with_error('branch -d ' .. branch)
+                    local success, err = utils.git_command_with_error('branch -D ' .. branch)
                     if success then
-                        vim.notify("Branche '" .. branch .. "' supprimée", vim.log.levels.INFO)
+                        vim.notify("Branche supprimée : " .. branch, vim.log.levels.INFO)
                     else
-                        vim.notify("Erreur lors de la suppression: " .. err, vim.log.levels.ERROR)
+                        vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
                     end
                 end
             end)
