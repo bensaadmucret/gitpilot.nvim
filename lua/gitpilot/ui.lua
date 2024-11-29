@@ -1,4 +1,4 @@
-local i18n = require('git-simple.i18n')
+local i18n = require('gitpilot.i18n')
 local M = {}
 
 -- Configuration locale
@@ -98,12 +98,12 @@ M.show_main_menu = function()
         
         -- Exécuter l'action correspondante
         local actions = {
-            [1] = function() require('git-simple.commands').smart_commit() end,
-            [2] = function() require('git-simple.commands').safe_branch_manager() end,
-            [3] = function() require('git-simple.commands').interactive_rebase() end,
-            [4] = function() require('git-simple.commands').conflict_resolver() end,
-            [5] = function() require('git-simple.commands').advanced_stash() end,
-            [6] = function() require('git-simple.commands').visual_history() end
+            [1] = function() require('gitpilot.commands').smart_commit() end,
+            [2] = function() require('gitpilot.commands').safe_branch_manager() end,
+            [3] = function() require('gitpilot.commands').interactive_rebase() end,
+            [4] = function() require('gitpilot.commands').conflict_resolver() end,
+            [5] = function() require('gitpilot.commands').advanced_stash() end,
+            [6] = function() require('gitpilot.commands').visual_history() end
         }
         
         if actions[selection] then
