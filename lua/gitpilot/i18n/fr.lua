@@ -49,53 +49,40 @@ return {
     -- Gestion des branches
     branch = {
         current = "Branche actuelle :",
-        create = " Créer une nouvelle branche",
-        switch = " Changer de branche",
-        merge = " Fusionner une branche",
-        delete = " Supprimer une branche",
-        select = "Sélectionnez une branche :",
-        select_merge = "Sélectionnez la branche à fusionner :",
-        select_delete = "Sélectionnez la branche à supprimer :",
-        confirm_merge = "Voulez-vous fusionner la branche",
-        confirm_delete = "Voulez-vous supprimer la branche",
-        created = "Branche créée",
-        switched = "Changement vers la branche",
-        merged = "Branche fusionnée",
-        deleted = "Branche supprimée",
-        cannot_delete_current = "Impossible de supprimer la branche courante",
-        warning = {
-            delete = " Cette action est irréversible",
-            unmerged = " Cette branche n'est pas fusionnée"
-        },
+        create = "➕ Créer une nouvelle branche",
+        switch = "🔄 Changer de branche",
+        merge = "🔀 Fusionner une branche",
+        delete = "❌ Supprimer une branche",
+        
         create_title = "Créer une Nouvelle Branche",
-        create = {
-            prompt = "Nom de la nouvelle branche:",
-            success = "Branche '%{name}' créée avec succès",
-            error = "Erreur lors de la création : %{error}",
-        },
-        exists = "Cette branche existe déjà",
-        none = "Aucune branche trouvée",
-        select_switch = "Sélectionnez une branche pour basculer",
-        select_merge = "Sélectionnez une branche à fusionner",
-        select_delete = "Sélectionnez une branche à supprimer",
-        already_on = "Vous êtes déjà sur cette branche",
+        create_success = "Branche '%{name}' créée avec succès",
+        create_error = "Erreur lors de la création : %{error}",
+        
         switch_title = "Changer de Branche",
         switch_success = "Basculé sur la branche '%{name}'",
         switch_error = "Erreur de changement : %{error}",
+        
         merge_title = "Fusionner une Branche",
         merge_confirm = "Fusionner '%{source}' dans '%{target}' ?",
         merge_success = "Fusion de '%{name}' réussie",
         merge_error = "Erreur de fusion : %{error}",
+        
         delete_title = "Supprimer une Branche",
         delete_confirm = "Supprimer la branche '%{name}' ?",
         delete_success = "Branche '%{name}' supprimée",
         delete_error = "Erreur de suppression : %{error}",
+        
+        exists = "Cette branche existe déjà",
+        none = "Aucune branche trouvée",
+        already_on = "Vous êtes déjà sur cette branche",
         no_merge_candidates = "Aucune branche disponible pour la fusion",
         no_delete_candidates = "Aucune branche disponible pour la suppression",
-        confirm_merge = "Voulez-vous fusionner la branche",
-        confirm_delete = "Voulez-vous supprimer la branche",
-        merged = "Branche fusionnée",
-        deleted = "Branche supprimée"
+        cannot_delete_current = "Impossible de supprimer la branche courante",
+        
+        warning = {
+            delete = "⚠️ Cette action est irréversible",
+            unmerged = "⚠️ Cette branche n'est pas fusionnée"
+        }
     },
 
     -- Rebase assistant
