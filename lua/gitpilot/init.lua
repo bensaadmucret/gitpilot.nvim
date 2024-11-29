@@ -22,43 +22,66 @@ local default_config = {
 -- Configuration active
 M.config = {}
 
+-- Import des modules
+local i18n = require('gitpilot.i18n')
+local commands = require('gitpilot.commands')
+local ui = require('gitpilot.ui')
+local branch = require('gitpilot.features.branch')
+
 -- Initialisation du plugin
 M.setup = function(opts)
     -- Fusion des options utilisateur avec les valeurs par défaut
     M.config = vim.tbl_deep_extend("force", default_config, opts or {})
     
     -- Initialisation des composants
-    require('gitpilot.i18n').setup(M.config)
-    require('gitpilot.commands').setup(M.config)
-    require('gitpilot.ui').setup(M.config)
+    i18n.setup(M.config)
+    commands.setup(M.config)
+    ui.setup(M.config)
+    branch.setup(M.config)
     
     -- Création des commandes utilisateur
     vim.api.nvim_create_user_command('GitPilot', function()
-        require('gitpilot.ui').show_main_menu()
+        ui.show_main_menu()
     end, {})
     
     vim.api.nvim_create_user_command('GitCommit', function()
-        require('gitpilot.commands').smart_commit()
+        commands.smart_commit()
     end, {})
     
     vim.api.nvim_create_user_command('GitBranch', function()
-        require('gitpilot.commands').safe_branch_manager()
+        commands.safe_branch_manager()
     end, {})
     
     vim.api.nvim_create_user_command('GitRebase', function()
-        require('gitpilot.commands').interactive_rebase()
+        commands.interactive_rebase()
     end, {})
     
     vim.api.nvim_create_user_command('GitConflict', function()
-        require('gitpilot.commands').conflict_resolver()
+        commands.conflict_resolver()
     end, {})
     
     vim.api.nvim_create_user_command('GitStash', function()
-        require('gitpilot.commands').advanced_stash()
+        commands.advanced_stash()
     end, {})
     
     vim.api.nvim_create_user_command('GitHistory', function()
-        require('gitpilot.commands').visual_history()
+        commands.visual_history()
+    end, {})
+    
+    vim.api.nvim_create_user_command('GitBranchCreate', function()
+        branch.create_branch()
+    end, {})
+
+    vim.api.nvim_create_user_command('GitBranchSwitch', function()
+        branch.switch_branch()
+    end, {})
+
+    vim.api.nvim_create_user_command('GitBranchMerge', function()
+        branch.merge_branch()
+    end, {})
+
+    vim.api.nvim_create_user_command('GitBranchDelete', function()
+        branch.delete_branch()
     end, {})
     
     -- Définition des highlights
