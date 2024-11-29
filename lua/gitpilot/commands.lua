@@ -99,11 +99,225 @@ M.safe_branch_manager = function()
         i18n.t("branch.current") .. " " .. current_branch,
         menu_items,
         {
-            width = 40
+            width = 40,
+            height = #menu_items + 2
         }
     )
     
-    -- TODO: Implémenter les actions sur les branches
+    -- Ajouter les mappings pour la navigation et la sélection
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    -- Navigation
+    vim.keymap.set('n', 'j', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] < #menu_items then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
+        end
+    end, opts)
+    
+    vim.keymap.set('n', 'k', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] > 1 then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
+        end
+    end, opts)
+    
+    -- Fermeture
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    -- Sélection
+    vim.keymap.set('n', '<CR>', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        local selection = cursor[1]
+        
+        -- Fermer la fenêtre du menu
+        vim.api.nvim_win_close(win, true)
+        
+        -- Gérer les différentes actions
+        if selection == 1 then
+            -- Créer une nouvelle branche
+            vim.ui.input({prompt = "Nom de la nouvelle branche: "}, function(branch_name)
+                if branch_name and branch_name ~= "" then
+                    local result = git_command('checkout -b ' .. branch_name)
+                    if result then
+                        ui.notify(i18n.t("branch.created") .. ": " .. branch_name, "info")
+                    end
+                end
+            end)
+            
+        elseif selection == 2 then
+            -- Changer de branche
+            local switch_buf, switch_win = ui.create_floating_window(
+                i18n.t("branch.select"),
+                branch_list,
+                {
+                    width = 40,
+                    height = #branch_list + 2
+                }
+            )
+            
+            local switch_opts = {buffer = switch_buf, noremap = true, silent = true}
+            
+            -- Navigation dans la liste des branches
+            vim.keymap.set('n', 'j', function()
+                local cursor = vim.api.nvim_win_get_cursor(switch_win)
+                if cursor[1] < #branch_list then
+                    vim.api.nvim_win_set_cursor(switch_win, {cursor[1] + 1, cursor[2]})
+                end
+            end, switch_opts)
+            
+            vim.keymap.set('n', 'k', function()
+                local cursor = vim.api.nvim_win_get_cursor(switch_win)
+                if cursor[1] > 1 then
+                    vim.api.nvim_win_set_cursor(switch_win, {cursor[1] - 1, cursor[2]})
+                end
+            end, switch_opts)
+            
+            -- Fermeture
+            vim.keymap.set('n', 'q', function()
+                vim.api.nvim_win_close(switch_win, true)
+            end, switch_opts)
+            
+            vim.keymap.set('n', '<Esc>', function()
+                vim.api.nvim_win_close(switch_win, true)
+            end, switch_opts)
+            
+            -- Sélection de la branche
+            vim.keymap.set('n', '<CR>', function()
+                local cursor = vim.api.nvim_win_get_cursor(switch_win)
+                local branch = branch_list[cursor[1]]:gsub("^%s*%*?%s*", "")
+                
+                vim.api.nvim_win_close(switch_win, true)
+                
+                if branch ~= current_branch then
+                    local result = git_command('checkout ' .. branch)
+                    if result then
+                        ui.notify(i18n.t("branch.switched") .. ": " .. branch, "info")
+                    end
+                end
+            end, switch_opts)
+            
+        elseif selection == 3 then
+            -- Fusionner une branche
+            local merge_buf, merge_win = ui.create_floating_window(
+                i18n.t("branch.select_merge"),
+                branch_list,
+                {
+                    width = 40,
+                    height = #branch_list + 2
+                }
+            )
+            
+            local merge_opts = {buffer = merge_buf, noremap = true, silent = true}
+            
+            -- Navigation dans la liste des branches
+            vim.keymap.set('n', 'j', function()
+                local cursor = vim.api.nvim_win_get_cursor(merge_win)
+                if cursor[1] < #branch_list then
+                    vim.api.nvim_win_set_cursor(merge_win, {cursor[1] + 1, cursor[2]})
+                end
+            end, merge_opts)
+            
+            vim.keymap.set('n', 'k', function()
+                local cursor = vim.api.nvim_win_get_cursor(merge_win)
+                if cursor[1] > 1 then
+                    vim.api.nvim_win_set_cursor(merge_win, {cursor[1] - 1, cursor[2]})
+                end
+            end, merge_opts)
+            
+            -- Fermeture
+            vim.keymap.set('n', 'q', function()
+                vim.api.nvim_win_close(merge_win, true)
+            end, merge_opts)
+            
+            vim.keymap.set('n', '<Esc>', function()
+                vim.api.nvim_win_close(merge_win, true)
+            end, merge_opts)
+            
+            -- Sélection de la branche à fusionner
+            vim.keymap.set('n', '<CR>', function()
+                local cursor = vim.api.nvim_win_get_cursor(merge_win)
+                local branch = branch_list[cursor[1]]:gsub("^%s*%*?%s*", "")
+                
+                vim.api.nvim_win_close(merge_win, true)
+                
+                if branch ~= current_branch then
+                    ui.confirm(i18n.t("branch.confirm_merge") .. " " .. branch .. "?", function(confirmed)
+                        if confirmed then
+                            local result = git_command('merge ' .. branch)
+                            if result then
+                                ui.notify(i18n.t("branch.merged") .. ": " .. branch, "info")
+                            end
+                        end
+                    end)
+                end
+            end, merge_opts)
+            
+        elseif selection == 4 then
+            -- Supprimer une branche
+            local delete_buf, delete_win = ui.create_floating_window(
+                i18n.t("branch.select_delete"),
+                branch_list,
+                {
+                    width = 40,
+                    height = #branch_list + 2
+                }
+            )
+            
+            local delete_opts = {buffer = delete_buf, noremap = true, silent = true}
+            
+            -- Navigation dans la liste des branches
+            vim.keymap.set('n', 'j', function()
+                local cursor = vim.api.nvim_win_get_cursor(delete_win)
+                if cursor[1] < #branch_list then
+                    vim.api.nvim_win_set_cursor(delete_win, {cursor[1] + 1, cursor[2]})
+                end
+            end, delete_opts)
+            
+            vim.keymap.set('n', 'k', function()
+                local cursor = vim.api.nvim_win_get_cursor(delete_win)
+                if cursor[1] > 1 then
+                    vim.api.nvim_win_set_cursor(delete_win, {cursor[1] - 1, cursor[2]})
+                end
+            end, delete_opts)
+            
+            -- Fermeture
+            vim.keymap.set('n', 'q', function()
+                vim.api.nvim_win_close(delete_win, true)
+            end, delete_opts)
+            
+            vim.keymap.set('n', '<Esc>', function()
+                vim.api.nvim_win_close(delete_win, true)
+            end, delete_opts)
+            
+            -- Sélection de la branche à supprimer
+            vim.keymap.set('n', '<CR>', function()
+                local cursor = vim.api.nvim_win_get_cursor(delete_win)
+                local branch = branch_list[cursor[1]]:gsub("^%s*%*?%s*", "")
+                
+                vim.api.nvim_win_close(delete_win, true)
+                
+                if branch ~= current_branch then
+                    ui.confirm(i18n.t("branch.confirm_delete") .. " " .. branch .. "?", function(confirmed)
+                        if confirmed then
+                            local result = git_command('branch -d ' .. branch)
+                            if result then
+                                ui.notify(i18n.t("branch.deleted") .. ": " .. branch, "info")
+                            end
+                        end
+                    end)
+                else
+                    ui.notify(i18n.t("branch.cannot_delete_current"), "error")
+                end
+            end, delete_opts)
+        end
+    end, opts)
 end
 
 -- Assistant de rebase interactif
@@ -201,7 +415,15 @@ M.visual_history = function()
         }
     )
     
-    -- TODO: Implémenter la navigation dans l'historique
+    -- Ajouter les mappings pour fermer la fenêtre
+    local opts = {buffer = buf, noremap = true, silent = true}
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
 end
 
 return M

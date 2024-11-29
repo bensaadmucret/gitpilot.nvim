@@ -1,6 +1,6 @@
 # 🌟 GitPilot.nvim
 
-Votre copilote Git intelligent pour Neovim - Une interface intuitive et guidée pour gérer Git comme un pro.
+git 
 
 ## ✨ Caractéristiques
 

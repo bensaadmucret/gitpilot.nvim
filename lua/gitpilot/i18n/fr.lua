@@ -1,6 +1,6 @@
 return {
     -- Messages généraux
-    welcome = "Bienvenue dans Git Simple !",
+    welcome = "Bienvenue dans GitPilot !",
     select_action = "Sélectionnez une action :",
     confirm = "Confirmer",
     cancel = "Annuler",
@@ -45,6 +45,29 @@ return {
         }
     },
 
+    -- Gestion des branches
+    branch = {
+        current = "Branche actuelle :",
+        create = "➕ Créer une nouvelle branche",
+        switch = "🔄 Changer de branche",
+        merge = "🔗 Fusionner une branche",
+        delete = "❌ Supprimer une branche",
+        select = "Sélectionnez une branche :",
+        select_merge = "Sélectionnez la branche à fusionner :",
+        select_delete = "Sélectionnez la branche à supprimer :",
+        confirm_merge = "Voulez-vous fusionner la branche",
+        confirm_delete = "Voulez-vous supprimer la branche",
+        created = "Branche créée",
+        switched = "Changement vers la branche",
+        merged = "Branche fusionnée",
+        deleted = "Branche supprimée",
+        cannot_delete_current = "Impossible de supprimer la branche courante",
+        warning = {
+            delete = "⚠️ Cette action est irréversible",
+            unmerged = "⚠️ Cette branche n'est pas fusionnée"
+        }
+    },
+
     -- Rebase assistant
     rebase = {
         intro = "Assistant de rebase interactif",
@@ -63,19 +86,6 @@ return {
             edit = "Marque le commit pour modification",
             squash = "Fusionne avec le commit précédent",
             drop = "Supprime le commit"
-        }
-    },
-
-    -- Gestionnaire de branches
-    branch = {
-        current = "Branche actuelle :",
-        create = "Créer une nouvelle branche",
-        switch = "Changer de branche",
-        merge = "Fusionner une branche",
-        delete = "Supprimer une branche",
-        warning = {
-            delete = "⚠️ Cette action est irréversible",
-            unmerged = "⚠️ Cette branche n'est pas fusionnée"
         }
     },
 

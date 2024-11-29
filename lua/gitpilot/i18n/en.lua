@@ -1,6 +1,6 @@
 return {
     -- General messages
-    welcome = "Welcome to Git Simple!",
+    welcome = "Welcome to GitPilot!",
     select_action = "Select an action:",
     confirm = "Confirm",
     cancel = "Cancel",
@@ -45,6 +45,29 @@ return {
         }
     },
 
+    -- Branch management
+    branch = {
+        current = "Current branch:",
+        create = "➕ Create new branch",
+        switch = "🔄 Switch branch",
+        merge = "🔗 Merge branch",
+        delete = "❌ Delete branch",
+        select = "Select a branch:",
+        select_merge = "Select branch to merge:",
+        select_delete = "Select branch to delete:",
+        confirm_merge = "Do you want to merge branch",
+        confirm_delete = "Do you want to delete branch",
+        created = "Branch created",
+        switched = "Switched to branch",
+        merged = "Branch merged",
+        deleted = "Branch deleted",
+        cannot_delete_current = "Cannot delete current branch",
+        warning = {
+            delete = "⚠️ This action is irreversible",
+            unmerged = "⚠️ This branch is not merged"
+        }
+    },
+
     -- Rebase assistant
     rebase = {
         intro = "Interactive Rebase Assistant",
@@ -63,19 +86,6 @@ return {
             edit = "Mark commit for editing",
             squash = "Melt into previous commit",
             drop = "Remove the commit"
-        }
-    },
-
-    -- Branch manager
-    branch = {
-        current = "Current branch:",
-        create = "Create new branch",
-        switch = "Switch branch",
-        merge = "Merge branch",
-        delete = "Delete branch",
-        warning = {
-            delete = "⚠️ This action is irreversible",
-            unmerged = "⚠️ This branch is not merged"
         }
     },
 
