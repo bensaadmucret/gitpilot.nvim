@@ -1,18 +1,59 @@
-# 🌟 GitPilot.nvim
+# GitPilot.nvim
 
-Your intelligent Git copilot for Neovim - An intuitive and guided interface to manage Git like a pro.
+A powerful Neovim Git management plugin with multilingual support (English/French).
 
 ## ✨ Features
 
-- 🌍 Multilingual interface (English and French)
-- 🎯 Interactive rebase assistant
-- 🔄 Intuitive branch management
-- 🚧 Guided conflict resolution
-- 📦 Advanced stash management
-- 📝 Smart commit assistant
-- 📊 History visualization
+- 🌍 Fully bilingual interface (English/French)
+- 🎯 Intuitive navigation with j/k
+- 💡 Contextual help
+- ⚡ Optimized performance
+- 🔄 Automatic refresh
 
-## 📥 Installation
+### Commit Management
+- 📝 Multiple file selection
+- 🏷️ Commit types with emojis
+- 👀 Changes preview
+- 📋 Guided commit messages
+
+### Branch Management
+- ➕ Create branches
+- 🔄 Switch branches
+- 🔗 Merge branches
+- ❌ Delete branches
+
+### Tag Management
+- 📋 List tags
+- ✨ Create tags (lightweight and annotated)
+- 🗑️ Delete tags
+- ⬆️ Push tags
+
+### Remote Management
+- 📋 List remotes
+- ➕ Add remotes
+- ❌ Remove remotes
+- ⬇️ Selective fetch
+- ⬆️ Advanced push options
+
+### Stash Management
+- 💾 Selective stash creation
+- 📋 List stashes
+- ↩️ Apply stash with options
+- 🗑️ Delete stash
+
+### Search and Navigation
+- 🔍 Search commits
+- 📂 Find files
+- 👤 Search by author
+- 🌿 Filter branches
+
+### Interactive Rebase
+- 📝 Reorder commits
+- ✏️ Change actions (pick, reword, edit, squash, fixup, drop)
+- 🔄 Resolve conflicts
+- 👀 Preview changes
+
+## 📦 Installation
 
 ### With [lazy.nvim](https://github.com/folke/lazy.nvim)
 ```lua
@@ -20,11 +61,20 @@ Your intelligent Git copilot for Neovim - An intuitive and guided interface to m
     "bensaadmucret/gitpilot.nvim",
     config = function()
         require("gitpilot").setup({
-            language = "en", -- or "fr" for French
+            language = "en",  -- or "fr" for French
             ui = {
                 icons = true,
                 help = true,
-                confirm_actions = true
+                confirm_actions = true,
+                window = {
+                    width = 60,
+                    height = 20,
+                    border = "rounded"
+                }
+            },
+            git = {
+                cmd = "git",
+                timeout = 5000
             }
         })
     end,
@@ -34,91 +84,79 @@ Your intelligent Git copilot for Neovim - An intuitive and guided interface to m
 ### With [packer.nvim](https://github.com/wbthomason/packer.nvim)
 ```lua
 use {
-    'bensaadmucret/gitpilot.nvim',
+    "bensaadmucret/gitpilot.nvim",
     config = function()
-        require('gitpilot').setup({
-            language = "en", -- or "fr" for French
-            ui = {
-                icons = true,
-                help = true,
-                confirm_actions = true
-            }
+        require("gitpilot").setup({
+            language = "en",
+            -- other options...
         })
     end
 }
 ```
 
-### With [vim-plug](https://github.com/junegunn/vim-plug)
-```vim
-Plug 'bensaadmucret/gitpilot.nvim'
+## 🚀 Commands
 
-" In your init.vim/init.lua, after plug#end():
-lua require('gitpilot').setup({
-    language = "en",
-    ui = {
-        icons = true,
-        help = true,
-        confirm_actions = true
-    }
-})
-```
+- `:GitPilot` - Open main menu
+- `:GitCommit` - Commit assistant
+- `:GitBranchCreate` - Create a new branch
+- `:GitBranchSwitch` - Switch branch
+- `:GitBranchMerge` - Merge branch
+- `:GitBranchDelete` - Delete branch
+- `:GitRebase` - Interactive rebase assistant
+- `:GitConflict` - Conflict resolution
+- `:GitStash` - Stash management
+- `:GitHistory` - History visualization
 
-## 🎮 Usage
+## ⌨️ Keyboard Shortcuts
 
-Once installed, you can access the main menu with:
-```vim
-:GitPilot
-```
+In menus:
+- `j/k` - Navigation
+- `Enter` - Selection
+- `q/Esc` - Close
+- `?` - Help
 
-### Available Commands
+## 🔧 Configuration
 
-- `:GitPilot` - Opens the interactive main menu
-- `:GitCommit` - Launches the commit assistant
-- `:GitBranch` - Opens the branch manager
-- `:GitRebase` - Starts the rebase assistant
-- `:GitConflict` - Helps with conflict resolution
-- `:GitStash` - Manages stashes
-- `:GitHistory` - Visualizes history
-
-## ⚙️ Configuration
-
-Default configuration:
 ```lua
-require('gitpilot').setup({
+require("gitpilot").setup({
     -- Language (en or fr)
     language = "en",
     
-    -- User interface options
+    -- User interface
     ui = {
-        -- Use icons
+        -- Enable icons
         icons = true,
-        -- Show contextual help
+        -- Show help
         help = true,
-        -- Ask for confirmation on dangerous actions
+        -- Confirm dangerous actions
         confirm_actions = true,
-        -- Floating window position
+        -- Window configuration
         window = {
             width = 60,
             height = 20,
-            border = "rounded",
-            position = "center"
+            border = "rounded"
         }
     },
     
     -- Git configuration
     git = {
-        -- Auto fetch interval (in minutes)
-        auto_fetch = 5,
-        -- Show git status in real time
-        live_status = true
+        -- Git command to use
+        cmd = "git",
+        -- Command timeout in ms
+        timeout = 5000
     }
 })
 ```
 
-## 🤝 Contributing
+## 📝 License
 
-Contributions are welcome! Feel free to submit issues and pull requests.
+MIT
 
-## 📄 License
+## 👥 Contributing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Contributions are welcome! Feel free to:
+1. Fork the project
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request

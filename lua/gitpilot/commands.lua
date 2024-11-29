@@ -1,5 +1,6 @@
 local i18n = require('gitpilot.i18n')
 local ui = require('gitpilot.ui')
+local utils = require('gitpilot.utils')
 local M = {}
 
 -- Configuration locale
@@ -33,7 +34,7 @@ end
 -- Assistant de commit intelligent
 M.smart_commit = function()
     -- Récupérer le status
-    local status = git_command('status --porcelain')
+    local status = utils.git_command('status --porcelain')
     if not status or status == "" then
         ui.notify(i18n.t("commit.files.none"), "warn")
         return
@@ -72,7 +73,7 @@ end
 -- Gestionnaire de branches sécurisé
 M.safe_branch_manager = function()
     -- Récupérer la liste des branches
-    local branches = git_command('branch')
+    local branches = utils.git_command('branch')
     if not branches then return end
     
     local branch_list = {}
@@ -144,7 +145,7 @@ M.safe_branch_manager = function()
             -- Créer une nouvelle branche
             vim.ui.input({prompt = "Nom de la nouvelle branche: "}, function(branch_name)
                 if branch_name and branch_name ~= "" then
-                    local result = git_command('checkout -b ' .. branch_name)
+                    local result = utils.git_command('checkout -b ' .. branch_name)
                     if result then
                         ui.notify(i18n.t("branch.created") .. ": " .. branch_name, "info")
                     end
@@ -196,10 +197,12 @@ M.safe_branch_manager = function()
                 vim.api.nvim_win_close(switch_win, true)
                 
                 if branch ~= current_branch then
-                    local result = git_command('checkout ' .. branch)
+                    local result = utils.git_command('checkout ' .. branch)
                     if result then
                         ui.notify(i18n.t("branch.switched") .. ": " .. branch, "info")
                     end
+                else
+                    ui.notify(i18n.t("branch.already_on"), "warn")
                 end
             end, switch_opts)
             
@@ -216,7 +219,7 @@ M.safe_branch_manager = function()
             
             local merge_opts = {buffer = merge_buf, noremap = true, silent = true}
             
-            -- Navigation dans la liste des branches
+            -- Navigation
             vim.keymap.set('n', 'j', function()
                 local cursor = vim.api.nvim_win_get_cursor(merge_win)
                 if cursor[1] < #branch_list then
@@ -240,23 +243,26 @@ M.safe_branch_manager = function()
                 vim.api.nvim_win_close(merge_win, true)
             end, merge_opts)
             
-            -- Sélection de la branche à fusionner
+            -- Sélection et fusion
             vim.keymap.set('n', '<CR>', function()
                 local cursor = vim.api.nvim_win_get_cursor(merge_win)
                 local branch = branch_list[cursor[1]]:gsub("^%s*%*?%s*", "")
                 
                 vim.api.nvim_win_close(merge_win, true)
                 
-                if branch ~= current_branch then
-                    ui.confirm(i18n.t("branch.confirm_merge") .. " " .. branch .. "?", function(confirmed)
-                        if confirmed then
-                            local result = git_command('merge ' .. branch)
-                            if result then
-                                ui.notify(i18n.t("branch.merged") .. ": " .. branch, "info")
-                            end
-                        end
-                    end)
+                if branch == current_branch then
+                    ui.notify(i18n.t("branch.cannot_merge_self"), "warn")
+                    return
                 end
+                
+                ui.confirm(i18n.t("branch.confirm_merge") .. " " .. branch .. "?", function(confirmed)
+                    if confirmed then
+                        local result = utils.git_command('merge ' .. branch)
+                        if result then
+                            ui.notify(i18n.t("branch.merged") .. ": " .. branch, "info")
+                        end
+                    end
+                end)
             end, merge_opts)
             
         elseif selection == 4 then
@@ -272,7 +278,7 @@ M.safe_branch_manager = function()
             
             local delete_opts = {buffer = delete_buf, noremap = true, silent = true}
             
-            -- Navigation dans la liste des branches
+            -- Navigation
             vim.keymap.set('n', 'j', function()
                 local cursor = vim.api.nvim_win_get_cursor(delete_win)
                 if cursor[1] < #branch_list then
@@ -296,25 +302,26 @@ M.safe_branch_manager = function()
                 vim.api.nvim_win_close(delete_win, true)
             end, delete_opts)
             
-            -- Sélection de la branche à supprimer
+            -- Sélection et suppression
             vim.keymap.set('n', '<CR>', function()
                 local cursor = vim.api.nvim_win_get_cursor(delete_win)
                 local branch = branch_list[cursor[1]]:gsub("^%s*%*?%s*", "")
                 
                 vim.api.nvim_win_close(delete_win, true)
                 
-                if branch ~= current_branch then
-                    ui.confirm(i18n.t("branch.confirm_delete") .. " " .. branch .. "?", function(confirmed)
-                        if confirmed then
-                            local result = git_command('branch -d ' .. branch)
-                            if result then
-                                ui.notify(i18n.t("branch.deleted") .. ": " .. branch, "info")
-                            end
-                        end
-                    end)
-                else
-                    ui.notify(i18n.t("branch.cannot_delete_current"), "error")
+                if branch == current_branch then
+                    ui.notify(i18n.t("branch.cannot_delete_current"), "warn")
+                    return
                 end
+                
+                ui.confirm(i18n.t("branch.warning.delete") .. "\n" .. i18n.t("branch.confirm_delete") .. " " .. branch .. "?", function(confirmed)
+                    if confirmed then
+                        local result = utils.git_command('branch -D ' .. branch)
+                        if result then
+                            ui.notify(i18n.t("branch.deleted") .. ": " .. branch, "info")
+                        end
+                    end
+                end)
             end, delete_opts)
         end
     end, opts)
@@ -323,7 +330,7 @@ end
 -- Assistant de rebase interactif
 M.interactive_rebase = function()
     -- Vérifier s'il y a des commits à rebase
-    local commits = git_command('log --oneline -n 5')
+    local commits = utils.git_command('log --oneline -n 5')
     if not commits then return end
     
     local commit_list = {}
@@ -342,7 +349,7 @@ end
 -- Résolution de conflits
 M.conflict_resolver = function()
     -- Vérifier les conflits
-    local conflicts = git_command('diff --name-only --diff-filter=U')
+    local conflicts = utils.git_command('diff --name-only --diff-filter=U')
     if not conflicts or conflicts == "" then
         ui.notify(i18n.t("conflict.none"), "info")
         return
@@ -368,7 +375,7 @@ end
 -- Gestionnaire de stash avancé
 M.advanced_stash = function()
     -- Récupérer la liste des stash
-    local stashes = git_command('stash list')
+    local stashes = utils.git_command('stash list')
     local stash_list = {}
     
     if stashes and stashes ~= "" then
@@ -401,7 +408,7 @@ end
 -- Visualisation de l'historique
 M.visual_history = function()
     -- Récupérer l'historique
-    local history = git_command('log --graph --oneline --decorate --all -n 20')
+    local history = utils.git_command('log --graph --oneline --decorate --all -n 20')
     if not history then return end
     
     local history_lines = vim.split(history, "\n")
