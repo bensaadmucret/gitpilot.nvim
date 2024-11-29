@@ -98,11 +98,11 @@ M.show_main_menu = function()
         
         -- Exécuter l'action correspondante
         local actions = {
-            [1] = function() require('gitpilot.commands').smart_commit() end,
-            [2] = function() require('gitpilot.commands').safe_branch_manager() end,
+            [1] = function() M.show_commits_menu() end,
+            [2] = function() M.show_branches_menu() end,
             [3] = function() require('gitpilot.commands').interactive_rebase() end,
             [4] = function() require('gitpilot.commands').conflict_resolver() end,
-            [5] = function() require('gitpilot.commands').advanced_stash() end,
+            [5] = function() M.show_stash_menu() end,
             [6] = function() require('gitpilot.commands').visual_history() end
         }
         
@@ -123,6 +123,214 @@ M.show_main_menu = function()
     -- Aide
     vim.keymap.set('n', '?', function()
         M.show_help()
+    end, opts)
+end
+
+-- Menu des commits
+M.show_commits_menu = function()
+    local menu_items = {
+        {
+            label = i18n.t("menu.create_commit"),
+            action = function() require('gitpilot.commands').smart_commit() end
+        },
+        {
+            label = i18n.t("menu.amend_commit"),
+            action = function() require('gitpilot.commands').amend_commit() end
+        },
+        {
+            label = i18n.t("menu.history"),
+            action = function() require('gitpilot.commands').visual_history() end
+        }
+    }
+    
+    local buf, win = M.create_floating_window(
+        i18n.t("menu.commits"),
+        menu_items,
+        {
+            width = 40,
+            height = #menu_items + 2
+        }
+    )
+    
+    -- Mappings
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    -- Navigation
+    vim.keymap.set('n', 'j', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] < #menu_items then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
+        end
+    end, opts)
+    
+    vim.keymap.set('n', 'k', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] > 1 then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
+        end
+    end, opts)
+    
+    -- Sélection
+    vim.keymap.set('n', '<CR>', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        local selection = cursor[1]
+        
+        -- Fermer la fenêtre
+        vim.api.nvim_win_close(win, true)
+        
+        -- Exécuter l'action correspondante
+        if menu_items[selection] and menu_items[selection].action then
+            menu_items[selection].action()
+        end
+    end, opts)
+    
+    -- Fermeture
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+end
+
+-- Menu des branches
+M.show_branches_menu = function()
+    local menu_items = {
+        {
+            label = i18n.t("menu.create_branch"),
+            action = function() require('gitpilot.commands').safe_branch_manager() end
+        },
+        {
+            label = i18n.t("menu.switch_branch"),
+            action = function() require('gitpilot.commands').safe_branch_manager() end
+        },
+        {
+            label = i18n.t("menu.merge_branch"),
+            action = function() require('gitpilot.commands').safe_branch_manager() end
+        },
+        {
+            label = i18n.t("menu.delete_branch"),
+            action = function() require('gitpilot.commands').safe_branch_manager() end
+        }
+    }
+    
+    local buf, win = M.create_floating_window(
+        i18n.t("menu.branches"),
+        menu_items,
+        {
+            width = 40,
+            height = #menu_items + 2
+        }
+    )
+    
+    -- Mappings
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    -- Navigation
+    vim.keymap.set('n', 'j', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] < #menu_items then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
+        end
+    end, opts)
+    
+    vim.keymap.set('n', 'k', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] > 1 then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
+        end
+    end, opts)
+    
+    -- Sélection
+    vim.keymap.set('n', '<CR>', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        local selection = cursor[1]
+        
+        -- Fermer la fenêtre
+        vim.api.nvim_win_close(win, true)
+        
+        -- Exécuter l'action correspondante
+        if menu_items[selection] and menu_items[selection].action then
+            menu_items[selection].action()
+        end
+    end, opts)
+    
+    -- Fermeture
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+end
+
+-- Menu du stash
+M.show_stash_menu = function()
+    local menu_items = {
+        {
+            label = i18n.t("menu.create_stash"),
+            action = function() require('gitpilot.commands').advanced_stash() end
+        },
+        {
+            label = i18n.t("menu.apply_stash"),
+            action = function() require('gitpilot.commands').advanced_stash() end
+        },
+        {
+            label = i18n.t("menu.delete_stash"),
+            action = function() require('gitpilot.commands').advanced_stash() end
+        }
+    }
+    
+    local buf, win = M.create_floating_window(
+        i18n.t("menu.stash"),
+        menu_items,
+        {
+            width = 40,
+            height = #menu_items + 2
+        }
+    )
+    
+    -- Mappings
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    -- Navigation
+    vim.keymap.set('n', 'j', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] < #menu_items then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
+        end
+    end, opts)
+    
+    vim.keymap.set('n', 'k', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        if cursor[1] > 1 then
+            vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
+        end
+    end, opts)
+    
+    -- Sélection
+    vim.keymap.set('n', '<CR>', function()
+        local cursor = vim.api.nvim_win_get_cursor(win)
+        local selection = cursor[1]
+        
+        -- Fermer la fenêtre
+        vim.api.nvim_win_close(win, true)
+        
+        -- Exécuter l'action correspondante
+        if menu_items[selection] and menu_items[selection].action then
+            menu_items[selection].action()
+        end
+    end, opts)
+    
+    -- Fermeture
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
     end, opts)
 end
 
