@@ -327,4 +327,34 @@ M.filter_branches = function()
     end)
 end
 
+-- Affiche le menu de recherche
+M.show_menu = function()
+    ui.show_main_menu({
+        {
+            label = i18n.t("search.commits"),
+            action = function()
+                M.search_commits()
+            end
+        },
+        {
+            label = i18n.t("search.files"),
+            action = function()
+                M.search_files()
+            end
+        },
+        {
+            label = i18n.t("search.author"),
+            action = function()
+                M.search_by_author()
+            end
+        },
+        {
+            label = i18n.t("search.branches"),
+            action = function()
+                M.filter_branches()
+            end
+        }
+    })
+end
+
 return M

@@ -15,7 +15,8 @@ return {
         rebase = " Assistant de rebase",
         conflict = " Résoudre les conflits",
         stash = " Gérer les stash",
-        history = " Voir l'historique"
+        history = " Voir l'historique",
+        search = " 🔍 Rechercher"
     },
     
     -- Commit assistant
@@ -168,6 +169,29 @@ return {
         drop = "Supprimer un stash",
         list = "Liste des stash",
         empty = "Aucun stash disponible"
+    },
+
+    -- Menu de recherche
+    search = {
+        commits = "🔍 Rechercher des commits",
+        files = "📁 Rechercher des fichiers",
+        author = "👤 Rechercher par auteur",
+        branches = "🌿 Rechercher des branches",
+        
+        commits_prompt = "Entrez le terme de recherche :",
+        files_prompt = "Entrez le motif de fichier :",
+        author_prompt = "Entrez le nom de l'auteur :",
+        branches_prompt = "Entrez le motif de branche :",
+        
+        commits_none = "Aucun commit trouvé",
+        files_none = "Aucun fichier trouvé",
+        author_none = "Aucun commit trouvé pour cet auteur",
+        branches_none = "Aucune branche trouvée",
+        
+        commits_results = "Résultats - Commits",
+        files_results = "Résultats - Fichiers",
+        author_results = "Résultats - Auteur",
+        branches_results = "Résultats - Branches"
     },
 
     -- Messages d'aide contextuelle

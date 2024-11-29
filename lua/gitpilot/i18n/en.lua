@@ -15,7 +15,8 @@ return {
         rebase = "🔄 Rebase assistant",
         conflict = "🚧 Resolve conflicts",
         stash = "📦 Manage stash",
-        history = "📜 View history"
+        history = "📜 View history",
+        search = "🔍 Search"
     },
     
     -- Commit assistant
@@ -170,6 +171,29 @@ return {
         drop = "Drop stash",
         list = "Stash list",
         empty = "No stashes available"
+    },
+
+    -- Search menu
+    search = {
+        commits = "🔍 Search commits",
+        files = "📁 Search files",
+        author = "👤 Search by author",
+        branches = "🌿 Search branches",
+        
+        commits_prompt = "Enter search term:",
+        files_prompt = "Enter file pattern:",
+        author_prompt = "Enter author name:",
+        branches_prompt = "Enter branch pattern:",
+        
+        commits_none = "No commits found",
+        files_none = "No files found",
+        author_none = "No commits found for this author",
+        branches_none = "No branches found",
+        
+        commits_results = "Search Results - Commits",
+        files_results = "Search Results - Files",
+        author_results = "Search Results - Author",
+        branches_results = "Search Results - Branches"
     },
 
     -- Contextual help messages
