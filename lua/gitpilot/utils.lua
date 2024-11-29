@@ -90,20 +90,18 @@ M.git_command = function(command)
     return output
 end
 
--- Exécute une commande git et retourne le succès/erreur
-M.git_command_with_error = function(args)
-    local cmd = string.format("%s %s 2>&1", config.git and config.git.cmd or "git", args)
-    local handle = io.popen(cmd)
-    if not handle then return false, "Failed to execute command" end
+-- Exécute une commande git et retourne le statut et l'erreur éventuelle
+M.git_command_with_error = function(command)
+    local git_cmd = config.git and config.git.cmd or "git"
+    local cmd = git_cmd .. " " .. command
+    local output = vim.fn.system(cmd)
+    local success = vim.v.shell_error == 0
     
-    local result = handle:read("*a")
-    local success = handle:close()
-    
-    if success then
-        return true, result
-    else
-        return false, result
+    if not success then
+        return false, output
     end
+    
+    return true, output
 end
 
 -- Vérifie si un fichier existe
