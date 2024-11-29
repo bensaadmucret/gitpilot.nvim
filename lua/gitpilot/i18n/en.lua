@@ -65,7 +65,24 @@ return {
         warning = {
             delete = "⚠️ This action is irreversible",
             unmerged = "⚠️ This branch is not merged"
-        }
+        },
+        create = {
+            prompt = "New branch name:",
+            success = "Branch created successfully"
+        },
+        exists = "This branch already exists",
+        none = "No branches found",
+        select_switch = "Select a branch to switch to",
+        select_merge = "Select a branch to merge",
+        select_delete = "Select a branch to delete",
+        already_on = "You are already on this branch",
+        switched = "Switched to branch",
+        no_merge_candidates = "No branches available for merging",
+        no_delete_candidates = "No branches available for deletion",
+        confirm_merge = "Do you want to merge branch",
+        confirm_delete = "Do you want to delete branch",
+        merged = "Branch merged",
+        deleted = "Branch deleted"
     },
 
     -- Rebase assistant

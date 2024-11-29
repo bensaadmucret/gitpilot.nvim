@@ -10,25 +10,25 @@ return {
     
     -- Menu principal
     menu = {
-        commit = "📝 Créer un commit",
-        branch = "🌿 Gérer les branches",
-        rebase = "🔄 Assistant de rebase",
-        conflict = "🚧 Résoudre les conflits",
-        stash = "📦 Gérer les stash",
-        history = "📜 Voir l'historique"
+        commit = " Créer un commit",
+        branch = " Gérer les branches",
+        rebase = " Assistant de rebase",
+        conflict = " Résoudre les conflits",
+        stash = " Gérer les stash",
+        history = " Voir l'historique"
     },
     
     -- Commit assistant
     commit = {
         type = {
             title = "Type de modification :",
-            feat = "✨ Nouvelle fonctionnalité",
-            fix = "🐛 Correction de bug",
-            docs = "📚 Documentation",
-            style = "💎 Style du code",
-            refactor = "♻️ Refactoring",
-            test = "🧪 Tests",
-            chore = "🔧 Maintenance"
+            feat = " Nouvelle fonctionnalité",
+            fix = " Correction de bug",
+            docs = " Documentation",
+            style = " Style du code",
+            refactor = " Refactoring",
+            test = " Tests",
+            chore = " Maintenance"
         },
         files = {
             select = "Sélectionnez les fichiers à inclure :",
@@ -40,7 +40,7 @@ return {
         message = {
             prompt = "Message du commit :",
             hint = "Décrivez brièvement vos changements",
-            warning = "⚠️ Le message est trop court",
+            warning = " Le message est trop court",
             template = "{type}: {description}"
         }
     },
@@ -48,10 +48,10 @@ return {
     -- Gestion des branches
     branch = {
         current = "Branche actuelle :",
-        create = "➕ Créer une nouvelle branche",
-        switch = "🔄 Changer de branche",
-        merge = "🔗 Fusionner une branche",
-        delete = "❌ Supprimer une branche",
+        create = " Créer une nouvelle branche",
+        switch = " Changer de branche",
+        merge = " Fusionner une branche",
+        delete = " Supprimer une branche",
         select = "Sélectionnez une branche :",
         select_merge = "Sélectionnez la branche à fusionner :",
         select_delete = "Sélectionnez la branche à supprimer :",
@@ -63,22 +63,40 @@ return {
         deleted = "Branche supprimée",
         cannot_delete_current = "Impossible de supprimer la branche courante",
         warning = {
-            delete = "⚠️ Cette action est irréversible",
-            unmerged = "⚠️ Cette branche n'est pas fusionnée"
-        }
+            delete = " Cette action est irréversible",
+            unmerged = " Cette branche n'est pas fusionnée"
+        },
+        create = {
+            prompt = "Nom de la nouvelle branche:",
+            success = "Branche créée avec succès"
+        },
+        exists = "Cette branche existe déjà",
+        created = "Branche créée",
+        none = "Aucune branche trouvée",
+        select_switch = "Sélectionnez une branche pour basculer",
+        select_merge = "Sélectionnez une branche à fusionner",
+        select_delete = "Sélectionnez une branche à supprimer",
+        already_on = "Vous êtes déjà sur cette branche",
+        switched = "Basculé sur la branche",
+        no_merge_candidates = "Aucune branche disponible pour la fusion",
+        no_delete_candidates = "Aucune branche disponible pour la suppression",
+        confirm_merge = "Voulez-vous fusionner la branche",
+        confirm_delete = "Voulez-vous supprimer la branche",
+        merged = "Branche fusionnée",
+        deleted = "Branche supprimée"
     },
 
     -- Rebase assistant
     rebase = {
         intro = "Assistant de rebase interactif",
-        warning = "⚠️ Cette opération va modifier l'historique",
+        warning = " Cette opération va modifier l'historique",
         backup = "Une sauvegarde sera créée automatiquement",
         options = {
-            pick = "✅ Garder le commit",
-            reword = "📝 Modifier le message",
-            edit = "🔧 Modifier le commit",
-            squash = "🔗 Fusionner avec le précédent",
-            drop = "❌ Supprimer le commit"
+            pick = " Garder le commit",
+            reword = " Modifier le message",
+            edit = " Modifier le commit",
+            squash = " Fusionner avec le précédent",
+            drop = " Supprimer le commit"
         },
         help = {
             pick = "Utilise le commit tel quel",
@@ -87,8 +105,8 @@ return {
             squash = "Fusionne avec le commit précédent",
             drop = "Supprime le commit"
         },
-        title = "📝 Rebase Interactif - Organisez vos commits",
-        help_title = "❓ Guide d'utilisation",
+        title = " Rebase Interactif - Organisez vos commits",
+        help_title = " Guide d'utilisation",
         action = {
             pick = "Conserver le commit",
             reword = "Modifier le message du commit",
@@ -100,13 +118,13 @@ return {
         help_move = "↑/↓ (j/k) : Naviguer | J/K : Déplacer le commit",
         help_start = "ENTRÉE : Démarrer le rebase | P : Prévisualiser les changements",
         help_cancel = "q/ESC : Annuler",
-        no_commits = "⚠️ Aucun commit à réorganiser",
-        started = "✨ Rebase interactif démarré",
-        preview = "🔍 Prévisualisation des changements",
+        no_commits = " Aucun commit à réorganiser",
+        started = " Rebase interactif démarré",
+        preview = " Prévisualisation des changements",
         conflicts = {
-            title = "⚠️ Conflits détectés - Résolution nécessaire",
+            title = " Conflits détectés - Résolution nécessaire",
             actions = "Actions disponibles :",
-            no_conflicts = "✅ Aucun conflit à résoudre",
+            no_conflicts = " Aucun conflit à résoudre",
             ours = "Garder NOS modifications",
             theirs = "Garder LEURS modifications",
             add = "Marquer comme résolu",
@@ -114,8 +132,8 @@ return {
             skip = "Ignorer ce commit",
             abort = "Abandonner le rebase"
         },
-        conflicts_resolved = "✅ Conflit résolu pour %s",
-        conflicts_done = "🎉 Tous les conflits sont résolus !"
+        conflicts_resolved = " Conflit résolu pour %s",
+        conflicts_done = " Tous les conflits sont résolus !"
     },
 
     -- Résolution de conflits
