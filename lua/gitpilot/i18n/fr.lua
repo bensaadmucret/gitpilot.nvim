@@ -86,7 +86,36 @@ return {
             edit = "Marque le commit pour modification",
             squash = "Fusionne avec le commit précédent",
             drop = "Supprime le commit"
-        }
+        },
+        title = "📝 Rebase Interactif - Organisez vos commits",
+        help_title = "❓ Guide d'utilisation",
+        action = {
+            pick = "Conserver le commit",
+            reword = "Modifier le message du commit",
+            edit = "Modifier le contenu du commit",
+            squash = "Fusionner avec le commit précédent (garde les deux messages)",
+            fixup = "Fusionner avec le commit précédent (garde uniquement le message précédent)",
+            drop = "Supprimer ce commit"
+        },
+        help_move = "↑/↓ (j/k) : Naviguer | J/K : Déplacer le commit",
+        help_start = "ENTRÉE : Démarrer le rebase | P : Prévisualiser les changements",
+        help_cancel = "q/ESC : Annuler",
+        no_commits = "⚠️ Aucun commit à réorganiser",
+        started = "✨ Rebase interactif démarré",
+        preview = "🔍 Prévisualisation des changements",
+        conflicts = {
+            title = "⚠️ Conflits détectés - Résolution nécessaire",
+            actions = "Actions disponibles :",
+            no_conflicts = "✅ Aucun conflit à résoudre",
+            ours = "Garder NOS modifications",
+            theirs = "Garder LEURS modifications",
+            add = "Marquer comme résolu",
+            continue = "Continuer le rebase",
+            skip = "Ignorer ce commit",
+            abort = "Abandonner le rebase"
+        },
+        conflicts_resolved = "✅ Conflit résolu pour %s",
+        conflicts_done = "🎉 Tous les conflits sont résolus !"
     },
 
     -- Résolution de conflits
