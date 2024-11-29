@@ -1,5 +1,5 @@
-local i18n = require('git-simple.i18n')
-local ui = require('git-simple.ui')
+local i18n = require('gitpilot.i18n')
+local ui = require('gitpilot.ui')
 local M = {}
 
 -- Configuration locale
