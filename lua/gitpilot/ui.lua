@@ -74,7 +74,17 @@ local function show_menu(title, items)
         end
     end, opts)
     
-    -- Sélection
+    -- Sélection par numéro
+    for i = 1, #items do
+        vim.keymap.set('n', tostring(i), function()
+            if items[i] and items[i].action then
+                vim.api.nvim_win_close(win, true)
+                items[i].action()
+            end
+        end, opts)
+    end
+
+    -- Sélection avec Enter
     vim.keymap.set('n', '<CR>', function()
         local cursor = vim.api.nvim_win_get_cursor(win)
         local selection = cursor[1] - 2 -- Ajustement pour le titre et la ligne de séparation
