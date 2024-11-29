@@ -50,8 +50,26 @@ return {
         current = "Current branch:",
         create = "➕ Create new branch",
         switch = "🔄 Switch branch",
-        merge = "🔗 Merge branch",
+        merge = "🔀 Merge branch",
         delete = "❌ Delete branch",
+        
+        create_title = "Create New Branch",
+        create_success = "Branch '%{name}' created successfully",
+        create_error = "Error creating branch: %{error}",
+        
+        switch_title = "Switch Branch",
+        switch_success = "Switched to branch '%{name}'",
+        switch_error = "Error switching branch: %{error}",
+        
+        merge_title = "Merge Branch",
+        merge_confirm = "Merge '%{source}' into '%{target}'?",
+        merge_success = "Successfully merged '%{name}'",
+        merge_error = "Merge error: %{error}",
+        
+        delete_title = "Delete Branch",
+        delete_confirm = "Delete branch '%{name}'?",
+        delete_success = "Branch '%{name}' deleted",
+        delete_error = "Error deleting branch: %{error}",
         select = "Select a branch:",
         select_merge = "Select branch to merge:",
         select_delete = "Select branch to delete:",
@@ -65,10 +83,6 @@ return {
         warning = {
             delete = "⚠️ This action is irreversible",
             unmerged = "⚠️ This branch is not merged"
-        },
-        create = {
-            prompt = "New branch name:",
-            success = "Branch created successfully"
         },
         exists = "This branch already exists",
         none = "No branches found",
