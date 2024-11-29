@@ -1,6 +1,7 @@
 local M = {}
 local config = {}
 local utils = require('gitpilot.utils')
+local i18n = require('gitpilot.i18n')
 
 M.setup = function(opts)
     config = opts
@@ -103,12 +104,12 @@ local function confirm(message, callback)
     
     -- Préparer les lignes
     local lines = {
-        "Confirmation",
+        i18n.t("menu.confirmation"),
         string.rep("-", 40),
         message,
         "",
-        "y - Confirmer",
-        "n - Annuler"
+        i18n.t("menu.confirm_yes"),
+        i18n.t("menu.confirm_no")
     }
     
     -- Configurer le buffer
@@ -183,13 +184,13 @@ end
 
 -- Créer une nouvelle branche
 M.create_branch = function()
-    prompt_input("Nouvelle Branche", function(branch_name)
+    prompt_input(i18n.t("branch.create_title"), function(branch_name)
         if branch_name and branch_name ~= "" then
             local success, err = utils.git_command_with_error('checkout -b ' .. branch_name)
             if success then
-                vim.notify("Branche créée : " .. branch_name, vim.log.levels.INFO)
+                vim.notify(i18n.t("branch.create_success", {name = branch_name}), vim.log.levels.INFO)
             else
-                vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
+                vim.notify(i18n.t("branch.create_error", {error = err}), vim.log.levels.ERROR)
             end
         end
     end)
@@ -198,13 +199,13 @@ end
 -- Changer de branche
 M.switch_branch = function()
     local branches = get_branches()
-    show_selection_menu("Changer de Branche", branches, function(branch)
+    show_selection_menu(i18n.t("branch.switch_title"), branches, function(branch)
         if branch then
             local success, err = utils.git_command_with_error('checkout ' .. branch)
             if success then
-                vim.notify("Changé vers la branche : " .. branch, vim.log.levels.INFO)
+                vim.notify(i18n.t("branch.switch_success", {name = branch}), vim.log.levels.INFO)
             else
-                vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
+                vim.notify(i18n.t("branch.switch_error", {error = err}), vim.log.levels.ERROR)
             end
         end
     end)
@@ -223,15 +224,15 @@ M.merge_branch = function()
         end
     end
     
-    show_selection_menu("Fusionner une Branche", merge_branches, function(branch)
+    show_selection_menu(i18n.t("branch.merge_title"), merge_branches, function(branch)
         if branch then
-            confirm("Fusionner " .. branch .. " dans " .. current .. " ?", function(confirmed)
+            confirm(i18n.t("branch.merge_confirm", {source = branch, target = current}), function(confirmed)
                 if confirmed then
                     local success, err = utils.git_command_with_error('merge ' .. branch)
                     if success then
-                        vim.notify("Fusion réussie de : " .. branch, vim.log.levels.INFO)
+                        vim.notify(i18n.t("branch.merge_success", {name = branch}), vim.log.levels.INFO)
                     else
-                        vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
+                        vim.notify(i18n.t("branch.merge_error", {error = err}), vim.log.levels.ERROR)
                     end
                 end
             end)
@@ -252,15 +253,15 @@ M.delete_branch = function()
         end
     end
     
-    show_selection_menu("Supprimer une Branche", delete_branches, function(branch)
+    show_selection_menu(i18n.t("branch.delete_title"), delete_branches, function(branch)
         if branch then
-            confirm("Supprimer la branche " .. branch .. " ?", function(confirmed)
+            confirm(i18n.t("branch.delete_confirm", {name = branch}), function(confirmed)
                 if confirmed then
                     local success, err = utils.git_command_with_error('branch -D ' .. branch)
                     if success then
-                        vim.notify("Branche supprimée : " .. branch, vim.log.levels.INFO)
+                        vim.notify(i18n.t("branch.delete_success", {name = branch}), vim.log.levels.INFO)
                     else
-                        vim.notify("Erreur : " .. err, vim.log.levels.ERROR)
+                        vim.notify(i18n.t("branch.delete_error", {error = err}), vim.log.levels.ERROR)
                     end
                 end
             end)

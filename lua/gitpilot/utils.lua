@@ -90,6 +90,22 @@ M.git_command = function(command)
     return output
 end
 
+-- Exécute une commande git et retourne le succès/erreur
+M.git_command_with_error = function(args)
+    local cmd = string.format("%s %s 2>&1", config.git and config.git.cmd or "git", args)
+    local handle = io.popen(cmd)
+    if not handle then return false, "Failed to execute command" end
+    
+    local result = handle:read("*a")
+    local success = handle:close()
+    
+    if success then
+        return true, result
+    else
+        return false, result
+    end
+end
+
 -- Vérifie si un fichier existe
 M.file_exists = function(path)
     local stat = uv.fs_stat(path)
