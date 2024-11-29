@@ -55,43 +55,43 @@ M.setup = function(opts)
     vim.api.nvim_create_user_command('GitPilot', function()
         ui.show_main_menu({
             {
-                label = "Commits",
+                label = i18n.t("menu.commits"),
                 action = function()
                     ui.show_commits_menu()
                 end
             },
             {
-                label = "Branches",
+                label = i18n.t("menu.branches"),
                 action = function()
                     ui.show_branches_menu()
                 end
             },
             {
-                label = "Remotes",
+                label = i18n.t("menu.remotes"),
                 action = function()
                     ui.show_remotes_menu()
                 end
             },
             {
-                label = "Tags",
+                label = i18n.t("menu.tags"),
                 action = function()
                     ui.show_tags_menu()
                 end
             },
             {
-                label = "Stash",
+                label = i18n.t("menu.stash"),
                 action = function()
                     ui.show_stash_menu()
                 end
             },
             {
-                label = "Recherche",
+                label = i18n.t("menu.search"),
                 action = function()
                     search.show_menu()
                 end
             },
             {
-                label = "Rebase",
+                label = i18n.t("menu.rebase"),
                 action = function()
                     rebase.start_rebase()
                 end
