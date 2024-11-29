@@ -1,8 +1,8 @@
 local M = {}
 
 local translations = {
-    fr = require('git-simple.i18n.fr'),
-    en = require('git-simple.i18n.en')
+    fr = require('gitpilot.i18n.fr'),
+    en = require('gitpilot.i18n.en')
 }
 
 local current_lang = 'en'  -- Default language
