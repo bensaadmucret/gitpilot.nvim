@@ -134,20 +134,28 @@ end
 M.show_branches_menu = function()
     M.show_main_menu({
         {
-            label = i18n.t("menu.create_branch"),
-            action = function() require('gitpilot.features.branch').create_branch() end
+            label = i18n.t("branch.create"),
+            action = function()
+                require('gitpilot.features.branch').create_branch()
+            end
         },
         {
-            label = i18n.t("menu.switch_branch"),
-            action = function() require('gitpilot.features.branch').switch_branch() end
+            label = i18n.t("branch.switch"),
+            action = function()
+                require('gitpilot.features.branch').switch_branch()
+            end
         },
         {
-            label = i18n.t("menu.merge_branch"),
-            action = function() require('gitpilot.features.branch').merge_branch() end
+            label = i18n.t("branch.merge"),
+            action = function()
+                require('gitpilot.features.branch').merge_branch()
+            end
         },
         {
-            label = i18n.t("menu.delete_branch"),
-            action = function() require('gitpilot.features.branch').delete_branch() end
+            label = i18n.t("branch.delete"),
+            action = function()
+                require('gitpilot.features.branch').delete_branch()
+            end
         }
     })
 end
