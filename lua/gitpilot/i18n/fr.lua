@@ -33,7 +33,13 @@ return {
         -- Sous-menu des tags
         create_tag = "➕ Créer un tag",
         delete_tag = "❌ Supprimer un tag",
-        push_tag = "⬆️ Pousser les tags"
+        push_tag = "⬆️ Pousser les tags",
+
+        -- Sous-menu des branches
+        create_branch = "➕ Créer une nouvelle branche",
+        switch_branch = "🔄 Changer de branche",
+        merge_branch = "🔀 Fusionner une branche",
+        delete_branch = "❌ Supprimer une branche",
     },
     
     -- Commit assistant

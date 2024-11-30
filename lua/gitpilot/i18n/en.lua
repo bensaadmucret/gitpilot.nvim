@@ -30,6 +30,12 @@ return {
         fetch = "⬇️ Fetch changes",
         push = "⬆️ Push changes",
         
+        -- Branch menu
+        create_branch = "➕ Create new branch",
+        switch_branch = "🔄 Switch branch",
+        merge_branch = "🔀 Merge branch",
+        delete_branch = "❌ Delete branch",
+        
         -- Tags submenu
         create_tag = "➕ Create tag",
         delete_tag = "❌ Delete tag",
