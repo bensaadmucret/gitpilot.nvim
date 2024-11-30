@@ -27,20 +27,31 @@ M.setup = function(opts)
     end
 end
 
--- Translation function
-M.t = function(key)
+-- Translation function with variable substitution
+M.t = function(key, vars)
     local lang_table = translations[current_lang]
     
     -- Split the key by dots to access nested tables
     local result = lang_table
     for k in string.gmatch(key, "[^.]+") do
         if type(result) ~= "table" then
-            return translations['en'][key] or key
+            result = translations['en'][key] or key
+            break
         end
         result = result[k]
     end
     
-    return result or translations['en'][key] or key
+    -- Get the translation string
+    local str = result or translations['en'][key] or key
+    
+    -- If we have variables to substitute
+    if vars then
+        str = str:gsub("%%{(.-)}", function(var)
+            return vars[var] or ""
+        end)
+    end
+    
+    return str
 end
 
 -- Get current language
