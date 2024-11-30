@@ -187,6 +187,7 @@ return {
         exists = "Le tag existe déjà",
         confirm_delete = "Supprimer le tag '%s' ?",
         details_title = "Détails du Tag",
+        message = "Message du Tag",
         commit_info = "Informations du Commit"
     },
 
@@ -210,7 +211,7 @@ return {
         added = "Remote ajouté avec succès",
         removed = "Remote supprimé avec succès",
         error = "Échec de l'opération remote : %s",
-        details_title = "Détails du Dépôt Distant",
+        details_title = "Détails du Remote",
         tracking_info = "Informations de Suivi"
     },
 
