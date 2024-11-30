@@ -22,6 +22,10 @@ end
 -- Obtenir la branche courante
 local function get_current_branch()
     local output = utils.git_command('branch --show-current')
+    if not output then
+        ui.notify(i18n.t("branch.error.current"), "error")
+        return nil
+    end
     return output:gsub("%s+", "")
 end
 
@@ -32,6 +36,11 @@ end
 
 -- Afficher un menu de sélection
 local function show_selection_menu(title, items, callback)
+    if #items == 0 then
+        ui.notify(i18n.t("branch.none"), "warn")
+        return
+    end
+
     local bufnr, win = create_floating_window()
     
     -- Préparer les lignes
@@ -171,14 +180,17 @@ end
 
 -- Créer une nouvelle branche
 M.create_branch = function()
-    prompt_input(i18n.t("branch.create_title"), function(branch_name)
-        if branch_name and branch_name ~= "" then
-            local success, err = utils.git_command_with_error('checkout -b ' .. branch_name)
-            if success then
-                vim.notify(i18n.t("branch.create_success", {name = branch_name}), vim.log.levels.INFO)
-            else
-                vim.notify(i18n.t("branch.create_error", {error = err}), vim.log.levels.ERROR)
-            end
+    prompt_input(i18n.t("branch.create.prompt"), function(branch_name)
+        if not branch_name or branch_name == "" then
+            ui.notify(i18n.t("branch.create.invalid"), "warn")
+            return
+        end
+        
+        local success, err = utils.git_command_with_error('checkout -b ' .. branch_name)
+        if success then
+            ui.notify(i18n.t("branch.create.success", {name = branch_name}), "info")
+        else
+            ui.notify(i18n.t("branch.create.error", {name = branch_name, error = err}), "error")
         end
     end)
 end

@@ -14,11 +14,14 @@ end
 -- Recherche dans l'historique des commits
 M.search_commits = function()
     vim.ui.input({prompt = i18n.t("search.commits.prompt")}, function(query)
-        if not query or query == "" then return end
+        if not query or query == "" then
+            ui.notify(i18n.t("search.commits.empty"), "warn")
+            return
+        end
         
         local commits = utils.git_command(string.format('log --all --grep="%s" --format="%%h|%%s|%%an|%%ar"', query))
         if not commits or commits == "" then
-            ui.notify(i18n.t("search.commits.none"), "warn")
+            ui.notify(i18n.t("search.commits.none"), "info")
             return
         end
 
@@ -37,8 +40,13 @@ M.search_commits = function()
             end
         end
 
+        if #commit_list == 0 then
+            ui.notify(i18n.t("search.commits.no_results"), "info")
+            return
+        end
+
         local buf, win = ui.create_floating_window(
-            i18n.t("search.commits.results"),
+            i18n.t("search.commits.results_title", {query = query}),
             commit_list,
             {
                 width = 100
@@ -48,21 +56,6 @@ M.search_commits = function()
         -- Navigation
         local opts = {buffer = buf, noremap = true, silent = true}
         
-        vim.keymap.set('n', 'j', function()
-            local cursor = vim.api.nvim_win_get_cursor(win)
-            if cursor[1] < #commit_list then
-                vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
-            end
-        end, opts)
-        
-        vim.keymap.set('n', 'k', function()
-            local cursor = vim.api.nvim_win_get_cursor(win)
-            if cursor[1] > 1 then
-                vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
-            end
-        end, opts)
-
-        -- Fermeture
         vim.keymap.set('n', 'q', function()
             vim.api.nvim_win_close(win, true)
         end, opts)
@@ -71,35 +64,44 @@ M.search_commits = function()
             vim.api.nvim_win_close(win, true)
         end, opts)
 
-        -- Voir les détails du commit
         vim.keymap.set('n', '<CR>', function()
             local cursor = vim.api.nvim_win_get_cursor(win)
-            local commit = commit_data[cursor[1]]
-            
-            local details = utils.git_command('show ' .. commit.hash)
-            if details then
-                local detail_lines = vim.split(details, "\n")
-                local detail_buf, detail_win = ui.create_floating_window(
-                    i18n.t("search.commits.details"),
-                    detail_lines,
-                    {
-                        width = 100,
-                        height = 20
-                    }
-                )
-
-                -- Navigation dans les détails
-                local detail_opts = {buffer = detail_buf, noremap = true, silent = true}
-                vim.keymap.set('n', 'q', function()
-                    vim.api.nvim_win_close(detail_win, true)
-                end, detail_opts)
-                
-                vim.keymap.set('n', '<Esc>', function()
-                    vim.api.nvim_win_close(detail_win, true)
-                end, detail_opts)
+            local selected = commit_data[cursor[1]]
+            if selected then
+                vim.api.nvim_win_close(win, true)
+                M.show_commit_details(selected.hash)
             end
         end, opts)
     end)
+end
+
+-- Afficher les détails d'un commit
+M.show_commit_details = function(hash)
+    local details = utils.git_command(string.format('show %s', hash))
+    if not details then
+        ui.notify(i18n.t("search.commits.details_error"), "error")
+        return
+    end
+
+    local buf, win = ui.create_floating_window(
+        i18n.t("search.commits.details_title", {hash = hash}),
+        vim.split(details, "\n"),
+        {
+            width = 100,
+            height = 30
+        }
+    )
+
+    -- Navigation
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
 end
 
 -- Recherche de fichiers modifiés

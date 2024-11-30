@@ -204,6 +204,74 @@ M.select_commit_type = function()
     end, opts)
 end
 
+-- Créer un commit
+M.create_commit = function(files, type, scope, message, body, breaking, footer)
+    if not files or #files == 0 then
+        ui.notify(i18n.t("commit.files.none"), "warn")
+        return
+    end
+
+    if not message or message == "" then
+        ui.notify(i18n.t("commit.message.empty"), "warn")
+        return
+    end
+
+    -- Construction du message de commit
+    local commit_msg = ""
+    if type then
+        commit_msg = type
+        if scope then
+            commit_msg = commit_msg .. "(" .. scope .. ")"
+        end
+        commit_msg = commit_msg .. ": "
+    end
+    commit_msg = commit_msg .. message
+
+    if body and body ~= "" then
+        commit_msg = commit_msg .. "\n\n" .. body
+    end
+
+    if breaking and breaking ~= "" then
+        commit_msg = commit_msg .. "\n\nBREAKING CHANGE: " .. breaking
+    end
+
+    if footer and footer ~= "" then
+        commit_msg = commit_msg .. "\n\n" .. footer
+    end
+
+    -- Stage des fichiers sélectionnés
+    for _, file in ipairs(files) do
+        local add_result = utils.git_command('add ' .. file.path)
+        if not add_result then
+            ui.notify(i18n.t("commit.action.error", {error = "Failed to stage " .. file.path}), "error")
+            return
+        end
+    end
+
+    -- Création du commit
+    local success, err = utils.git_command_with_error('commit -m "' .. commit_msg .. '"')
+    if success then
+        ui.notify(i18n.t("commit.action.success"), "info")
+    else
+        ui.notify(i18n.t("commit.action.error", {error = err}), "error")
+    end
+end
+
+-- Modifier le dernier commit
+M.amend_commit = function(message)
+    if not message or message == "" then
+        ui.notify(i18n.t("commit.message.empty"), "warn")
+        return
+    end
+
+    local success, err = utils.git_command_with_error('commit --amend -m "' .. message .. '"')
+    if success then
+        ui.notify(i18n.t("commit.action.amend_success"), "info")
+    else
+        ui.notify(i18n.t("commit.action.amend_error", {error = err}), "error")
+    end
+end
+
 -- Assistant de commit complet
 M.smart_commit = function()
     -- 1. Sélection des fichiers

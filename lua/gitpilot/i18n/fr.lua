@@ -325,47 +325,31 @@ return {
         title = "🔍 Recherche",
         no_results = "Aucun résultat trouvé",
         commits = {
-            title = "Rechercher dans les Commits",
-            prompt = "Entrez un terme de recherche pour les commits :",
-            results = "Résultats de Recherche - Commits",
-            none = "Aucun commit correspondant trouvé",
-            details = "Détails du Commit",
-            copy_hash = "Hash copié dans le presse-papiers",
-            by_message = "Rechercher par message de commit",
-            by_files = "Rechercher par fichiers modifiés"
+            prompt = "Entrez un terme de recherche :",
+            empty = "Le terme de recherche ne peut pas être vide",
+            none = "Aucun commit trouvé",
+            no_results = "Aucun résultat pour cette recherche",
+            results_title = "Résultats pour : %s",
+            details_title = "Détails du commit : %s",
+            details_error = "Erreur lors de la récupération des détails du commit"
         },
         files = {
-            title = "Rechercher des Fichiers",
-            prompt = "Entrez un motif de recherche pour les fichiers :",
-            results = "Résultats de Recherche - Fichiers",
-            none = "Aucun fichier correspondant trouvé",
-            in_content = "Rechercher dans le contenu des fichiers",
-            by_name = "Rechercher par nom de fichier",
-            by_extension = "Rechercher par extension"
+            prompt = "Entrez un motif de recherche :",
+            empty = "Le motif de recherche ne peut pas être vide",
+            none = "Aucun fichier trouvé",
+            results = "Fichiers trouvés"
         },
         author = {
-            title = "Rechercher par Auteur",
             prompt = "Entrez le nom de l'auteur :",
-            results = "Résultats de Recherche - Commits par Auteur",
+            empty = "Le nom de l'auteur ne peut pas être vide",
             none = "Aucun commit trouvé pour cet auteur",
-            email = "Rechercher par email",
-            name = "Rechercher par nom"
+            results = "Commits par %s"
         },
         branches = {
-            title = "Rechercher des Branches",
-            prompt = "Entrez un motif de recherche pour les branches :",
-            results = "Résultats de Recherche - Branches",
-            none = "Aucune branche correspondante trouvée",
-            local = "Branches locales",
-            remote = "Branches distantes",
-            all = "Toutes les branches"
-        },
-        navigation = {
-            next = "Résultat suivant",
-            previous = "Résultat précédent",
-            details = "Afficher les détails",
-            close = "Fermer",
-            help = "Appuyez sur '?' pour l'aide"
+            prompt = "Entrez un motif de recherche :",
+            empty = "Le motif de recherche ne peut pas être vide",
+            none = "Aucune branche trouvée",
+            results = "Branches trouvées"
         }
     },
 
