@@ -2,6 +2,7 @@ local M = {}
 local config = {}
 local utils = require('gitpilot.utils')
 local i18n = require('gitpilot.i18n')
+local ui = require('gitpilot.ui')
 
 M.setup = function(opts)
     config = opts
@@ -24,28 +25,14 @@ local function get_current_branch()
     return output:gsub("%s+", "")
 end
 
--- Créer une fenêtre flottante
-local function create_float_window()
-    local width = 60
-    local height = 20
-    local bufnr = vim.api.nvim_create_buf(false, true)
-    
-    local win = vim.api.nvim_open_win(bufnr, true, {
-        relative = 'editor',
-        width = width,
-        height = height,
-        row = (vim.o.lines - height) / 2,
-        col = (vim.o.columns - width) / 2,
-        style = 'minimal',
-        border = 'rounded'
-    })
-    
-    return bufnr, win
+-- Création d'une fenêtre flottante
+local function create_floating_window()
+    return ui.create_floating_window()
 end
 
 -- Afficher un menu de sélection
 local function show_selection_menu(title, items, callback)
-    local bufnr, win = create_float_window()
+    local bufnr, win = create_floating_window()
     
     -- Préparer les lignes
     local lines = {title, string.rep("-", 40)}
@@ -100,7 +87,7 @@ end
 
 -- Demander une confirmation
 local function confirm(message, callback)
-    local bufnr, win = create_float_window()
+    local bufnr, win = create_floating_window()
     
     -- Préparer les lignes
     local lines = {
@@ -143,7 +130,7 @@ end
 
 -- Demander un input
 local function prompt_input(title, callback)
-    local bufnr, win = create_float_window()
+    local bufnr, win = create_floating_window()
     
     -- Préparer les lignes
     local lines = {

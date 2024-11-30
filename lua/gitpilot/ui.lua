@@ -16,7 +16,7 @@ M.notify = function(msg, level)
 end
 
 -- Création d'une fenêtre flottante
-local function create_float_window(title)
+M.create_floating_window = function(title)
     local width = config.ui.window.width
     local height = config.ui.window.height
     local row = math.floor((vim.o.lines - height) / 2)
@@ -52,7 +52,7 @@ end
 
 -- Affichage d'un menu
 local function show_menu(title, items)
-    local buf, win = create_float_window(title)
+    local buf, win = M.create_floating_window(title)
     
     -- Préparation des lignes du menu
     local lines = {}
