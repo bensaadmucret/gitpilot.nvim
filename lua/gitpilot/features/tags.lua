@@ -1,171 +1,118 @@
 local M = {}
+local utils = require('gitpilot.utils')
 local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
-local utils = require('gitpilot.utils')
 
--- Configuration locale
-local config = {}
-
--- Setup function
-M.setup = function(opts)
-    config = opts
-end
-
--- Liste des tags
+---Liste tous les tags disponibles
+---@return table Liste des tags avec {name, hash, message}
 M.list_tags = function()
-    local tags = utils.git_command('tag -l --format="%(refname:short)|%(objectname:short)|%(contents:subject)"')
-    if not tags then return {} end
+    local success, output = pcall(utils.git_command, 'tag --format="%(refname:short)|%(objectname:short)|%(subject)"')
+    if not success then
+        vim.notify("tags.error.list", vim.log.levels.ERROR)
+        return {}
+    end
 
-    local tag_list = {}
-    for line in tags:gmatch("[^\r\n]+") do
+    if not output or output == "" then
+        return {}
+    end
+
+    local tags = {}
+    for line in output:gmatch("[^\r\n]+") do
         local name, hash, message = line:match("([^|]+)|([^|]+)|(.+)")
         if name and hash then
-            table.insert(tag_list, {
+            table.insert(tags, {
                 name = name,
                 hash = hash,
                 message = message or ""
             })
         end
     end
-    return tag_list
+    return tags
 end
 
--- Créer un tag
-M.create_tag = function()
-    -- Obtenir le hash du commit actuel
-    local current_commit = utils.git_command('rev-parse HEAD')
-    if not current_commit then return end
+---Crée un nouveau tag
+---@param name string Nom du tag
+---@param message string Message associé au tag
+---@return boolean true si le tag est créé, false sinon
+M.create_tag = function(name, message)
+    if not name or name == "" then
+        vim.notify("tags.create.invalid_name", vim.log.levels.WARN)
+        return false
+    end
 
-    vim.ui.input({prompt = i18n.t("tag.name.prompt")}, function(name)
-        if not name or name == "" then return end
-        
-        -- Vérifier si le tag existe déjà
-        local existing = utils.git_command('tag -l ' .. name)
-        if existing and existing ~= "" then
-            ui.notify(i18n.t("tag.exists"), "warn")
-            return
-        end
+    local cmd = message and message ~= ""
+        and string.format('tag -a %s -m "%s"', name, message)
+        or string.format('tag %s', name)
 
-        vim.ui.input({prompt = i18n.t("tag.message.prompt")}, function(message)
-            if not message or message == "" then
-                -- Tag léger
-                local result = utils.git_command(string.format('tag %s', name))
-                if result then
-                    ui.notify(i18n.t("tag.created_light"), "info")
-                end
-            else
-                -- Tag annoté
-                local result = utils.git_command(string.format('tag -a %s -m "%s"', name, message))
-                if result then
-                    ui.notify(i18n.t("tag.created_annotated"), "info")
-                end
-            end
-        end)
-    end)
+    local success = pcall(utils.git_command, cmd)
+    if not success then
+        vim.notify("tags.error.create", vim.log.levels.ERROR)
+        return false
+    end
+
+    vim.notify("tags.created", vim.log.levels.INFO)
+    return true
 end
 
--- Supprimer un tag
-M.delete_tag = function()
-    local tags = M.list_tags()
-    if #tags == 0 then
-        ui.notify(i18n.t("tag.none"), "warn")
-        return
+---Pousse un tag vers le remote
+---@param tag_name string Nom du tag à pousser
+---@return boolean true si le tag est poussé, false sinon
+M.push_tag = function(tag_name)
+    if not tag_name or tag_name == "" then
+        vim.notify("tags.push.invalid_name", vim.log.levels.WARN)
+        return false
     end
 
-    local items = {}
-    for _, tag in ipairs(tags) do
-        table.insert(items, {
-            label = string.format("%s (%s) - %s", tag.name, tag.hash, tag.message),
-            action = function()
-                -- Demander confirmation
-                vim.ui.input({
-                    prompt = string.format(i18n.t("tag.confirm_delete"), tag.name)
-                }, function(input)
-                    if input and input:lower() == "y" then
-                        local success = utils.git_command('tag -d ' .. tag.name)
-                        if success then
-                            ui.notify(string.format(i18n.t("tag.deleted"), tag.name), "info")
-                        end
-                    end
-                end)
-            end
-        })
+    local success = pcall(utils.git_command, 'push origin ' .. tag_name)
+    if not success then
+        vim.notify("tags.error.push", vim.log.levels.ERROR)
+        return false
     end
 
-    ui.show_main_menu(items, i18n.t("tag.delete_title"))
+    vim.notify("tags.pushed", vim.log.levels.INFO)
+    return true
 end
 
--- Push des tags
-M.push_tag = function()
-    local tags = M.list_tags()
-    if #tags == 0 then
-        ui.notify(i18n.t("tag.none"), "warn")
-        return
+---Supprime un tag local
+---@param tag_name string Nom du tag à supprimer
+---@return boolean true si le tag est supprimé, false sinon
+M.delete_tag = function(tag_name)
+    if not tag_name or tag_name == "" then
+        vim.notify("tags.delete.invalid_name", vim.log.levels.WARN)
+        return false
     end
 
-    local tag_display = {}
-    for _, tag in ipairs(tags) do
-        table.insert(tag_display, string.format("%s (%s)", tag.name, tag.hash))
+    local success = pcall(utils.git_command, 'tag -d ' .. tag_name)
+    if not success then
+        vim.notify("tags.error.delete", vim.log.levels.ERROR)
+        return false
     end
-    table.insert(tag_display, 1, i18n.t("tag.push_all"))
 
-    local buf, win = ui.create_floating_window(
-        i18n.t("tag.select_push"),
-        tag_display,
-        {
-            width = 60
-        }
-    )
-
-    -- Navigation et sélection
-    local opts = {buffer = buf, noremap = true, silent = true}
-    
-    vim.keymap.set('n', 'j', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        if cursor[1] < #tag_display then
-            vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
-        end
-    end, opts)
-    
-    vim.keymap.set('n', 'k', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        if cursor[1] > 1 then
-            vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
-        end
-    end, opts)
-
-    -- Fermeture
-    vim.keymap.set('n', 'q', function()
-        vim.api.nvim_win_close(win, true)
-    end, opts)
-    
-    vim.keymap.set('n', '<Esc>', function()
-        vim.api.nvim_win_close(win, true)
-    end, opts)
-
-    -- Sélection et push
-    vim.keymap.set('n', '<CR>', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        vim.api.nvim_win_close(win, true)
-        
-        if cursor[1] == 1 then
-            -- Push tous les tags
-            local result = utils.git_command('push --tags')
-            if result then
-                ui.notify(i18n.t("tag.pushed_all"), "info")
-            end
-        else
-            -- Push tag spécifique
-            local tag = tags[cursor[1] - 1]
-            local result = utils.git_command('push origin ' .. tag.name)
-            if result then
-                ui.notify(i18n.t("tag.pushed") .. ": " .. tag.name, "info")
-            end
-        end
-    end, opts)
+    vim.notify("tags.deleted", vim.log.levels.INFO)
+    return true
 end
 
--- Afficher les détails d'un tag
+---Supprime un tag distant
+---@param tag_name string Nom du tag à supprimer du remote
+---@return boolean true si le tag distant est supprimé, false sinon
+M.delete_remote_tag = function(tag_name)
+    if not tag_name or tag_name == "" then
+        vim.notify("tags.delete_remote.invalid_name", vim.log.levels.WARN)
+        return false
+    end
+
+    local success = pcall(utils.git_command, 'push origin :refs/tags/' .. tag_name)
+    if not success then
+        vim.notify("tags.error.delete_remote", vim.log.levels.ERROR)
+        return false
+    end
+
+    vim.notify("tags.deleted_remote", vim.log.levels.INFO)
+    return true
+end
+
+---Afficher les détails d'un tag
+---@param tag_name string Nom du tag
 M.show_tag_details = function(tag_name)
     -- Récupérer les détails du tag
     local details = {}

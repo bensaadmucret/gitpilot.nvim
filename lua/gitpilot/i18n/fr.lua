@@ -34,7 +34,7 @@ return {
         -- Sous-menu des commits
         create_commit = "📝 Créer un nouveau commit",
         amend_commit = "✏️ Modifier le dernier commit",
-        history = "📜 Voir l'historique",
+        show_history = "📜 Voir l'historique",
         discard = "🗑️ Abandonner les modifications",
         
         -- Sous-menu des remotes
@@ -47,13 +47,7 @@ return {
         create_tag = "➕ Créer un tag",
         delete_tag = "❌ Supprimer un tag",
         list_tags = "📋 Lister les tags",
-        push_tags = "⬆️ Pousser les tags",
-
-        -- Sous-menu des branches
-        create_branch = "➕ Créer une nouvelle branche",
-        switch_branch = "🔄 Changer de branche",
-        merge_branch = "🔀 Fusionner une branche",
-        delete_branch = "❌ Supprimer une branche",
+        push_tags = "⬆️ Pousser les tags"
     },
     
     -- Gestion des commits
@@ -109,21 +103,6 @@ return {
             untracked = "Fichiers non suivis",
             no_changes = "Aucun changement à commiter"
         }
-    },
-    
-    -- Messages des commits
-    commit_messages = {
-        create = "📝 Créer un nouveau commit",
-        amend = "✏️ Modifier le dernier commit",
-        history = "📜 Voir l'historique",
-        discard = "🗑️ Abandonner les modifications",
-        title = "Message de commit",
-        description = "Description (optionnel)",
-        success = "Commit créé avec succès",
-        amend_success = "Commit modifié avec succès",
-        error = "Erreur lors de la création du commit",
-        no_changes = "Aucun changement à commiter",
-        confirm_discard = "Voulez-vous vraiment abandonner toutes les modifications ? Cette action est irréversible. (o/N)"
     },
     
     -- Gestion des branches
@@ -183,187 +162,85 @@ return {
         }
     },
     
-    -- Messages des branches
-    branch_messages = {
-        current = "branche actuelle",
-        create = "➕ Créer une nouvelle branche",
-        switch = "🔄 Changer de branche",
-        merge = "🔀 Fusionner une branche",
-        delete = "❌ Supprimer une branche",
-        create_title = "Créer une nouvelle branche",
-        switch_title = "Changer de branche",
-        merge_title = "Fusionner une branche",
-        delete_title = "Supprimer une branche",
-        switch_success = "Basculé vers la branche '%{name}'",
-        create_success = "Branche '%{name}' créée avec succès",
-        merge_success = "Branche '%{name}' fusionnée avec succès",
-        delete_success = "Branche '%{name}' supprimée avec succès",
-        error_exists = "La branche '%{name}' existe déjà",
-        error_not_exists = "La branche '%{name}' n'existe pas",
-        error_current = "Impossible de supprimer la branche actuelle",
-        confirm_delete = "Êtes-vous sûr de vouloir supprimer la branche '%{name}' ?"
-    },
-    
     -- Gestion des tags
     tag = {
         title = "🏷️ Gestion des Tags",
-        create = "Créer un Tag",
-        delete = "Supprimer un Tag",
-        push = "Pousser les Tags",
         none = "Aucun tag trouvé",
         name = {
             prompt = "Entrez le nom du tag :",
             invalid = "Nom de tag invalide"
         },
         message = {
-            prompt = "Entrez le message du tag (optionnel) :"
+            prompt = "Entrez le message du tag (optionnel) :",
+            preview = "Aperçu du message du tag :"
         },
-        created_light = "Tag léger créé",
-        created_annotated = "Tag annoté créé",
-        deleted = "Tag '%s' supprimé",
-        pushed = "Tags poussés vers le remote",
-        exists = "Le tag existe déjà",
-        confirm_delete = "Supprimer le tag '%s' ?",
-        details_title = "Détails du Tag",
-        message = "Message du Tag",
-        commit_info = "Informations du Commit"
-    },
-
-    -- Gestion des dépôts distants
-    remote = {
-        title = "🔄 Gestion des Remotes",
-        add = "Ajouter un Remote",
-        remove = "Supprimer un Remote",
-        push = "Pousser vers le Remote",
-        fetch = "Récupérer depuis le Remote",
-        none = "Aucun remote trouvé",
-        name = {
-            prompt = "Entrez le nom du remote :",
-            invalid = "Nom de remote invalide"
+        create = {
+            title = "Créer un Tag",
+            success = "Tag '%s' créé avec succès",
+            error = "Erreur lors de la création du tag : %s",
+            exists = "Le tag '%s' existe déjà"
         },
-        url = {
-            prompt = "Entrez l'URL du remote :",
-            invalid = "URL invalide",
-            url = "URL"
+        delete = {
+            title = "Supprimer un Tag",
+            prompt = "Sélectionnez le tag à supprimer :",
+            confirm = "Supprimer le tag '%s' ? Cette action est irréversible !",
+            success = "Tag '%s' supprimé avec succès",
+            error = "Erreur lors de la suppression du tag : %s"
         },
-        added = "Remote ajouté avec succès",
-        removed = "Remote supprimé avec succès",
-        error = "Échec de l'opération remote : %s",
-        details_title = "Détails du Remote",
-        tracking_info = "Informations de Suivi"
-    },
-
-    -- Rebase assistant
-    rebase = {
-        intro = "Assistant de Rebase Interactif",
-        warning = "⚠️ Cette opération va modifier l'historique",
-        backup = "Une sauvegarde sera créée automatiquement",
-        title = "📝 Rebase Interactif - Organisez vos commits",
-        help_title = "❓ Guide d'utilisation",
-        action = {
-            pick = "✅ Garder le commit tel quel",
-            reword = "📝 Modifier le message",
-            edit = "🔧 Modifier le contenu",
-            squash = "🔗 Fusionner avec le précédent (garder les deux messages)",
-            fixup = "🔗 Fusionner avec le précédent (garder uniquement le message précédent)",
-            drop = "❌ Supprimer ce commit"
-        },
-        help_move = "↑/↓ (j/k) : Navigation | J/K : Déplacer le commit",
-        help_start = "ENTRÉE : Démarrer le rebase | P : Prévisualiser les changements",
-        help_cancel = "q/ÉCHAP : Annuler",
-        no_commits = "⚠️ Aucun commit à réorganiser",
-        started = "✨ Rebase interactif démarré",
-        preview = "🔍 Prévisualisation des changements",
-        conflicts = {
-            title = "⚠️ Conflits Détectés - Résolution Requise",
-            actions = "Actions disponibles :",
-            no_conflicts = "✅ Aucun conflit à résoudre",
-            ours = "Garder NOS modifications",
-            theirs = "Garder LEURS modifications",
-            add = "Marquer comme résolu",
-            continue = "Continuer le rebase",
-            skip = "Passer ce commit",
-            abort = "Annuler le rebase",
-            resolved = "✅ Conflit résolu pour %s",
-            done = "🎉 Tous les conflits sont résolus !"
+        push = {
+            title = "Pousser les Tags",
+            prompt = "Sélectionnez les tags à pousser :",
+            confirm = "Pousser les tags sélectionnés ?",
+            success = "Tags poussés avec succès",
+            error = "Erreur lors de la poussée des tags : %s"
         }
     },
-
-    -- Résolution de conflits
-    conflict = {
-        found = "Conflits détectés dans les fichiers :",
-        none = "Aucun conflit détecté",
-        options = {
-            ours = "Garder nos modifications",
-            theirs = "Garder leurs modifications",
-            both = "Garder les deux",
-            manual = "Éditer manuellement"
-        },
-        help = "Utilisez les flèches pour naviguer et Entrée pour sélectionner"
-    },
-
-    -- Gestionnaire de stash
+    
+    -- Gestion des stash
     stash = {
         title = "📦 Gestion des Stash",
-        list_title = "Liste des Stash",
-        content_title = "Contenu du Stash",
-        create = "Créer un Stash",
-        apply = "Appliquer un Stash",
-        delete = "Supprimer un Stash",
         none = "Aucun stash trouvé",
-        select_files = "Sélectionnez les fichiers à stasher",
-        no_changes = "Aucun changement à stasher",
-        created = "Changements stashés avec succès",
-        applied = "Stash appliqué avec succès",
-        deleted = "Stash supprimé avec succès",
-        error = "Échec de l'opération stash : %s",
-        confirm_delete = "Supprimer le stash '%s' ?"
-    },
-
-    -- Menu de recherche
-    search = {
-        title = "🔍 Recherche",
-        no_results = "Aucun résultat trouvé",
-        commits = {
-            prompt = "Entrez un terme de recherche :",
-            empty = "Le terme de recherche ne peut pas être vide",
-            none = "Aucun commit trouvé",
-            no_results = "Aucun résultat pour cette recherche",
-            results_title = "Résultats pour : %s",
-            details_title = "Détails du commit : %s",
-            details_error = "Erreur lors de la récupération des détails du commit"
+        create = {
+            title = "Créer un Stash",
+            prompt = "Entrez un message pour le stash (optionnel) :",
+            success = "Modifications remisées avec succès",
+            error = "Erreur lors de la remise des modifications : %s",
+            no_changes = "Aucune modification à remiser"
         },
-        files = {
-            prompt = "Entrez un motif de recherche :",
-            empty = "Le motif de recherche ne peut pas être vide",
-            none = "Aucun fichier trouvé",
-            results = "Fichiers trouvés"
+        apply = {
+            title = "Appliquer un Stash",
+            prompt = "Sélectionnez le stash à appliquer :",
+            confirm = "Appliquer le stash '%s' ?",
+            success = "Stash appliqué avec succès",
+            error = "Erreur lors de l'application du stash : %s",
+            conflict = "Conflits détectés lors de l'application du stash"
         },
-        author = {
-            prompt = "Entrez le nom de l'auteur :",
-            empty = "Le nom de l'auteur ne peut pas être vide",
-            none = "Aucun commit trouvé pour cet auteur",
-            results = "Commits par %s"
-        },
-        branches = {
-            prompt = "Entrez un motif de recherche :",
-            empty = "Le motif de recherche ne peut pas être vide",
-            none = "Aucune branche trouvée",
-            results = "Branches trouvées"
+        drop = {
+            title = "Supprimer un Stash",
+            prompt = "Sélectionnez le stash à supprimer :",
+            confirm = "Supprimer le stash '%s' ? Cette action est irréversible !",
+            success = "Stash supprimé avec succès",
+            error = "Erreur lors de la suppression du stash : %s"
         }
     },
-
-    -- Messages d'aide contextuelle
-    help = {
-        rebase = "Le rebase permet de réorganiser vos commits. Suivez le guide !",
-        conflict = "Un conflit survient quand deux modifications se chevauchent.",
-        stash = "Le stash permet de mettre de côté vos modifications temporairement.",
-        general = "Appuyez sur ? pour l'aide, Échap pour annuler",
-        keys = {
-            navigation = "↑/↓: Navigation",
-            select = "Entrée: Sélectionner",
-            cancel = "Échap: Annuler",
-            help = "?: Aide"
+    
+    -- Recherche
+    search = {
+        title = "🔍 Recherche",
+        prompt = "Entrez votre recherche :",
+        no_results = "Aucun résultat trouvé",
+        commits = {
+            title = "Rechercher dans les Commits",
+            prompt = "Rechercher des commits :",
+            author = "Auteur",
+            date = "Date",
+            message = "Message"
+        },
+        files = {
+            title = "Rechercher dans les Fichiers",
+            prompt = "Rechercher des fichiers :",
+            path = "Chemin",
+            content = "Contenu"
         }
     }
 }
