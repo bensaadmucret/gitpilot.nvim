@@ -131,19 +131,35 @@ return {
         intro = "Assistant de Rebase Interactif",
         warning = "⚠️ Cette opération va modifier l'historique",
         backup = "Une sauvegarde sera créée automatiquement",
-        options = {
-            pick = "pick - utiliser le commit",
-            reword = "reword - modifier le message",
-            edit = "edit - modifier le commit",
-            squash = "squash - fusionner avec le précédent",
-            fixup = "fixup - fusionner sans le message",
-            drop = "drop - supprimer le commit"
+        title = "📝 Rebase Interactif - Organisez vos commits",
+        help_title = "❓ Guide d'utilisation",
+        action = {
+            pick = "✅ Garder le commit tel quel",
+            reword = "📝 Modifier le message",
+            edit = "🔧 Modifier le contenu",
+            squash = "🔗 Fusionner avec le précédent (garder les deux messages)",
+            fixup = "🔗 Fusionner avec le précédent (garder uniquement le message précédent)",
+            drop = "❌ Supprimer ce commit"
         },
-        success = "Rebase terminé avec succès",
-        error = "Erreur pendant le rebase",
-        abort = "Rebase annulé",
-        continue = "Continuer le rebase",
-        no_commits = "Aucun commit à rebase"
+        help_move = "↑/↓ (j/k) : Navigation | J/K : Déplacer le commit",
+        help_start = "ENTRÉE : Démarrer le rebase | P : Prévisualiser les changements",
+        help_cancel = "q/ÉCHAP : Annuler",
+        no_commits = "⚠️ Aucun commit à réorganiser",
+        started = "✨ Rebase interactif démarré",
+        preview = "🔍 Prévisualisation des changements",
+        conflicts = {
+            title = "⚠️ Conflits Détectés - Résolution Requise",
+            actions = "Actions disponibles :",
+            no_conflicts = "✅ Aucun conflit à résoudre",
+            ours = "Garder NOS modifications",
+            theirs = "Garder LEURS modifications",
+            add = "Marquer comme résolu",
+            continue = "Continuer le rebase",
+            skip = "Passer ce commit",
+            abort = "Annuler le rebase",
+            resolved = "✅ Conflit résolu pour %s",
+            done = "🎉 Tous les conflits sont résolus !"
+        }
     },
 
     -- Résolution de conflits

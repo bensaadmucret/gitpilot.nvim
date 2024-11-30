@@ -107,29 +107,15 @@ return {
         intro = "Interactive Rebase Assistant",
         warning = "⚠️ This operation will modify history",
         backup = "A backup will be created automatically",
-        options = {
-            pick = "✅ Use commit",
-            reword = "📝 Edit message",
-            edit = "🔧 Edit commit",
-            squash = "🔗 Merge with previous",
-            drop = "❌ Remove commit"
-        },
-        help = {
-            pick = "Use commit as is",
-            reword = "Use commit but edit the message",
-            edit = "Mark commit for editing",
-            squash = "Melt into previous commit",
-            drop = "Remove the commit"
-        },
         title = "📝 Interactive Rebase - Organize Your Commits",
         help_title = "❓ Usage Guide",
         action = {
-            pick = "Keep commit as is",
-            reword = "Edit commit message",
-            edit = "Edit commit content",
-            squash = "Merge with previous commit (keep both messages)",
-            fixup = "Merge with previous commit (keep only previous message)",
-            drop = "Remove this commit",
+            pick = "✅ Keep commit as is",
+            reword = "📝 Edit commit message",
+            edit = "🔧 Edit commit content",
+            squash = "🔗 Merge with previous (keep both messages)",
+            fixup = "🔗 Merge with previous (keep only previous message)",
+            drop = "❌ Remove this commit"
         },
         help_move = "↑/↓ (j/k) : Navigate | J/K : Move commit",
         help_start = "ENTER : Start rebase | P : Preview changes",
@@ -148,7 +134,7 @@ return {
             skip = "Skip this commit",
             abort = "Abort rebase",
             resolved = "✅ Conflict resolved for %s",
-            done = "🎉 All conflicts resolved!",
+            done = "🎉 All conflicts resolved!"
         }
     },
 
