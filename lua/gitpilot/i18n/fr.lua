@@ -33,7 +33,8 @@ return {
         -- Sous-menu des tags
         create_tag = "➕ Créer un tag",
         delete_tag = "❌ Supprimer un tag",
-        push_tag = "⬆️ Pousser les tags",
+        list_tags = "📋 Lister les tags",
+        push_tags = "⬆️ Pousser les tags",
 
         -- Sous-menu des branches
         create_branch = "➕ Créer une nouvelle branche",

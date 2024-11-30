@@ -39,7 +39,13 @@ return {
         -- Tags submenu
         create_tag = "➕ Create tag",
         delete_tag = "❌ Delete tag",
-        push_tag = "⬆️ Push tags"
+        list_tags = "📋 List tags",
+        push_tags = "⬆️ Push tags",
+        
+        -- Tags submenu (old)
+        -- create_tag = "➕ Create tag",
+        -- delete_tag = "❌ Delete tag",
+        -- push_tag = "⬆️ Push tags"
     },
     
     -- Commit assistant

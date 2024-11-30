@@ -203,8 +203,12 @@ M.show_tags_menu = function()
             action = function() require('gitpilot.features.tags').delete_tag() end
         },
         {
-            label = i18n.t("menu.push_tag"),
-            action = function() require('gitpilot.features.tags').push_tag() end
+            label = i18n.t("menu.list_tags"),
+            action = function() require('gitpilot.features.tags').list_tags() end
+        },
+        {
+            label = i18n.t("menu.push_tags"),
+            action = function() require('gitpilot.features.tags').push_tags() end
         }
     })
 end
