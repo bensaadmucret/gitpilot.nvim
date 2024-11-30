@@ -138,6 +138,29 @@ return {
         confirm_delete = "Are you sure you want to delete branch '%{name}'?",
     },
 
+    -- Tag management
+    tag = {
+        name = {
+            prompt = "Tag name:"
+        },
+        message = {
+            prompt = "Message (optional, Enter for lightweight tag):"
+        },
+        exists = "This tag already exists",
+        none = "No tags found",
+        created_light = "Lightweight tag created successfully",
+        created_annotated = "Annotated tag created successfully",
+        deleted = "Tag '%s' deleted successfully",
+        pushed = "Tags pushed successfully",
+        confirm_delete = "Do you want to delete tag '%s'? (y/N)",
+        delete_title = "🏷️ Delete tag",
+        error = {
+            create = "Error creating tag",
+            delete = "Error deleting tag",
+            push = "Error pushing tags"
+        }
+    },
+
     -- Rebase assistant
     rebase = {
         intro = "Interactive Rebase Assistant",

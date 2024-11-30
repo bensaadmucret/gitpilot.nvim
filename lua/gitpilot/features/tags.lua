@@ -72,61 +72,27 @@ M.delete_tag = function()
         return
     end
 
-    local tag_display = {}
+    local items = {}
     for _, tag in ipairs(tags) do
-        table.insert(tag_display, string.format("%s (%s) - %s", tag.name, tag.hash, tag.message))
+        table.insert(items, {
+            label = string.format("%s (%s) - %s", tag.name, tag.hash, tag.message),
+            action = function()
+                -- Demander confirmation
+                vim.ui.input({
+                    prompt = string.format(i18n.t("tag.confirm_delete"), tag.name)
+                }, function(input)
+                    if input and input:lower() == "y" then
+                        local success = utils.git_command('tag -d ' .. tag.name)
+                        if success then
+                            ui.notify(string.format(i18n.t("tag.deleted"), tag.name), "info")
+                        end
+                    end
+                end)
+            end
+        })
     end
 
-    local buf, win = ui.create_floating_window(
-        i18n.t("tag.select_delete"),
-        tag_display,
-        {
-            width = 80
-        }
-    )
-
-    -- Navigation et sélection
-    local opts = {buffer = buf, noremap = true, silent = true}
-    
-    vim.keymap.set('n', 'j', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        if cursor[1] < #tag_display then
-            vim.api.nvim_win_set_cursor(win, {cursor[1] + 1, cursor[2]})
-        end
-    end, opts)
-    
-    vim.keymap.set('n', 'k', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        if cursor[1] > 1 then
-            vim.api.nvim_win_set_cursor(win, {cursor[1] - 1, cursor[2]})
-        end
-    end, opts)
-
-    -- Fermeture
-    vim.keymap.set('n', 'q', function()
-        vim.api.nvim_win_close(win, true)
-    end, opts)
-    
-    vim.keymap.set('n', '<Esc>', function()
-        vim.api.nvim_win_close(win, true)
-    end, opts)
-
-    -- Sélection et suppression
-    vim.keymap.set('n', '<CR>', function()
-        local cursor = vim.api.nvim_win_get_cursor(win)
-        local tag = tags[cursor[1]]
-        
-        vim.api.nvim_win_close(win, true)
-        
-        ui.confirm(i18n.t("tag.confirm_delete") .. " " .. tag.name .. "?", function(confirmed)
-            if confirmed then
-                local result = utils.git_command('tag -d ' .. tag.name)
-                if result then
-                    ui.notify(i18n.t("tag.deleted") .. ": " .. tag.name, "info")
-                end
-            end
-        end)
-    end, opts)
+    ui.show_main_menu(items, i18n.t("tag.delete_title"))
 end
 
 -- Push des tags

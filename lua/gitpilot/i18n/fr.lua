@@ -133,25 +133,24 @@ return {
 
     -- Gestion des tags
     tag = {
-        create = "➕ Créer un tag",
-        delete = "❌ Supprimer un tag",
-        push = "⬆️ Pousser les tags",
         name = {
-            prompt = "Nom du tag :",
-            invalid = "Nom de tag invalide"
+            prompt = "Nom du tag :"
         },
         message = {
-            prompt = "Message du tag (optionnel) :"
+            prompt = "Message (optionnel, Entrée pour un tag léger) :"
         },
         exists = "Ce tag existe déjà",
         none = "Aucun tag trouvé",
-        created = "Tag créé avec succès",
-        deleted = "Tag supprimé avec succès",
+        created_light = "Tag léger créé avec succès",
+        created_annotated = "Tag annoté créé avec succès",
+        deleted = "Tag '%s' supprimé avec succès",
         pushed = "Tags poussés avec succès",
+        confirm_delete = "Voulez-vous supprimer le tag '%s' ? (y/N)",
+        delete_title = "🏷️ Supprimer un tag",
         error = {
             create = "Erreur lors de la création du tag",
             delete = "Erreur lors de la suppression du tag",
-            push = "Erreur lors de l'envoi des tags"
+            push = "Erreur lors du push des tags"
         }
     },
 
