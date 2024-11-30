@@ -16,7 +16,24 @@ return {
         conflict = "🚧 Resolve conflicts",
         stash = "📦 Manage stash",
         history = "📜 View history",
-        search = "🔍 Search"
+        search = "🔍 Search",
+        tags = "🏷️ Manage tags",
+        
+        -- Commit submenu
+        create_commit = "📝 Create new commit",
+        amend_commit = "✏️ Amend last commit",
+        history = "📜 View commit history",
+        
+        -- Remote submenu
+        add_remote = "➕ Add remote repository",
+        remove_remote = "❌ Remove remote repository",
+        fetch = "⬇️ Fetch changes",
+        push = "⬆️ Push changes",
+        
+        -- Tags submenu
+        create_tag = "➕ Create tag",
+        delete_tag = "❌ Delete tag",
+        push_tag = "⬆️ Push tags"
     },
     
     -- Commit assistant

@@ -17,7 +17,23 @@ return {
         stash = "📦 Gérer les stash",
         history = "📜 Voir l'historique",
         search = "🔍 Rechercher",
-        tags = "🏷️ Gérer les tags"
+        tags = "🏷️ Gérer les tags",
+
+        -- Sous-menu des commits
+        create_commit = "📝 Créer un nouveau commit",
+        amend_commit = "✏️ Modifier le dernier commit",
+        history = "📜 Voir l'historique des commits",
+
+        -- Sous-menu des remotes
+        add_remote = "➕ Ajouter un dépôt distant",
+        remove_remote = "❌ Supprimer un dépôt distant",
+        fetch = "⬇️ Récupérer les modifications",
+        push = "⬆️ Pousser les modifications",
+
+        -- Sous-menu des tags
+        create_tag = "➕ Créer un tag",
+        delete_tag = "❌ Supprimer un tag",
+        push_tag = "⬆️ Pousser les tags"
     },
     
     -- Commit assistant
