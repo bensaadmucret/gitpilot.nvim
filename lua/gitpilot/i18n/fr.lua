@@ -24,17 +24,19 @@ return {
         tags = "Opérations de Tag",
         tags_title = "🏷️ Gestion des Tags",
         stash = "Opérations de Stash",
-        stash_title = "📦 Gestion du Stash",
+        stash_title = "📦 Gestion des Stash",
         search = "Opérations de Recherche",
         search_title = "🔍 Recherche",
         rebase = "Opérations de Rebase",
-        rebase_title = "♻️ Rebase"
+        rebase_title = "♻️ Rebase",
+        history = "📜 Voir l'historique",
         
         -- Sous-menu des commits
         create_commit = "📝 Créer un nouveau commit",
         amend_commit = "✏️ Modifier le dernier commit",
-        history = "📜 Voir l'historique des commits",
-
+        history = "📜 Voir l'historique",
+        discard = "🗑️ Abandonner les modifications",
+        
         -- Sous-menu des remotes
         add_remote = "➕ Ajouter un dépôt distant",
         remove_remote = "❌ Supprimer un dépôt distant",
@@ -109,6 +111,21 @@ return {
         }
     },
     
+    -- Messages des commits
+    commit_messages = {
+        create = "📝 Créer un nouveau commit",
+        amend = "✏️ Modifier le dernier commit",
+        history = "📜 Voir l'historique",
+        discard = "🗑️ Abandonner les modifications",
+        title = "Message de commit",
+        description = "Description (optionnel)",
+        success = "Commit créé avec succès",
+        amend_success = "Commit modifié avec succès",
+        error = "Erreur lors de la création du commit",
+        no_changes = "Aucun changement à commiter",
+        confirm_discard = "Voulez-vous vraiment abandonner toutes les modifications ? Cette action est irréversible. (o/N)"
+    },
+    
     -- Gestion des branches
     branch = {
         title = "🌿 Gestion des Branches",
@@ -165,7 +182,28 @@ return {
             tracking = "Branche de suivi"
         }
     },
-
+    
+    -- Messages des branches
+    branch_messages = {
+        current = "branche actuelle",
+        create = "➕ Créer une nouvelle branche",
+        switch = "🔄 Changer de branche",
+        merge = "🔀 Fusionner une branche",
+        delete = "❌ Supprimer une branche",
+        create_title = "Créer une nouvelle branche",
+        switch_title = "Changer de branche",
+        merge_title = "Fusionner une branche",
+        delete_title = "Supprimer une branche",
+        switch_success = "Basculé vers la branche '%{name}'",
+        create_success = "Branche '%{name}' créée avec succès",
+        merge_success = "Branche '%{name}' fusionnée avec succès",
+        delete_success = "Branche '%{name}' supprimée avec succès",
+        error_exists = "La branche '%{name}' existe déjà",
+        error_not_exists = "La branche '%{name}' n'existe pas",
+        error_current = "Impossible de supprimer la branche actuelle",
+        confirm_delete = "Êtes-vous sûr de vouloir supprimer la branche '%{name}' ?"
+    },
+    
     -- Gestion des tags
     tag = {
         title = "🏷️ Gestion des Tags",
