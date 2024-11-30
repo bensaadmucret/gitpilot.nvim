@@ -16,36 +16,46 @@ M.notify = function(msg, level)
 end
 
 -- Création d'une fenêtre flottante
-M.create_floating_window = function(title)
-    local width = config.ui.window.width
-    local height = config.ui.window.height
+M.create_floating_window = function(title, lines, opts)
+    opts = opts or {}
+    local width = opts.width or config.ui.window.width or 60
+    local height = opts.height or config.ui.window.height or 20
     local row = math.floor((vim.o.lines - height) / 2)
     local col = math.floor((vim.o.columns - width) / 2)
     
-    local opts = {
+    local win_opts = {
         relative = 'editor',
         row = row,
         col = col,
         width = width,
         height = height,
         style = 'minimal',
-        border = config.ui.window.border
+        border = opts.border or config.ui.window.border or 'rounded'
     }
     
     local buf = vim.api.nvim_create_buf(false, true)
-    local win = vim.api.nvim_open_win(buf, true, opts)
+    local win = vim.api.nvim_open_win(buf, true, win_opts)
     
     -- Configuration de la fenêtre
     vim.api.nvim_win_set_option(win, 'winhl', 'Normal:GitSimpleNormal,FloatBorder:GitSimpleBorder')
-    vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
     vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
     
-    -- Ajout du titre
+    -- Ajout du titre et des lignes
+    local content = {}
     if title then
-        vim.api.nvim_buf_set_option(buf, 'modifiable', true)
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, {title, string.rep('-', width - 2)})
-        vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+        table.insert(content, title)
+        table.insert(content, string.rep('-', width - 2))
     end
+    
+    if lines then
+        for _, line in ipairs(lines) do
+            table.insert(content, line)
+        end
+    end
+    
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
+    vim.api.nvim_buf_set_option(buf, 'modifiable', false)
     
     return buf, win
 end
