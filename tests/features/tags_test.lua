@@ -78,6 +78,9 @@ function test.test_create_tag()
     teardown()
     
     -- Test successful annotated tag creation
+    mock_git_command = function() return "tag v1.0 created" end
+    utils.git_command = mock_git_command
+    
     result = tags.create_tag("v1.0", "Test message")
     assert(result == true, "Expected true for annotated tag creation")
     test_helpers.assert_notification("info", "tags.created")
