@@ -7,12 +7,10 @@ return {
         yes = "Yes",
         no = "No"
     },
+    cancel = "Cancel",
     success = "Success!",
     error = "Error",
     warning = "Warning",
-    
-    -- Confirmation messages
-    -- Removed duplicate confirmation messages
     
     -- Main menu
     menu = {
@@ -54,7 +52,7 @@ return {
         create_tag = "➕ Create tag",
         delete_tag = "❌ Delete tag",
         list_tags = "📋 List tags",
-        push_tags = "⬆️ Push tags",
+        push_tags = "⬆️ Push tags"
     },
     
     -- Commit management
@@ -112,275 +110,128 @@ return {
         }
     },
 
-    -- Commit messages
-    commit_messages = {
-        create = "📝 Create new commit",
-        amend = "✏️ Amend last commit",
-        history = "📜 View history",
-        discard = "🗑️ Discard changes",
-        title = "Commit message",
-        description = "Description (optional)",
-        success = "Commit created successfully",
-        amend_success = "Commit amended successfully",
-        error = "Error creating commit",
-        no_changes = "No changes to commit",
-        confirm_discard = "Do you really want to discard all changes? This action cannot be undone. (y/N)"
-    },
-
     -- Branch management
     branch = {
         title = "🌿 Branch Management",
         current = "Current branch: %s",
         none = "No branches found",
         create = {
-            title = "Create New Branch",
-            prompt = "Enter branch name:",
-            from = "Create from: %s",
+            title = "Create Branch",
+            prompt = "New branch name:",
             success = "Branch '%s' created successfully",
             error = "Error creating branch: %s",
-            exists = "Branch '%s' already exists",
-            invalid = "Invalid branch name"
-        },
-        switch = {
-            title = "Switch Branch",
-            prompt = "Select branch to switch to:",
-            confirm = "Switch to branch '%s'?",
-            success = "Switched to branch '%s'",
-            error = "Error switching branch: %s",
-            unsaved = "You have unsaved changes. Stash or commit them first"
-        },
-        merge = {
-            title = "Merge Branch",
-            prompt = "Select branch to merge into current branch:",
-            confirm = "Merge '%s' into '%s'?",
-            success = "Branch '%s' merged successfully",
-            error = "Error merging branch: %s",
-            conflict = "Merge conflicts detected",
-            abort = "Merge aborted",
-            no_ff = "Merge with commit (no fast-forward)",
-            squash = "Squash merge"
+            exists = "Branch '%s' already exists"
         },
         delete = {
             title = "Delete Branch",
             prompt = "Select branch to delete:",
-            confirm = "Delete branch '%s'? This cannot be undone! (y/N)",
+            confirm = "Delete branch '%s'? This action cannot be undone!",
             success = "Branch '%s' deleted successfully",
             error = "Error deleting branch: %s",
-            unmerged = "Branch '%s' is not fully merged",
-            force = "Force delete unmerged branch?"
+            current = "Cannot delete current branch"
         },
-        status = {
-            ahead = "%d commits ahead of '%s'",
-            behind = "%d commits behind '%s'",
-            diverged = "Diverged from '%s' by %d commits",
-            up_to_date = "Up to date with '%s'",
-            local_only = "Local branch only",
-            tracking = "Tracking '%s'"
-        },
-        type = {
-            local = "Local branch",
-            remote = "Remote branch",
-            tracking = "Tracking branch"
+        checkout = {
+            title = "Switch Branch",
+            prompt = "Select branch:",
+            success = "Switched to branch '%s'",
+            error = "Error switching branch: %s"
         }
-    },
-    
-    -- Branch messages
-    branch_messages = {
-        current = "current branch",
-        create = "➕ Create new branch",
-        switch = "🔄 Switch branch",
-        merge = "🔀 Merge branch",
-        delete = "❌ Delete branch",
-        create_title = "Create new branch",
-        switch_title = "Switch branch",
-        merge_title = "Merge branch",
-        delete_title = "Delete branch",
-        switch_success = "Switched to branch '%{name}'",
-        create_success = "Branch '%{name}' created successfully",
-        merge_success = "Successfully merged branch '%{name}'",
-        delete_success = "Branch '%{name}' deleted successfully",
-        error_exists = "Branch '%{name}' already exists",
-        error_not_exists = "Branch '%{name}' does not exist",
-        error_current = "Cannot delete the current branch",
-        confirm_delete = "Are you sure you want to delete branch '%{name}'?",
     },
 
     -- Tag management
     tag = {
         title = "🏷️ Tag Management",
-        create = "Create Tag",
-        delete = "Delete Tag",
-        push = "Push Tags",
         none = "No tags found",
-        name = {
-            prompt = "Enter tag name:",
-            invalid = "Invalid tag name"
+        create = {
+            title = "Create Tag",
+            name_prompt = "Tag name:",
+            message_prompt = "Message (optional):",
+            success = "Tag '%s' created successfully",
+            error = "Error creating tag: %s",
+            exists = "Tag '%s' already exists"
         },
-        message = {
-            prompt = "Enter tag message (optional):"
+        delete = {
+            title = "Delete Tag",
+            prompt = "Select tag to delete:",
+            confirm = "Delete tag '%s'? This action cannot be undone!",
+            success = "Tag '%s' deleted successfully",
+            error = "Error deleting tag: %s"
         },
-        created_light = "Lightweight tag created",
-        created_annotated = "Annotated tag created",
-        deleted = "Tag '%s' deleted",
-        pushed = "Tags pushed to remote",
-        exists = "Tag already exists",
-        confirm_delete = "Delete tag '%s'?",
-        details_title = "Tag Details",
-        message = "Tag Message",
-        commit_info = "Commit Information",
-    },
-
-    -- Remote management
-    remote = {
-        title = "🔄 Remote Management",
-        add = "Add Remote",
-        remove = "Remove Remote",
-        push = "Push to Remote",
-        fetch = "Fetch from Remote",
-        none = "No remotes found",
-        name = {
-            prompt = "Enter remote name:",
-            invalid = "Invalid remote name"
-        },
-        url = {
-            prompt = "Enter remote URL:",
-            invalid = "Invalid URL",
-            url = "URL",
-        },
-        added = "Remote added successfully",
-        removed = "Remote removed successfully",
-        error = "Remote operation failed: %s",
-        details_title = "Remote Details",
-        tracking_info = "Tracking Information",
-    },
-
-    -- Rebase assistant
-    rebase = {
-        intro = "Interactive Rebase Assistant",
-        warning = "⚠️ This operation will modify history",
-        backup = "A backup will be created automatically",
-        title = "📝 Interactive Rebase - Organize Your Commits",
-        help_title = "❓ Usage Guide",
-        action = {
-            pick = "✅ Keep commit as is",
-            reword = "📝 Edit commit message",
-            edit = "🔧 Edit commit content",
-            squash = "🔗 Merge with previous (keep both messages)",
-            fixup = "🔗 Merge with previous (keep only previous message)",
-            drop = "❌ Remove this commit"
-        },
-        help_move = "↑/↓ (j/k) : Navigate | J/K : Move commit",
-        help_start = "ENTER : Start rebase | P : Preview changes",
-        help_cancel = "q/ESC : Cancel",
-        no_commits = "⚠️ No commits to reorganize",
-        started = "✨ Interactive rebase started",
-        preview = "🔍 Changes Preview",
-        conflicts = {
-            title = "⚠️ Conflicts Detected - Resolution Required",
-            actions = "Available Actions:",
-            no_conflicts = "✅ No conflicts to resolve",
-            ours = "Keep OUR changes",
-            theirs = "Keep THEIR changes",
-            add = "Mark as resolved",
-            continue = "Continue rebase",
-            skip = "Skip this commit",
-            abort = "Abort rebase",
-            resolved = "✅ Conflict resolved for %s",
-            done = "🎉 All conflicts resolved!"
+        push = {
+            title = "Push Tags",
+            prompt = "Select tags to push:",
+            confirm = "Push selected tags?",
+            success = "Tags pushed successfully",
+            error = "Error pushing tags: %s"
         }
-    },
-
-    -- Conflict resolution
-    conflict = {
-        found = "Conflicts found in files:",
-        none = "No conflicts detected",
-        options = {
-            ours = "Keep our changes",
-            theirs = "Keep their changes",
-            both = "Keep both",
-            manual = "Edit manually"
-        },
-        help = "Use arrows to navigate and Enter to select"
     },
 
     -- Stash management
     stash = {
         title = "📦 Stash Management",
-        list_title = "Stash List",
-        content_title = "Stash Content",
-        create = "Create Stash",
-        apply = "Apply Stash",
-        delete = "Delete Stash",
         none = "No stashes found",
-        select_files = "Select files to stash",
-        no_changes = "No changes to stash",
-        created = "Changes stashed successfully",
-        applied = "Stash applied successfully",
-        deleted = "Stash deleted successfully",
-        error = "Stash operation failed: %s",
-        confirm_delete = "Delete stash '%s'?"
-    },
-
-    -- Search functionality
-    search = {
-        title = "🔍 Search",
-        no_results = "No results found",
-        commits = {
-            title = "Search Commits",
-            prompt = "Enter search term for commits:",
-            results = "Search Results - Commits",
-            none = "No matching commits found",
-            details = "Commit Details",
-            copy_hash = "Hash copied to clipboard",
-            by_message = "Search by commit message",
-            by_files = "Search by changed files"
+        create = {
+            title = "Create Stash",
+            message_prompt = "Stash message (optional):",
+            success = "Stash created successfully",
+            error = "Error creating stash: %s",
+            no_changes = "No changes to stash"
         },
-        files = {
-            title = "Search Files",
-            prompt = "Enter file pattern to search:",
-            results = "Search Results - Files",
-            none = "No matching files found",
-            in_content = "Search in file contents",
-            by_name = "Search by file name",
-            by_extension = "Search by file extension"
+        apply = {
+            title = "Apply Stash",
+            prompt = "Select stash to apply:",
+            success = "Stash applied successfully",
+            error = "Error applying stash: %s"
         },
-        author = {
-            title = "Search by Author",
-            prompt = "Enter author name:",
-            results = "Search Results - Author Commits",
-            none = "No commits found for this author",
-            email = "Search by email",
-            name = "Search by name"
-        },
-        branches = {
-            title = "Search Branches",
-            prompt = "Enter branch pattern to search:",
-            results = "Search Results - Branches",
-            none = "No matching branches found",
-            local = "Local branches",
-            remote = "Remote branches",
-            all = "All branches"
-        },
-        navigation = {
-            next = "Next result",
-            previous = "Previous result",
-            details = "Show details",
-            close = "Close",
-            help = "Press '?' for help"
+        delete = {
+            title = "Delete Stash",
+            prompt = "Select stash to delete:",
+            confirm = "Delete selected stash? This action cannot be undone!",
+            success = "Stash deleted successfully",
+            error = "Error deleting stash: %s"
         }
     },
 
-    -- Contextual help messages
-    help = {
-        rebase = "Rebase allows you to reorganize your commits. Follow the guide!",
-        conflict = "A conflict occurs when two changes overlap.",
-        stash = "Stash allows you to temporarily store your changes.",
-        general = "Press ? for help, Esc to cancel",
-        keys = {
-            navigation = "↑/↓: Navigation",
-            select = "Enter: Select",
-            cancel = "Esc: Cancel",
-            help = "?: Help"
+    -- Search
+    search = {
+        title = "🔍 Search",
+        prompt = "Enter your search:",
+        no_results = "No results found",
+        commits = {
+            title = "Search in commits",
+            prompt = "Enter search term:"
+        }
+    },
+
+    -- Rebase operations
+    rebase = {
+        title = "♻️ Rebase",
+        intro = "Interactive Rebase Assistant",
+        warning = "⚠️ This operation will modify history",
+        backup = "A backup will be created automatically",
+        select_base = "Select base branch or commit:",
+        actions = {
+            pick = "pick - use commit",
+            reword = "reword - edit commit message",
+            edit = "edit - edit commit",
+            squash = "squash - combine with previous commit",
+            fixup = "fixup - combine silently with previous commit",
+            drop = "drop - remove commit"
+        },
+        conflict = {
+            detected = "Rebase conflicts detected",
+            resolve = "Please resolve conflicts and continue",
+            abort = "Or abort the rebase"
+        },
+        continue = {
+            prompt = "Continue rebase?",
+            success = "Rebase completed successfully",
+            error = "Error continuing rebase: %s"
+        },
+        abort = {
+            prompt = "Abort rebase?",
+            success = "Rebase aborted successfully",
+            error = "Error aborting rebase: %s"
         }
     }
 }
