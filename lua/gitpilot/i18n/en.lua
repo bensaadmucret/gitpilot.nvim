@@ -13,6 +13,7 @@ return {
         main = "Main Menu",
         commits = "📝 Manage commits",
         branches = "🌿 Manage branches",
+        branches_title = "🌿 Branch Management",
         remotes = "🔄 Manage remotes",
         tags = "🏷️ Manage tags",
         stash = "📦 Manage stash",
@@ -114,6 +115,27 @@ return {
             delete = "⚠️ This action is irreversible",
             unmerged = "⚠️ This branch is not merged"
         }
+    },
+    
+    -- Branch messages
+    branch_messages = {
+        current = "current branch",
+        create = "➕ Create new branch",
+        switch = "🔄 Switch branch",
+        merge = "🔀 Merge branch",
+        delete = "❌ Delete branch",
+        create_title = "Create new branch",
+        switch_title = "Switch branch",
+        merge_title = "Merge branch",
+        delete_title = "Delete branch",
+        switch_success = "Switched to branch '%{name}'",
+        create_success = "Branch '%{name}' created successfully",
+        merge_success = "Successfully merged branch '%{name}'",
+        delete_success = "Branch '%{name}' deleted successfully",
+        error_exists = "Branch '%{name}' already exists",
+        error_not_exists = "Branch '%{name}' does not exist",
+        error_current = "Cannot delete the current branch",
+        confirm_delete = "Are you sure you want to delete branch '%{name}'?",
     },
 
     -- Rebase assistant

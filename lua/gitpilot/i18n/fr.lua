@@ -13,6 +13,7 @@ return {
         main = "Menu Principal",
         commits = "📝 Gérer les commits",
         branches = "🌿 Gérer les branches",
+        branches_title = "🌿 Gestion des branches",
         remotes = "🔄 Gérer les dépôts distants",
         tags = "🏷️ Gérer les tags",
         stash = "📦 Gérer les stash",
@@ -107,6 +108,27 @@ return {
             delete = "⚠️ Cette action est irréversible",
             unmerged = "⚠️ Cette branche n'est pas fusionnée"
         }
+    },
+
+    -- Messages pour les branches
+    branch_messages = {
+        current = "branche actuelle",
+        create = "➕ Créer une nouvelle branche",
+        switch = "🔄 Changer de branche",
+        merge = "🔀 Fusionner une branche",
+        delete = "❌ Supprimer une branche",
+        create_title = "Créer une nouvelle branche",
+        switch_title = "Changer de branche",
+        merge_title = "Fusionner une branche",
+        delete_title = "Supprimer une branche",
+        switch_success = "Basculé sur la branche '%{name}'",
+        create_success = "Branche '%{name}' créée avec succès",
+        merge_success = "Fusion de la branche '%{name}' réussie",
+        delete_success = "Branche '%{name}' supprimée avec succès",
+        error_exists = "La branche '%{name}' existe déjà",
+        error_not_exists = "La branche '%{name}' n'existe pas",
+        error_current = "Impossible de supprimer la branche courante",
+        confirm_delete = "Êtes-vous sûr de vouloir supprimer la branche '%{name}' ?",
     },
 
     -- Gestion des tags

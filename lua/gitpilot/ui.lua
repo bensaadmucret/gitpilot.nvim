@@ -117,8 +117,8 @@ local function show_menu(title, items)
 end
 
 -- Menu principal
-M.show_main_menu = function(items)
-    show_menu("GitPilot - " .. i18n.t("menu.main"), items)
+M.show_main_menu = function(items, title)
+    show_menu(title or ("GitPilot - " .. i18n.t("menu.main")), items)
 end
 
 -- Menu des commits
@@ -141,6 +141,10 @@ end
 
 -- Menu des branches
 M.show_branches_menu = function()
+    -- Obtenir la branche courante
+    local current_branch = vim.fn.system('git branch --show-current'):gsub('\n', '')
+    local menu_title = string.format("%s (%s: %s)", i18n.t("menu.branches_title"), i18n.t("branch.current"), current_branch)
+    
     M.show_main_menu({
         {
             label = i18n.t("branch.create"),
@@ -166,7 +170,7 @@ M.show_branches_menu = function()
                 require('gitpilot.features.branch').delete_branch()
             end
         }
-    })
+    }, menu_title)  -- Passer le titre personnalisé
 end
 
 -- Menu des remotes
