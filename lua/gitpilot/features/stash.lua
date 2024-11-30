@@ -268,6 +268,32 @@ M.apply_stash = function()
     end, opts)
 end
 
+-- Afficher le contenu d'un stash
+M.show_stash_content = function(stash_ref)
+    local content = utils.git_command('stash show -p ' .. stash_ref)
+    if not content then return end
+
+    local buf, win = ui.create_floating_window(
+        i18n.t("stash.content_title") .. ": " .. stash_ref,
+        vim.split(content, "\n"),
+        {
+            width = 80,
+            height = 20
+        }
+    )
+
+    -- Navigation
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+end
+
 -- Supprimer un stash
 M.delete_stash = function()
     local stashes = M.list_stash()

@@ -2,30 +2,35 @@ return {
     -- General messages
     welcome = "Welcome to GitPilot!",
     select_action = "Select an action:",
-    confirm = "Confirm",
-    cancel = "Cancel",
+    confirm = {
+        title = "Confirmation Required",
+        yes = "Yes",
+        no = "No"
+    },
     success = "Success!",
     error = "Error",
     warning = "Warning",
     
+    -- Confirmation messages
+    -- Removed duplicate confirmation messages
+    
     -- Main menu
     menu = {
         main = "Main Menu",
-        commits = "📝 Manage commits",
+        commits = "Commit Operations",
         commits_title = "📝 Commit Management",
-        branches = "🌿 Manage branches",
+        branches = "Branch Operations",
         branches_title = "🌿 Branch Management",
-        remotes = "🔄 Manage remotes",
+        remotes = "Remote Operations",
         remotes_title = "🔄 Remote Management",
-        tags = "🏷️ Manage tags",
+        tags = "Tag Operations",
         tags_title = "🏷️ Tag Management",
-        stash = "📦 Manage stash",
+        stash = "Stash Operations",
         stash_title = "📦 Stash Management",
-        search = "🔍 Search",
+        search = "Search Operations",
         search_title = "🔍 Search",
-        rebase = "🔄 Rebase assistant",
-        rebase_title = "🔄 Rebase Assistant",
-        conflict = "🚧 Resolve conflicts",
+        rebase = "Rebase Operations",
+        rebase_title = "♻️ Rebase",
         history = "📜 View history",
         
         -- Commit submenu
@@ -202,73 +207,51 @@ return {
 
     -- Tag management
     tag = {
+        title = "🏷️ Tag Management",
+        create = "Create Tag",
+        delete = "Delete Tag",
+        push = "Push Tags",
+        none = "No tags found",
         name = {
             prompt = "Enter tag name:",
             invalid = "Invalid tag name"
         },
         message = {
-            prompt = "Enter tag message (optional for lightweight tag):",
+            prompt = "Enter tag message (optional):"
         },
+        created_light = "Lightweight tag created",
+        created_annotated = "Annotated tag created",
+        deleted = "Tag '%s' deleted",
+        pushed = "Tags pushed to remote",
         exists = "Tag already exists",
-        created_light = "Lightweight tag created successfully",
-        created_annotated = "Annotated tag created successfully",
-        none = "No tags found",
-        confirm_delete = "Are you sure you want to delete tag '%s'? (y/N)",
-        deleted = "Tag '%s' deleted successfully",
-        delete_title = "Delete Tag",
-        push_success = "Tags pushed successfully",
-        push_error = "Error pushing tags: %s"
+        confirm_delete = "Delete tag '%s'?",
+        details_title = "Tag Details",
+        message = "Tag Message",
+        commit_info = "Commit Information",
     },
 
     -- Remote management
     remote = {
         title = "🔄 Remote Management",
-        none = "No remote repositories found",
+        add = "Add Remote",
+        remove = "Remove Remote",
+        push = "Push to Remote",
+        fetch = "Fetch from Remote",
+        none = "No remotes found",
         name = {
             prompt = "Enter remote name:",
-            invalid = "Invalid remote name",
-            exists = "Remote with this name already exists"
+            invalid = "Invalid remote name"
         },
         url = {
             prompt = "Enter remote URL:",
-            invalid = "Invalid remote URL"
+            invalid = "Invalid URL",
+            url = "URL",
         },
-        add = {
-            title = "Add Remote Repository",
-            success = "Remote '%s' added successfully",
-            error = "Error adding remote: %s"
-        },
-        remove = {
-            title = "Remove Remote Repository",
-            select = "Select remote to remove:",
-            confirm = "Are you sure you want to remove remote '%s'?",
-            success = "Remote '%s' removed successfully",
-            error = "Error removing remote: %s"
-        },
-        fetch = {
-            title = "Fetch Changes",
-            all = "Fetch from all remotes",
-            specific = "Fetch from '%s'",
-            success = "Changes fetched successfully",
-            error = "Error fetching changes: %s"
-        },
-        push = {
-            title = "Push Changes",
-            select_remote = "Select remote to push to:",
-            select_branch = "Select branch to push:",
-            confirm = "Push to %s/%s?",
-            force = "Force push (--force-with-lease)",
-            success = "Changes pushed successfully",
-            error = "Error pushing changes: %s"
-        },
-        pull = {
-            title = "Pull Changes",
-            select_remote = "Select remote to pull from:",
-            select_branch = "Select branch to pull:",
-            confirm = "Pull from %s/%s?",
-            success = "Changes pulled successfully",
-            error = "Error pulling changes: %s"
-        }
+        added = "Remote added successfully",
+        removed = "Remote removed successfully",
+        error = "Remote operation failed: %s",
+        details_title = "Remote Details",
+        tracking_info = "Tracking Information",
     },
 
     -- Rebase assistant
@@ -323,33 +306,19 @@ return {
     -- Stash management
     stash = {
         title = "📦 Stash Management",
+        list_title = "Stash List",
+        content_title = "Stash Content",
+        create = "Create Stash",
+        apply = "Apply Stash",
+        delete = "Delete Stash",
+        none = "No stashes found",
         select_files = "Select files to stash",
         no_changes = "No changes to stash",
-        none = "No stashes found",
-        create = {
-            prompt = "Enter stash message (optional):",
-            success = "Changes stashed successfully",
-            error = "Error stashing changes"
-        },
-        apply = {
-            title = "Apply Stash",
-            confirm = "Apply stash '%s'?",
-            success = "Stash applied successfully",
-            error = "Error applying stash"
-        },
-        delete = {
-            title = "Delete Stash",
-            confirm = "Delete stash '%s'? (y/N)",
-            success = "Stash deleted successfully",
-            error = "Error deleting stash"
-        },
-        navigation = {
-            select_all = "Select all",
-            deselect_all = "Deselect all",
-            toggle = "Toggle selection",
-            confirm = "Confirm",
-            cancel = "Cancel"
-        }
+        created = "Changes stashed successfully",
+        applied = "Stash applied successfully",
+        deleted = "Stash deleted successfully",
+        error = "Stash operation failed: %s",
+        confirm_delete = "Delete stash '%s'?"
     },
 
     -- Search functionality

@@ -192,62 +192,113 @@ end
 M.show_remotes_menu = function()
     M.show_main_menu({
         {
-            label = i18n.t("menu.add_remote"),
+            label = i18n.t("remote.add"),
             action = function() require('gitpilot.features.remote').add_remote() end
         },
         {
-            label = i18n.t("menu.remove_remote"),
+            label = i18n.t("remote.remove"),
             action = function() require('gitpilot.features.remote').remove_remote() end
         },
         {
-            label = i18n.t("menu.fetch"),
-            action = function() require('gitpilot.features.remote').fetch_remote() end
+            label = i18n.t("remote.push"),
+            action = function() require('gitpilot.features.remote').push_remote() end
         },
         {
-            label = i18n.t("menu.push"),
-            action = function() require('gitpilot.features.remote').push_remote() end
+            label = i18n.t("remote.fetch"),
+            action = function() require('gitpilot.features.remote').fetch_remote() end
         }
-    })
+    }, i18n.t("remote.title"))
 end
 
 -- Menu des tags
 M.show_tags_menu = function()
     M.show_main_menu({
         {
-            label = i18n.t("menu.create_tag"),
+            label = i18n.t("tag.create"),
             action = function() require('gitpilot.features.tags').create_tag() end
         },
         {
-            label = i18n.t("menu.delete_tag"),
+            label = i18n.t("tag.delete"),
             action = function() require('gitpilot.features.tags').delete_tag() end
         },
         {
-            label = i18n.t("menu.list_tags"),
-            action = function() require('gitpilot.features.tags').list_tags() end
-        },
-        {
-            label = i18n.t("menu.push_tags"),
-            action = function() require('gitpilot.features.tags').push_tags() end
+            label = i18n.t("tag.push"),
+            action = function() require('gitpilot.features.tags').push_tag() end
         }
-    })
+    }, i18n.t("tag.title"))
 end
 
 -- Menu du stash
 M.show_stash_menu = function()
     M.show_main_menu({
         {
-            label = i18n.t("menu.create_stash"),
+            label = i18n.t("stash.create"),
             action = function() require('gitpilot.features.stash').create_stash() end
         },
         {
-            label = i18n.t("menu.apply_stash"),
+            label = i18n.t("stash.apply"),
             action = function() require('gitpilot.features.stash').apply_stash() end
         },
         {
-            label = i18n.t("menu.delete_stash"),
+            label = i18n.t("stash.delete"),
             action = function() require('gitpilot.features.stash').delete_stash() end
         }
+    }, i18n.t("stash.title"))
+end
+
+-- Fonction de confirmation
+M.confirm = function(message, callback)
+    if not config.ui.confirm_actions then
+        callback(true)
+        return
+    end
+
+    local buf, win = M.create_floating_window(i18n.t("confirm"), {
+        message,
+        "",
+        i18n.t("confirm.yes") .. " (y)",
+        i18n.t("confirm.no") .. " (n)"
     })
+
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    vim.keymap.set('n', 'y', function()
+        vim.api.nvim_win_close(win, true)
+        callback(true)
+    end, opts)
+    
+    vim.keymap.set('n', 'n', function()
+        vim.api.nvim_win_close(win, true)
+        callback(false)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+        callback(false)
+    end, opts)
+end
+
+-- Fonction d'input
+M.input = function(prompt, callback)
+    local buf, win = M.create_floating_window(prompt)
+    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+    
+    -- Activer le mode insertion
+    vim.cmd('startinsert')
+    
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    vim.keymap.set('i', '<CR>', function()
+        local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+        local input = table.concat(lines, '\n')
+        vim.api.nvim_win_close(win, true)
+        callback(input)
+    end, opts)
+    
+    vim.keymap.set('i', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+        callback(nil)
+    end, opts)
 end
 
 return M

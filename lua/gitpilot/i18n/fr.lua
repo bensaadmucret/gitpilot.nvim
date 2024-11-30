@@ -2,7 +2,11 @@ return {
     -- Messages généraux
     welcome = "Bienvenue dans GitPilot !",
     select_action = "Sélectionnez une action :",
-    confirm = "Confirmer",
+    confirm = {
+        title = "Confirmation requise",
+        yes = "Oui",
+        no = "Non"
+    },
     cancel = "Annuler",
     success = "Succès !",
     error = "Erreur",
@@ -11,20 +15,20 @@ return {
     -- Menu principal
     menu = {
         main = "Menu Principal",
-        commits = "📝 Gérer les commits",
-        commits_title = "📝 Gestion des commits",
-        branches = "🌿 Gérer les branches",
-        branches_title = "🌿 Gestion des branches",
-        remotes = "🔄 Gérer les dépôts distants",
-        remotes_title = "🔄 Gestion des dépôts distants",
-        tags = "🏷️ Gérer les tags",
-        tags_title = "🏷️ Gestion des tags",
-        stash = "📦 Gestion du stash",
-        stash_title = "📦 Gestion du stash",
-        search = "🔍 Rechercher",
+        commits = "Opérations de Commit",
+        commits_title = "📝 Gestion des Commits",
+        branches = "Opérations de Branche",
+        branches_title = "🌿 Gestion des Branches",
+        remotes = "Opérations de Remote",
+        remotes_title = "🔄 Gestion des Remotes",
+        tags = "Opérations de Tag",
+        tags_title = "🏷️ Gestion des Tags",
+        stash = "Opérations de Stash",
+        stash_title = "📦 Gestion du Stash",
+        search = "Opérations de Recherche",
         search_title = "🔍 Recherche",
-        rebase = "🔄 Assistant de rebase",
-        rebase_title = "🔄 Assistant de rebase",
+        rebase = "Opérations de Rebase",
+        rebase_title = "♻️ Rebase"
         
         -- Sous-menu des commits
         create_commit = "📝 Créer un nouveau commit",
@@ -164,73 +168,50 @@ return {
 
     -- Gestion des tags
     tag = {
+        title = "🏷️ Gestion des Tags",
+        create = "Créer un Tag",
+        delete = "Supprimer un Tag",
+        push = "Pousser les Tags",
+        none = "Aucun tag trouvé",
         name = {
             prompt = "Entrez le nom du tag :",
             invalid = "Nom de tag invalide"
         },
         message = {
-            prompt = "Entrez le message du tag (optionnel pour tag léger) :",
+            prompt = "Entrez le message du tag (optionnel) :"
         },
-        exists = "Ce tag existe déjà",
-        created_light = "Tag léger créé avec succès",
-        created_annotated = "Tag annoté créé avec succès",
-        none = "Aucun tag trouvé",
-        confirm_delete = "Êtes-vous sûr de vouloir supprimer le tag '%s' ? (o/N)",
-        deleted = "Tag '%s' supprimé avec succès",
-        delete_title = "Supprimer un Tag",
-        push_success = "Tags poussés avec succès",
-        push_error = "Erreur lors du push des tags : %s"
+        created_light = "Tag léger créé",
+        created_annotated = "Tag annoté créé",
+        deleted = "Tag '%s' supprimé",
+        pushed = "Tags poussés vers le remote",
+        exists = "Le tag existe déjà",
+        confirm_delete = "Supprimer le tag '%s' ?",
+        details_title = "Détails du Tag",
+        commit_info = "Informations du Commit"
     },
 
     -- Gestion des dépôts distants
     remote = {
-        title = "🔄 Gestion des Dépôts Distants",
-        none = "Aucun dépôt distant trouvé",
+        title = "🔄 Gestion des Remotes",
+        add = "Ajouter un Remote",
+        remove = "Supprimer un Remote",
+        push = "Pousser vers le Remote",
+        fetch = "Récupérer depuis le Remote",
+        none = "Aucun remote trouvé",
         name = {
-            prompt = "Entrez le nom du dépôt distant :",
-            invalid = "Nom de dépôt distant invalide",
-            exists = "Un dépôt distant avec ce nom existe déjà"
+            prompt = "Entrez le nom du remote :",
+            invalid = "Nom de remote invalide"
         },
         url = {
-            prompt = "Entrez l'URL du dépôt distant :",
-            invalid = "URL de dépôt distant invalide"
+            prompt = "Entrez l'URL du remote :",
+            invalid = "URL invalide",
+            url = "URL"
         },
-        add = {
-            title = "Ajouter un Dépôt Distant",
-            success = "Dépôt distant '%s' ajouté avec succès",
-            error = "Erreur lors de l'ajout du dépôt distant : %s"
-        },
-        remove = {
-            title = "Supprimer un Dépôt Distant",
-            select = "Sélectionnez le dépôt distant à supprimer :",
-            confirm = "Êtes-vous sûr de vouloir supprimer le dépôt distant '%s' ?",
-            success = "Dépôt distant '%s' supprimé avec succès",
-            error = "Erreur lors de la suppression du dépôt distant : %s"
-        },
-        fetch = {
-            title = "Récupérer les Modifications",
-            all = "Récupérer depuis tous les dépôts distants",
-            specific = "Récupérer depuis '%s'",
-            success = "Modifications récupérées avec succès",
-            error = "Erreur lors de la récupération des modifications : %s"
-        },
-        push = {
-            title = "Pousser les Modifications",
-            select_remote = "Sélectionnez le dépôt distant de destination :",
-            select_branch = "Sélectionnez la branche à pousser :",
-            confirm = "Pousser vers %s/%s ?",
-            force = "Pousser en force (--force-with-lease)",
-            success = "Modifications poussées avec succès",
-            error = "Erreur lors du push des modifications : %s"
-        },
-        pull = {
-            title = "Tirer les Modifications",
-            select_remote = "Sélectionnez le dépôt distant source :",
-            select_branch = "Sélectionnez la branche à tirer :",
-            confirm = "Tirer depuis %s/%s ?",
-            success = "Modifications tirées avec succès",
-            error = "Erreur lors du pull des modifications : %s"
-        }
+        added = "Remote ajouté avec succès",
+        removed = "Remote supprimé avec succès",
+        error = "Échec de l'opération remote : %s",
+        details_title = "Détails du Dépôt Distant",
+        tracking_info = "Informations de Suivi"
     },
 
     -- Rebase assistant
@@ -284,34 +265,20 @@ return {
 
     -- Gestionnaire de stash
     stash = {
-        title = "📦 Gestion du Stash",
-        select_files = "Sélectionnez les fichiers à remiser",
-        no_changes = "Aucune modification à remiser",
+        title = "📦 Gestion des Stash",
+        list_title = "Liste des Stash",
+        content_title = "Contenu du Stash",
+        create = "Créer un Stash",
+        apply = "Appliquer un Stash",
+        delete = "Supprimer un Stash",
         none = "Aucun stash trouvé",
-        create = {
-            prompt = "Entrez un message pour le stash (optionnel) :",
-            success = "Modifications remisées avec succès",
-            error = "Erreur lors de la remise des modifications"
-        },
-        apply = {
-            title = "Appliquer le Stash",
-            confirm = "Appliquer le stash '%s' ?",
-            success = "Stash appliqué avec succès",
-            error = "Erreur lors de l'application du stash"
-        },
-        delete = {
-            title = "Supprimer le Stash",
-            confirm = "Supprimer le stash '%s' ? (o/N)",
-            success = "Stash supprimé avec succès",
-            error = "Erreur lors de la suppression du stash"
-        },
-        navigation = {
-            select_all = "Tout sélectionner",
-            deselect_all = "Tout désélectionner",
-            toggle = "Basculer la sélection",
-            confirm = "Confirmer",
-            cancel = "Annuler"
-        }
+        select_files = "Sélectionnez les fichiers à stasher",
+        no_changes = "Aucun changement à stasher",
+        created = "Changements stashés avec succès",
+        applied = "Stash appliqué avec succès",
+        deleted = "Stash supprimé avec succès",
+        error = "Échec de l'opération stash : %s",
+        confirm_delete = "Supprimer le stash '%s' ?"
     },
 
     -- Menu de recherche

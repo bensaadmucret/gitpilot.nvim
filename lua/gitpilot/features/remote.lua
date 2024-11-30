@@ -293,4 +293,46 @@ M.push_remote = function()
     end, opts)
 end
 
+-- Afficher les détails d'un remote
+M.show_remote_details = function(remote_name)
+    -- Récupérer les détails du remote
+    local details = {}
+    
+    -- URL
+    local url = utils.git_command('remote get-url ' .. remote_name)
+    if url then
+        table.insert(details, i18n.t("remote.url") .. ": " .. url:gsub("\n", ""))
+    end
+    
+    -- Branches suivies
+    local tracking = utils.git_command('remote show ' .. remote_name)
+    if tracking then
+        table.insert(details, "")
+        table.insert(details, i18n.t("remote.tracking_info") .. ":")
+        for line in tracking:gmatch("[^\r\n]+") do
+            table.insert(details, "  " .. line)
+        end
+    end
+
+    local buf, win = ui.create_floating_window(
+        i18n.t("remote.details_title") .. ": " .. remote_name,
+        details,
+        {
+            width = 80,
+            height = 20
+        }
+    )
+
+    -- Navigation
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+end
+
 return M

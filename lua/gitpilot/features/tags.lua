@@ -96,7 +96,7 @@ M.delete_tag = function()
 end
 
 -- Push des tags
-M.push_tags = function()
+M.push_tag = function()
     local tags = M.list_tags()
     if #tags == 0 then
         ui.notify(i18n.t("tag.none"), "warn")
@@ -162,6 +162,49 @@ M.push_tags = function()
                 ui.notify(i18n.t("tag.pushed") .. ": " .. tag.name, "info")
             end
         end
+    end, opts)
+end
+
+-- Afficher les détails d'un tag
+M.show_tag_details = function(tag_name)
+    -- Récupérer les détails du tag
+    local details = {}
+    
+    -- Message et auteur du tag
+    local tag_info = utils.git_command('tag -n99 ' .. tag_name)
+    if tag_info then
+        table.insert(details, i18n.t("tag.message") .. ":")
+        table.insert(details, tag_info)
+        table.insert(details, "")
+    end
+    
+    -- Commit associé
+    local commit_info = utils.git_command('show ' .. tag_name)
+    if commit_info then
+        table.insert(details, i18n.t("tag.commit_info") .. ":")
+        for line in commit_info:gmatch("[^\r\n]+") do
+            table.insert(details, "  " .. line)
+        end
+    end
+
+    local buf, win = ui.create_floating_window(
+        i18n.t("tag.details_title") .. ": " .. tag_name,
+        details,
+        {
+            width = 80,
+            height = 20
+        }
+    )
+
+    -- Navigation
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    vim.keymap.set('n', 'q', function()
+        vim.api.nvim_win_close(win, true)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
     end, opts)
 end
 
