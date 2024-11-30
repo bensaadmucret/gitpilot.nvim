@@ -10,15 +10,15 @@ return {
     
     -- Menu principal
     menu = {
-        commit = "📝 Créer un commit",
-        branch = "🌿 Gérer les branches",
-        rebase = "🔄 Assistant de rebase",
-        conflict = "🚧 Résoudre les conflits",
-        stash = "📦 Gérer les stash",
-        history = "📜 Voir l'historique",
-        search = "🔍 Rechercher",
+        main = "Menu Principal",
+        commits = "📝 Gérer les commits",
+        branches = "🌿 Gérer les branches",
+        remotes = "🔄 Gérer les dépôts distants",
         tags = "🏷️ Gérer les tags",
-
+        stash = "📦 Gérer les stash",
+        search = "🔍 Rechercher",
+        rebase = "🔄 Assistant de rebase",
+        
         -- Sous-menu des commits
         create_commit = "📝 Créer un nouveau commit",
         amend_commit = "✏️ Modifier le dernier commit",

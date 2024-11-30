@@ -10,14 +10,16 @@ return {
     
     -- Main menu
     menu = {
-        commit = "📝 Create commit",
-        branch = "🌿 Manage branches",
+        main = "Main Menu",
+        commits = "📝 Manage commits",
+        branches = "🌿 Manage branches",
+        remotes = "🔄 Manage remotes",
+        tags = "🏷️ Manage tags",
+        stash = "📦 Manage stash",
+        search = "🔍 Search",
         rebase = "🔄 Rebase assistant",
         conflict = "🚧 Resolve conflicts",
-        stash = "📦 Manage stash",
         history = "📜 View history",
-        search = "🔍 Search",
-        tags = "🏷️ Manage tags",
         
         -- Commit submenu
         create_commit = "📝 Create new commit",
