@@ -52,30 +52,58 @@ return {
         push_tags = "⬆️ Push tags",
     },
     
-    -- Commit assistant
+    -- Commit management
     commit = {
+        title = "📝 Commit Management",
+        files = {
+            select = "Select files to commit",
+            selected = "Selected files",
+            none = "No files to commit",
+            all = "Select all files",
+            none_action = "Deselect all files",
+            staged = "Staged files",
+            unstaged = "Unstaged files"
+        },
         type = {
-            title = "Change type:",
+            title = "Select commit type",
             feat = "✨ New feature",
             fix = "🐛 Bug fix",
             docs = "📚 Documentation",
             style = "💎 Code style",
-            refactor = "♻️ Refactoring",
+            refactor = "♻️ Code refactoring",
+            perf = "⚡ Performance improvement",
             test = "🧪 Tests",
-            chore = "🔧 Maintenance"
-        },
-        files = {
-            select = "Select files to include:",
-            selected = "Selected files:",
-            none = "No files selected",
-            all = "Select all",
-            none_action = "Deselect all"
+            build = "🔧 Build system",
+            ci = "👷 CI/CD",
+            chore = "🔨 Chore",
+            revert = "⏪ Revert changes"
         },
         message = {
-            prompt = "Commit message:",
-            hint = "Briefly describe your changes",
-            warning = "⚠️ Message is too short",
-            template = "{type}: {description}"
+            title = "Commit Message",
+            prompt = "Enter commit message:",
+            hint = "Brief description of changes",
+            scope = "Enter scope (optional):",
+            body = "Enter detailed description (optional):",
+            breaking = "Breaking changes (optional):",
+            footer = "Footer notes (optional):",
+            preview = "Preview commit message:",
+            empty = "Commit message cannot be empty",
+            too_short = "Commit message is too short"
+        },
+        action = {
+            create = "Create commit",
+            amend = "Amend last commit",
+            success = "Changes committed successfully",
+            amend_success = "Commit amended successfully",
+            error = "Error creating commit: %s",
+            amend_error = "Error amending commit: %s",
+            cancel = "Commit cancelled"
+        },
+        status = {
+            staged = "Staged changes",
+            unstaged = "Unstaged changes",
+            untracked = "Untracked files",
+            no_changes = "No changes to commit"
         }
     },
 
@@ -96,40 +124,58 @@ return {
 
     -- Branch management
     branch = {
-        current = "Current branch:",
-        create = "➕ Create new branch",
-        switch = "🔄 Switch branch",
-        merge = "🔀 Merge branch",
-        delete = "❌ Delete branch",
-        
-        create_title = "Create New Branch",
-        create_success = "Branch '%{name}' created successfully",
-        create_error = "Error creating branch: %{error}",
-        
-        switch_title = "Switch Branch",
-        switch_success = "Switched to branch '%{name}'",
-        switch_error = "Error switching branch: %{error}",
-        
-        merge_title = "Merge Branch",
-        merge_confirm = "Merge '%{source}' into '%{target}'?",
-        merge_success = "Successfully merged '%{name}'",
-        merge_error = "Merge error: %{error}",
-        
-        delete_title = "Delete Branch",
-        delete_confirm = "Delete branch '%{name}'?",
-        delete_success = "Branch '%{name}' deleted",
-        delete_error = "Error deleting branch: %{error}",
-        
-        exists = "This branch already exists",
+        title = "🌿 Branch Management",
+        current = "Current branch: %s",
         none = "No branches found",
-        already_on = "You are already on this branch",
-        no_merge_candidates = "No branches available for merging",
-        no_delete_candidates = "No branches available for deletion",
-        cannot_delete_current = "Cannot delete current branch",
-        
-        warning = {
-            delete = "⚠️ This action is irreversible",
-            unmerged = "⚠️ This branch is not merged"
+        create = {
+            title = "Create New Branch",
+            prompt = "Enter branch name:",
+            from = "Create from: %s",
+            success = "Branch '%s' created successfully",
+            error = "Error creating branch: %s",
+            exists = "Branch '%s' already exists",
+            invalid = "Invalid branch name"
+        },
+        switch = {
+            title = "Switch Branch",
+            prompt = "Select branch to switch to:",
+            confirm = "Switch to branch '%s'?",
+            success = "Switched to branch '%s'",
+            error = "Error switching branch: %s",
+            unsaved = "You have unsaved changes. Stash or commit them first"
+        },
+        merge = {
+            title = "Merge Branch",
+            prompt = "Select branch to merge into current branch:",
+            confirm = "Merge '%s' into '%s'?",
+            success = "Branch '%s' merged successfully",
+            error = "Error merging branch: %s",
+            conflict = "Merge conflicts detected",
+            abort = "Merge aborted",
+            no_ff = "Merge with commit (no fast-forward)",
+            squash = "Squash merge"
+        },
+        delete = {
+            title = "Delete Branch",
+            prompt = "Select branch to delete:",
+            confirm = "Delete branch '%s'? This cannot be undone! (y/N)",
+            success = "Branch '%s' deleted successfully",
+            error = "Error deleting branch: %s",
+            unmerged = "Branch '%s' is not fully merged",
+            force = "Force delete unmerged branch?"
+        },
+        status = {
+            ahead = "%d commits ahead of '%s'",
+            behind = "%d commits behind '%s'",
+            diverged = "Diverged from '%s' by %d commits",
+            up_to_date = "Up to date with '%s'",
+            local_only = "Local branch only",
+            tracking = "Tracking '%s'"
+        },
+        type = {
+            local = "Local branch",
+            remote = "Remote branch",
+            tracking = "Tracking branch"
         }
     },
     
@@ -157,23 +203,71 @@ return {
     -- Tag management
     tag = {
         name = {
-            prompt = "Tag name:"
+            prompt = "Enter tag name:",
+            invalid = "Invalid tag name"
         },
         message = {
-            prompt = "Message (optional, Enter for lightweight tag):"
+            prompt = "Enter tag message (optional for lightweight tag):",
         },
-        exists = "This tag already exists",
-        none = "No tags found",
+        exists = "Tag already exists",
         created_light = "Lightweight tag created successfully",
         created_annotated = "Annotated tag created successfully",
+        none = "No tags found",
+        confirm_delete = "Are you sure you want to delete tag '%s'? (y/N)",
         deleted = "Tag '%s' deleted successfully",
-        pushed = "Tags pushed successfully",
-        confirm_delete = "Do you want to delete tag '%s'? (y/N)",
-        delete_title = "🏷️ Delete tag",
-        error = {
-            create = "Error creating tag",
-            delete = "Error deleting tag",
-            push = "Error pushing tags"
+        delete_title = "Delete Tag",
+        push_success = "Tags pushed successfully",
+        push_error = "Error pushing tags: %s"
+    },
+
+    -- Remote management
+    remote = {
+        title = "🔄 Remote Management",
+        none = "No remote repositories found",
+        name = {
+            prompt = "Enter remote name:",
+            invalid = "Invalid remote name",
+            exists = "Remote with this name already exists"
+        },
+        url = {
+            prompt = "Enter remote URL:",
+            invalid = "Invalid remote URL"
+        },
+        add = {
+            title = "Add Remote Repository",
+            success = "Remote '%s' added successfully",
+            error = "Error adding remote: %s"
+        },
+        remove = {
+            title = "Remove Remote Repository",
+            select = "Select remote to remove:",
+            confirm = "Are you sure you want to remove remote '%s'?",
+            success = "Remote '%s' removed successfully",
+            error = "Error removing remote: %s"
+        },
+        fetch = {
+            title = "Fetch Changes",
+            all = "Fetch from all remotes",
+            specific = "Fetch from '%s'",
+            success = "Changes fetched successfully",
+            error = "Error fetching changes: %s"
+        },
+        push = {
+            title = "Push Changes",
+            select_remote = "Select remote to push to:",
+            select_branch = "Select branch to push:",
+            confirm = "Push to %s/%s?",
+            force = "Force push (--force-with-lease)",
+            success = "Changes pushed successfully",
+            error = "Error pushing changes: %s"
+        },
+        pull = {
+            title = "Pull Changes",
+            select_remote = "Select remote to pull from:",
+            select_branch = "Select branch to pull:",
+            confirm = "Pull from %s/%s?",
+            success = "Changes pulled successfully",
+            error = "Error pulling changes: %s"
         }
     },
 
@@ -226,50 +320,85 @@ return {
         help = "Use arrows to navigate and Enter to select"
     },
 
-    -- Stash manager
+    -- Stash management
     stash = {
-        create = "➕ Create stash",
-        apply = "📥 Apply stash",
-        pop = "📤 Pop stash",
-        drop = "❌ Drop stash",
-        list = "📋 Stash list",
-        empty = "No stashes available",
-        message = {
-            prompt = "Stash message (optional):"
-        },
+        title = "📦 Stash Management",
+        select_files = "Select files to stash",
         no_changes = "No changes to stash",
-        none = "No stash found",
-        created = "Stash created successfully",
-        applied = "Stash applied successfully",
-        dropped = "Stash dropped successfully",
-        error = {
-            create = "Error creating stash",
-            apply = "Error applying stash",
-            drop = "Error dropping stash"
+        none = "No stashes found",
+        create = {
+            prompt = "Enter stash message (optional):",
+            success = "Changes stashed successfully",
+            error = "Error stashing changes"
+        },
+        apply = {
+            title = "Apply Stash",
+            confirm = "Apply stash '%s'?",
+            success = "Stash applied successfully",
+            error = "Error applying stash"
+        },
+        delete = {
+            title = "Delete Stash",
+            confirm = "Delete stash '%s'? (y/N)",
+            success = "Stash deleted successfully",
+            error = "Error deleting stash"
+        },
+        navigation = {
+            select_all = "Select all",
+            deselect_all = "Deselect all",
+            toggle = "Toggle selection",
+            confirm = "Confirm",
+            cancel = "Cancel"
         }
     },
 
-    -- Search menu
+    -- Search functionality
     search = {
-        commits = "🔍 Search commits",
-        files = "📁 Search files",
-        author = "👤 Search by author",
-        branches = "🌿 Search branches",
-        
-        commits_prompt = "Enter search term:",
-        files_prompt = "Enter file pattern:",
-        author_prompt = "Enter author name:",
-        branches_prompt = "Enter branch pattern:",
-        
-        commits_none = "No commits found",
-        files_none = "No files found",
-        author_none = "No commits found for this author",
-        branches_none = "No branches found",
-        
-        commits_results = "Search Results - Commits",
-        files_results = "Search Results - Files",
-        author_results = "Search Results - Author",
-        branches_results = "Search Results - Branches"
+        title = "🔍 Search",
+        no_results = "No results found",
+        commits = {
+            title = "Search Commits",
+            prompt = "Enter search term for commits:",
+            results = "Search Results - Commits",
+            none = "No matching commits found",
+            details = "Commit Details",
+            copy_hash = "Hash copied to clipboard",
+            by_message = "Search by commit message",
+            by_files = "Search by changed files"
+        },
+        files = {
+            title = "Search Files",
+            prompt = "Enter file pattern to search:",
+            results = "Search Results - Files",
+            none = "No matching files found",
+            in_content = "Search in file contents",
+            by_name = "Search by file name",
+            by_extension = "Search by file extension"
+        },
+        author = {
+            title = "Search by Author",
+            prompt = "Enter author name:",
+            results = "Search Results - Author Commits",
+            none = "No commits found for this author",
+            email = "Search by email",
+            name = "Search by name"
+        },
+        branches = {
+            title = "Search Branches",
+            prompt = "Enter branch pattern to search:",
+            results = "Search Results - Branches",
+            none = "No matching branches found",
+            local = "Local branches",
+            remote = "Remote branches",
+            all = "All branches"
+        },
+        navigation = {
+            next = "Next result",
+            previous = "Previous result",
+            details = "Show details",
+            close = "Close",
+            help = "Press '?' for help"
+        }
     },
 
     -- Contextual help messages
