@@ -6,6 +6,15 @@ M.setup = function(opts)
     config = opts
 end
 
+-- Fonction de notification
+M.notify = function(msg, level)
+    level = level or vim.log.levels.INFO
+    vim.notify(msg, level, {
+        title = "GitPilot",
+        icon = "🚀"
+    })
+end
+
 -- Création d'une fenêtre flottante
 local function create_float_window(title)
     local width = config.ui.window.width
