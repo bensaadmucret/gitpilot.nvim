@@ -14,105 +14,58 @@ return {
     
     -- Main menu
     menu = {
+        main_title = " GitPilot - Main Menu",
         main = "Main Menu",
         commits = "Commit Operations",
-        commits_title = "📝 Commit Management",
+        commits_title = " Commit Management",
         branches = "Branch Operations",
-        branches_title = "🌿 Branch Management",
+        branches_title = " Branch Management",
         remotes = "Remote Operations",
-        remotes_title = "🔄 Remote Management",
+        remotes_title = " Remote Management",
         tags = "Tag Operations",
-        tags_title = "🏷️ Tag Management",
+        tags_title = " Tag Management",
         stash = "Stash Operations",
-        stash_title = "📦 Stash Management",
+        stash_title = " Stash Management",
         search = "Search Operations",
-        search_title = "🔍 Search",
+        search_title = " Search",
         rebase = "Rebase Operations",
-        rebase_title = "♻️ Rebase",
-        history = "📜 View history",
-        
-        -- Commit submenu
-        create_commit = "📝 Create new commit",
-        amend_commit = "✏️ Amend last commit",
-        history = "📜 View commit history",
-        
-        -- Remote submenu
-        add_remote = "➕ Add remote repository",
-        remove_remote = "❌ Remove remote repository",
-        fetch = "⬇️ Fetch changes",
-        push = "⬆️ Push changes",
-        
-        -- Branch menu
-        create_branch = "➕ Create new branch",
-        switch_branch = "🔄 Switch branch",
-        merge_branch = "🔀 Merge branch",
-        delete_branch = "❌ Delete branch",
-        
-        -- Tags submenu
-        create_tag = "➕ Create tag",
-        delete_tag = "❌ Delete tag",
-        list_tags = "📋 List tags",
-        push_tags = "⬆️ Push tags"
+        rebase_title = " Rebase"
     },
-    
+
     -- Commit management
     commit = {
-        title = "📝 Commit Management",
+        title = " Commit Management",
+        create = "Create commit",
+        amend = "Amend last commit",
         files = {
-            select = "Select files to commit",
-            selected = "Selected files",
             none = "No files to commit",
-            all = "Select all files",
-            none_action = "Deselect all files",
-            staged = "Staged files",
-            unstaged = "Unstaged files"
+            select = "Select files to commit:"
         },
         type = {
-            title = "Select commit type",
-            feat = "✨ New feature",
-            fix = "🐛 Bug fix",
-            docs = "📚 Documentation",
-            style = "💎 Code style",
-            refactor = "♻️ Code refactoring",
-            perf = "⚡ Performance improvement",
-            test = "🧪 Tests",
-            build = "🔧 Build system",
-            ci = "👷 CI/CD",
-            chore = "🔨 Chore",
-            revert = "⏪ Revert changes"
+            select = "Select commit type:",
+            feat = "New feature",
+            fix = "Bug fix",
+            docs = "Documentation",
+            style = "Code style",
+            refactor = "Code refactoring",
+            test = "Tests",
+            chore = "Maintenance"
         },
         message = {
-            title = "Commit Message",
-            prompt = "Enter commit message:",
-            hint = "Brief description of changes",
-            scope = "Enter scope (optional):",
-            body = "Enter detailed description (optional):",
-            breaking = "Breaking changes (optional):",
-            footer = "Footer notes (optional):",
-            preview = "Preview commit message:",
-            empty = "Commit message cannot be empty",
-            too_short = "Commit message is too short"
+            prompt = "Commit message:",
+            empty = "Commit message cannot be empty"
         },
         action = {
-            create = "Create commit",
-            amend = "Amend last commit",
-            success = "Changes committed successfully",
-            amend_success = "Commit amended successfully",
+            success = "Commit created successfully",
             error = "Error creating commit: %s",
-            amend_error = "Error amending commit: %s",
-            cancel = "Commit cancelled"
-        },
-        status = {
-            staged = "Staged changes",
-            unstaged = "Unstaged changes",
-            untracked = "Untracked files",
-            no_changes = "No changes to commit"
+            amend_success = "Commit amended successfully",
+            amend_error = "Error amending commit: %s"
         }
     },
 
     -- Branch management
     branch = {
-        title = "🌿 Branch Management",
+        title = " Branch Management",
         current = "Current branch: %s",
         none = "No branches found",
         create = {
@@ -130,18 +83,58 @@ return {
             error = "Error deleting branch: %s",
             current = "Cannot delete current branch"
         },
-        checkout = {
+        switch = {
             title = "Switch Branch",
             prompt = "Select branch:",
             success = "Switched to branch '%s'",
             error = "Error switching branch: %s"
+        },
+        merge = {
+            title = "Merge Branch",
+            prompt = "Select branch to merge:",
+            success = "Branch '%s' merged successfully",
+            error = "Error merging branch: %s"
+        }
+    },
+
+    -- Remote management
+    remote = {
+        title = " Remote Management",
+        add = "Add remote",
+        remove = "Remove remote",
+        push = "Push changes",
+        pull = "Pull changes",
+        none = "No remotes found",
+        name = {
+            prompt = "Remote name:"
+        },
+        url = {
+            prompt = "Remote URL:"
+        },
+        added = "Remote added successfully",
+        deleted = "Remote deleted",
+        fetched = "Remote updated",
+        url = "URL",
+        tracking_info = "Tracking Information",
+        details_title = "Remote Details",
+        push = {
+            normal = "Normal (default)",
+            force = "Force (--force)",
+            force_lease = "Force with lease (--force-with-lease)"
+        },
+        action = {
+            success = "Remote operation completed successfully",
+            error = "Error performing remote operation: %s"
         }
     },
 
     -- Tag management
     tag = {
-        title = "🏷️ Tag Management",
+        title = " Tag Management",
         none = "No tags found",
+        message = "Message",
+        commit_info = "Commit Information",
+        details_title = "Tag Details",
         create = {
             title = "Create Tag",
             name_prompt = "Tag name:",
@@ -168,7 +161,7 @@ return {
 
     -- Stash management
     stash = {
-        title = "📦 Stash Management",
+        title = " Stash Management",
         none = "No stashes found",
         create = {
             title = "Create Stash",
@@ -194,44 +187,34 @@ return {
 
     -- Search
     search = {
-        title = "🔍 Search",
+        title = " Search",
         prompt = "Enter your search:",
         no_results = "No results found",
         commits = {
             title = "Search in commits",
-            prompt = "Enter search term:"
-        }
-    },
-
-    -- Rebase operations
-    rebase = {
-        title = "♻️ Rebase",
-        intro = "Interactive Rebase Assistant",
-        warning = "⚠️ This operation will modify history",
-        backup = "A backup will be created automatically",
-        select_base = "Select base branch or commit:",
-        actions = {
-            pick = "pick - use commit",
-            reword = "reword - edit commit message",
-            edit = "edit - edit commit",
-            squash = "squash - combine with previous commit",
-            fixup = "fixup - combine silently with previous commit",
-            drop = "drop - remove commit"
+            prompt = "Enter search term:",
+            empty = "Search term cannot be empty",
+            none = "No commits found",
+            no_results = "No results found for this search",
+            details_error = "Error retrieving commit details",
+            details_title = "Commit Details %s",
+            details = "Details"
         },
-        conflict = {
-            detected = "Rebase conflicts detected",
-            resolve = "Please resolve conflicts and continue",
-            abort = "Or abort the rebase"
+        files = {
+            prompt = "Enter search pattern:",
+            none = "No files found",
+            results = "Search Results"
         },
-        continue = {
-            prompt = "Continue rebase?",
-            success = "Rebase completed successfully",
-            error = "Error continuing rebase: %s"
+        author = {
+            prompt = "Enter author name:",
+            none = "No commits found for this author",
+            results = "Commits by %s"
         },
-        abort = {
-            prompt = "Abort rebase?",
-            success = "Rebase aborted successfully",
-            error = "Error aborting rebase: %s"
+        branches = {
+            prompt = "Enter search pattern:",
+            none = "No branches found",
+            results = "Found Branches",
+            switched = "Switched to branch"
         }
     }
 }
