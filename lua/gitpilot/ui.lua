@@ -123,20 +123,25 @@ end
 
 -- Menu des commits
 M.show_commits_menu = function()
+    local menu_title = i18n.t("menu.commits_title")
     M.show_main_menu({
         {
-            label = i18n.t("menu.create_commit"),
+            label = i18n.t("commit.create"),
             action = function() require('gitpilot.features.commit').create_commit() end
         },
         {
-            label = i18n.t("menu.amend_commit"),
+            label = i18n.t("commit.amend"),
             action = function() require('gitpilot.features.commit').amend_commit() end
         },
         {
-            label = i18n.t("menu.history"),
+            label = i18n.t("commit.history"),
             action = function() require('gitpilot.features.commit').show_history() end
+        },
+        {
+            label = i18n.t("commit.discard"),
+            action = function() require('gitpilot.features.commit').discard_changes() end
         }
-    })
+    }, menu_title)
 end
 
 -- Menu des branches

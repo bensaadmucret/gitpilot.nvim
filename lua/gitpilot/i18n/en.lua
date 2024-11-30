@@ -12,13 +12,19 @@ return {
     menu = {
         main = "Main Menu",
         commits = "📝 Manage commits",
+        commits_title = "📝 Commit Management",
         branches = "🌿 Manage branches",
         branches_title = "🌿 Branch Management",
         remotes = "🔄 Manage remotes",
+        remotes_title = "🔄 Remote Management",
         tags = "🏷️ Manage tags",
+        tags_title = "🏷️ Tag Management",
         stash = "📦 Manage stash",
+        stash_title = "📦 Stash Management",
         search = "🔍 Search",
+        search_title = "🔍 Search",
         rebase = "🔄 Rebase assistant",
+        rebase_title = "🔄 Rebase Assistant",
         conflict = "🚧 Resolve conflicts",
         history = "📜 View history",
         
@@ -44,11 +50,6 @@ return {
         delete_tag = "❌ Delete tag",
         list_tags = "📋 List tags",
         push_tags = "⬆️ Push tags",
-        
-        -- Tags submenu (old)
-        -- create_tag = "➕ Create tag",
-        -- delete_tag = "❌ Delete tag",
-        -- push_tag = "⬆️ Push tags"
     },
     
     -- Commit assistant
@@ -76,6 +77,21 @@ return {
             warning = "⚠️ Message is too short",
             template = "{type}: {description}"
         }
+    },
+
+    -- Commit messages
+    commit_messages = {
+        create = "📝 Create new commit",
+        amend = "✏️ Amend last commit",
+        history = "📜 View history",
+        discard = "🗑️ Discard changes",
+        title = "Commit message",
+        description = "Description (optional)",
+        success = "Commit created successfully",
+        amend_success = "Commit amended successfully",
+        error = "Error creating commit",
+        no_changes = "No changes to commit",
+        confirm_discard = "Do you really want to discard all changes? This action cannot be undone. (y/N)"
     },
 
     -- Branch management

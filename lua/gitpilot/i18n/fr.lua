@@ -12,13 +12,19 @@ return {
     menu = {
         main = "Menu Principal",
         commits = "📝 Gérer les commits",
+        commits_title = "📝 Gestion des commits",
         branches = "🌿 Gérer les branches",
         branches_title = "🌿 Gestion des branches",
         remotes = "🔄 Gérer les dépôts distants",
+        remotes_title = "🔄 Gestion des dépôts distants",
         tags = "🏷️ Gérer les tags",
+        tags_title = "🏷️ Gestion des tags",
         stash = "📦 Gérer les stash",
+        stash_title = "📦 Gestion du stash",
         search = "🔍 Rechercher",
+        search_title = "🔍 Recherche",
         rebase = "🔄 Assistant de rebase",
+        rebase_title = "🔄 Assistant de rebase",
         
         -- Sous-menu des commits
         create_commit = "📝 Créer un nouveau commit",
