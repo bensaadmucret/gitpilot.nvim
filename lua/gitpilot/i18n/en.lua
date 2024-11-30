@@ -71,33 +71,18 @@ return {
         delete_confirm = "Delete branch '%{name}'?",
         delete_success = "Branch '%{name}' deleted",
         delete_error = "Error deleting branch: %{error}",
-        select = "Select a branch:",
-        select_merge = "Select branch to merge:",
-        select_delete = "Select branch to delete:",
-        confirm_merge = "Do you want to merge branch",
-        confirm_delete = "Do you want to delete branch",
-        created = "Branch created",
-        switched = "Switched to branch",
-        merged = "Branch merged",
-        deleted = "Branch deleted",
+        
+        exists = "This branch already exists",
+        none = "No branches found",
+        already_on = "You are already on this branch",
+        no_merge_candidates = "No branches available for merging",
+        no_delete_candidates = "No branches available for deletion",
         cannot_delete_current = "Cannot delete current branch",
+        
         warning = {
             delete = "⚠️ This action is irreversible",
             unmerged = "⚠️ This branch is not merged"
-        },
-        exists = "This branch already exists",
-        none = "No branches found",
-        select_switch = "Select a branch to switch to",
-        select_merge = "Select a branch to merge",
-        select_delete = "Select a branch to delete",
-        already_on = "You are already on this branch",
-        switched = "Switched to branch",
-        no_merge_candidates = "No branches available for merging",
-        no_delete_candidates = "No branches available for deletion",
-        confirm_merge = "Do you want to merge branch",
-        confirm_delete = "Do you want to delete branch",
-        merged = "Branch merged",
-        deleted = "Branch deleted"
+        }
     },
 
     -- Rebase assistant
@@ -165,12 +150,25 @@ return {
 
     -- Stash manager
     stash = {
-        create = "Create stash",
-        apply = "Apply stash",
-        pop = "Pop stash",
-        drop = "Drop stash",
-        list = "Stash list",
-        empty = "No stashes available"
+        create = "➕ Create stash",
+        apply = "📥 Apply stash",
+        pop = "📤 Pop stash",
+        drop = "❌ Drop stash",
+        list = "📋 Stash list",
+        empty = "No stashes available",
+        message = {
+            prompt = "Stash message (optional):"
+        },
+        no_changes = "No changes to stash",
+        none = "No stash found",
+        created = "Stash created successfully",
+        applied = "Stash applied successfully",
+        dropped = "Stash dropped successfully",
+        error = {
+            create = "Error creating stash",
+            apply = "Error applying stash",
+            drop = "Error dropping stash"
+        }
     },
 
     -- Search menu
