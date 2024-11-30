@@ -1,0 +1,18 @@
+local assert = require('luassert')
+local validate = require('gitpilot.i18n.validate')
+
+describe('i18n validation', function()
+    describe('validate_translations', function()
+        it('should detect missing translations', function()
+            local missing = validate.validate_translations()
+            assert.equals(0, #missing, "Found missing translations:\n" .. vim.inspect(missing))
+        end)
+    end)
+
+    describe('validate_variables', function()
+        it('should detect inconsistent variables', function()
+            local inconsistent = validate.validate_variables()
+            assert.equals(0, #inconsistent, "Found inconsistent variables:\n" .. vim.inspect(inconsistent))
+        end)
+    end)
+end)
