@@ -3,6 +3,22 @@ local utils = require('gitpilot.utils')
 local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
 
+-- Configuration par défaut
+local config = {
+    git_cmd = 'git',
+    timeout = 5000,
+    test_mode = false
+}
+
+-- Configure le module
+M.setup = function(opts)
+    config = vim.tbl_deep_extend('force', config, opts or {})
+    -- Si nous sommes en mode test, on initialise l'environnement de test
+    if config.test_mode then
+        utils.setup(config)
+    end
+end
+
 ---Liste tous les tags disponibles
 ---@return table Liste des tags avec {name, hash, message}
 M.list_tags = function()

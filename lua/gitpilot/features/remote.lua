@@ -3,12 +3,20 @@ local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
 local utils = require('gitpilot.utils')
 
--- Configuration locale
-local config = {}
+-- Configuration par défaut
+local config = {
+    git_cmd = 'git',
+    timeout = 5000,
+    test_mode = false
+}
 
 -- Setup function
 M.setup = function(opts)
-    config = opts
+    config = vim.tbl_deep_extend('force', config, opts or {})
+    -- Si nous sommes en mode test, on initialise l'environnement de test
+    if config.test_mode then
+        utils.setup(config)
+    end
 end
 
 -- Liste des remotes
