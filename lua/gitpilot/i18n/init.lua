@@ -9,6 +9,7 @@ local current_lang = 'en'  -- Default language
 
 -- Setup function
 M.setup = function(opts)
+    opts = opts or {}
     if opts.language then
         if translations[opts.language] then
             current_lang = opts.language

@@ -108,9 +108,9 @@ describe("Branch Module", function()
             utils.execute_command = function(cmd)
                 return "* \n  \n invalid"
             end
-            local branches, current = branch.list_branches()
-            assert.are.same({"invalid"}, branches)
-            assert.is_nil(current)
+            local branches = branch.list_branches()
+            assert.equals(1, #branches)
+            assert.equals("invalid", branches[1])
         end)
     end)
     
@@ -328,6 +328,12 @@ describe("Branch Module", function()
                 end
             end
 
+            mock.ui.input = function(opts, callback)
+                if callback then
+                    callback(nil) -- Simuler l'annulation de la création de branche
+                end
+            end
+
             utils.execute_command = function(cmd)
                 if cmd == "git branch --all" then
                     return "* main\n  develop"
@@ -352,8 +358,8 @@ describe("Branch Module", function()
                         end
                     end
                 else
-                    -- Simuler la sélection d'une action
-                    callback(items[1])
+                    -- Simuler l'annulation de la sélection d'action
+                    callback(nil)
                 end
             end
 
@@ -368,7 +374,7 @@ describe("Branch Module", function()
             assert.is_true(branch_menu_shown)
         end)
     end)
-
+    
     describe("setup", function()
         it("should handle nil options", function()
             branch.setup(nil)

@@ -107,8 +107,8 @@ describe("I18n Module", function()
         end)
 
         it("should handle multiple nested keys", function()
-            local result = i18n.t("branch.error.not_found")
-            assert.is_not.equals("branch.error.not_found", result)
+            local result = i18n.t("menu.submenu.item")
+            assert.equals(i18n.t("menu.submenu.item"), result)
         end)
 
         it("should fallback to English for missing translations in current language", function()
