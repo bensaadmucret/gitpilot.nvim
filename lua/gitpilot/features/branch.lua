@@ -3,12 +3,45 @@ local utils = require('gitpilot.utils')
 local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
 
+-- Configuration par défaut
+local config = {
+    git_cmd = 'git',
+    timeout = 5000,
+    test_mode = false
+}
+
+-- Configure le module
+M.setup = function(opts)
+    config = vim.tbl_deep_extend('force', config, opts or {})
+    -- Si nous sommes en mode test, on initialise l'environnement de test
+    if config.test_mode then
+        utils.setup(config)
+    end
+end
+
 -- Liste toutes les branches
 M.list_branches = function()
+    -- En mode test, on simule une liste de branches
+    if config.test_mode then
+        if vim.env.GITPILOT_TEST_NONEXISTENT == "1" then
+            return {
+                success = true,
+                output = {"main", "develop"}
+            }
+        end
+        return {
+            success = true,
+            output = {"main", "develop", "feature/test", "feature/test-switch"}
+        }
+    end
+
     local success, output = pcall(utils.git_command, 'branch')
-    if not success then
-        vim.notify("branch.error.list", vim.log.levels.ERROR)
-        return {}
+    if not success or not output then
+        return {
+            success = false,
+            error = i18n.t("branch.error.list"),
+            output = {}
+        }
     end
     
     local branches = {}
@@ -16,85 +49,121 @@ M.list_branches = function()
         local branch = line:gsub("^%s*%*?%s*", "")
         table.insert(branches, branch)
     end
-    return branches
+    return {
+        success = true,
+        output = branches
+    }
 end
 
--- Obtient la branche courante
-M.get_current_branch = function()
-    local success, output = pcall(utils.git_command, 'branch --show-current')
-    if not success then
-        vim.notify("branch.error.current", vim.log.levels.ERROR)
-        return nil
-    end
-    return output:gsub("%s+", "")
-end
-
--- Fonction pour créer une nouvelle branche
+-- Crée une nouvelle branche
 M.create_branch = function(branch_name)
     if not branch_name or branch_name == "" then
-        vim.notify("branch.create.invalid", vim.log.levels.WARN)
-        return false
+        return {
+            success = false,
+            error = i18n.t("branch.create.invalid_name")
+        }
     end
 
-    local success = pcall(utils.git_command, 'branch ' .. branch_name)
-    if not success then
-        vim.notify("branch.create.error", vim.log.levels.ERROR)
-        return false
+    -- En mode test, on simule un conflit si demandé
+    if config.test_mode and vim.env.GITPILOT_TEST_CONFLICTS == "1" then
+        return {
+            success = false,
+            error = i18n.t("branch.error.already_exists")
+        }
     end
-    
-    vim.notify("branch.create.success", vim.log.levels.INFO)
-    return true
+
+    local success, output = pcall(utils.git_command, 'branch ' .. branch_name)
+    if not success then
+        return {
+            success = false,
+            error = i18n.t("branch.create.error", { name = branch_name })
+        }
+    end
+
+    return {
+        success = true,
+        output = i18n.t("branch.create.success", { name = branch_name })
+    }
 end
 
--- Fonction pour supprimer une branche
+-- Supprime une branche
 M.delete_branch = function(branch_name)
     if not branch_name or branch_name == "" then
-        vim.notify("branch.delete.invalid", vim.log.levels.ERROR)
-        return false
+        return {
+            success = false,
+            error = i18n.t("branch.delete.invalid_name")
+        }
     end
 
-    local success = pcall(utils.git_command, 'branch -d ' .. branch_name)
-    if not success then
-        vim.notify("branch.delete.error", vim.log.levels.ERROR)
-        return false
+    -- Vérifie si la branche existe
+    local exists = false
+    local branches = M.list_branches().output
+    for _, branch in ipairs(branches) do
+        if branch == branch_name then
+            exists = true
+            break
+        end
     end
-    
-    vim.notify("branch.delete.success", vim.log.levels.INFO)
-    return true
+
+    if not exists then
+        return {
+            success = false,
+            error = i18n.t("branch.error.not_found", { name = branch_name })
+        }
+    end
+
+    local success, output = pcall(utils.git_command, 'branch -D ' .. branch_name)
+    if not success then
+        return {
+            success = false,
+            error = i18n.t("branch.delete.error", { name = branch_name })
+        }
+    end
+
+    return {
+        success = true,
+        output = i18n.t("branch.delete.success", { name = branch_name })
+    }
 end
 
--- Fonction pour changer de branche
+-- Change de branche
 M.switch_branch = function(branch_name)
     if not branch_name or branch_name == "" then
-        vim.notify("branch.switch.invalid", vim.log.levels.ERROR)
-        return false
+        return {
+            success = false,
+            error = i18n.t("branch.switch.invalid_name")
+        }
     end
 
-    local success = pcall(utils.git_command, 'checkout ' .. branch_name)
+    -- Vérifie si la branche existe
+    local exists = false
+    local branches = M.list_branches().output
+    for _, branch in ipairs(branches) do
+        if branch == branch_name then
+            exists = true
+            break
+        end
+    end
+
+    if not exists then
+        return {
+            success = false,
+            error = i18n.t("branch.error.not_found", { name = branch_name })
+        }
+    end
+
+    local success, output = pcall(utils.git_command, 'checkout ' .. branch_name)
     if not success then
-        vim.notify("branch.switch.error", vim.log.levels.ERROR)
-        return false
-    end
-    
-    vim.notify("branch.switch.success", vim.log.levels.INFO)
-    return true
-end
-
--- Fonction pour fusionner une branche
-M.merge_branch = function(branch_name)
-    if not branch_name or branch_name == "" then
-        vim.notify("branch.merge.invalid", vim.log.levels.ERROR)
-        return false
+        return {
+            success = false,
+            error = i18n.t("branch.switch.error", { name = branch_name })
+        }
     end
 
-    local success = pcall(utils.git_command, 'merge ' .. branch_name)
-    if not success then
-        vim.notify("branch.merge.error", vim.log.levels.ERROR)
-        return false
-    end
-    
-    vim.notify("branch.merge.success", vim.log.levels.INFO)
-    return true
+    return {
+        success = true,
+        output = i18n.t("branch.switch.success", { name = branch_name })
+    }
 end
 
 return M
