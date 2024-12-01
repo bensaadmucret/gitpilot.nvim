@@ -1,5 +1,8 @@
 # GitPilot.nvim
 
+[![Test](https://github.com/bensaadmucret/gitpilot.nvim/actions/workflows/test.yml/badge.svg)](https://github.com/bensaadmucret/gitpilot.nvim/actions/workflows/test.yml)
+[![Coverage Status](https://coveralls.io/repos/github/bensaadmucret/gitpilot.nvim/badge.svg?branch=main)](https://coveralls.io/github/bensaadmucret/gitpilot.nvim?branch=main)
+
 Un plugin Neovim puissant pour la gestion Git avec support multilingue (Français/Anglais).
 
 ## ✨ Fonctionnalités
