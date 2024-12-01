@@ -34,11 +34,18 @@ local allowed_commands = {
 
 -- Setup function
 M.setup = function(opts)
-    config = vim.tbl_deep_extend('force', config, opts or {})
+    if opts then
+        config = vim.tbl_deep_extend('force', config, opts or {})
+    end
 end
 
 -- Git command with error handling
 M.git_command = function(command)
+    -- Validate input
+    if type(command) ~= "string" then
+        return false, "Command must be a string"
+    end
+
     if config.git.test_mode then
         -- In test mode, return GIT_RESPONSE from environment
         local response = vim.env.GIT_RESPONSE or ""
@@ -69,14 +76,14 @@ end
 M.get_git_version = function()
     local success, output = M.git_command("--version")
     if not success then
-        return nil
+        return nil, output
     end
     return output:match("git version ([%d%.]+)")
 end
 
--- Check if path is in a git repository
+-- Check if path is git repository
 M.is_git_repo = function()
-    local success = M.git_command("rev-parse --is-inside-work-tree")
+    local success, _ = M.git_command("rev-parse --git-dir")
     return success
 end
 
@@ -84,53 +91,46 @@ end
 M.get_current_branch = function()
     local success, output = M.git_command("branch --show-current")
     if not success then
-        return nil
+        return nil, output
     end
-    return output:gsub("\n", "")
+    return vim.trim(output)
 end
 
--- Get repository root
-M.get_repo_root = function()
-    local success, output = M.git_command("rev-parse --show-toplevel")
-    if not success then
-        return nil
-    end
-    return output:gsub("\n", "")
-end
-
--- Get file status
-M.get_file_status = function(file)
-    if not file or file == "" then
-        return nil, "File path cannot be empty"
-    end
-    
-    local success, output = M.git_command("status --porcelain " .. file)
+-- Get all branches
+M.get_branches = function()
+    local success, output = M.git_command("branch")
     if not success then
         return nil, output
     end
     
-    if output == "" then
-        return "unmodified"
+    local branches = {}
+    for branch in output:gmatch("[%s*]([^%s]+)") do
+        table.insert(branches, branch)
+    end
+    return branches
+end
+
+-- Get all remotes
+M.get_remotes = function()
+    local success, output = M.git_command("remote")
+    if not success then
+        return nil, output
     end
     
-    local status = output:sub(1, 2)
-    if status:match("M") then
-        return "modified"
-    elseif status:match("A") then
-        return "added"
-    elseif status:match("D") then
-        return "deleted"
-    elseif status:match("R") then
-        return "renamed"
-    elseif status:match("C") then
-        return "copied"
-    elseif status:match("U") then
-        return "updated"
-    elseif status:match("%?%?") then
-        return "untracked"
-    else
-        return "unknown"
+    local remotes = {}
+    for remote in output:gmatch("([^%s]+)") do
+        table.insert(remotes, remote)
     end
+    return remotes
+end
+
+-- Get status
+M.get_status = function()
+    local success, output = M.git_command("status --porcelain")
+    if not success then
+        return nil, output
+    end
+    return output
 end
 
 return M
