@@ -102,6 +102,20 @@ return {
             success = "Branch '%s' merged successfully",
             error = "Error merging branch: %s"
         },
+        success = {
+            created = "Branch '%{name}' created successfully",
+            switched = "Switched to branch '%{name}'",
+            merged = "Branch '%{name}' merged successfully",
+            deleted = "Branch '%{name}' deleted successfully"
+        },
+        error = {
+            invalid_name = "Branch name is invalid",
+            create_failed = "Failed to create branch '%{name}'",
+            switch_failed = "Failed to switch to branch '%{name}'",
+            merge_failed = "Failed to merge branch '%{name}'",
+            delete_failed = "Failed to delete branch '%{name}'",
+            merge_conflict = "Conflicts detected while merging '%{name}'"
+        },
         create_success = "Branch '%{name}' created successfully",
         checkout_success = "Switched to branch '%{name}'",
         merge_success = "Branch '%{name}' merged successfully",

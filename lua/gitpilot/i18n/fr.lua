@@ -75,17 +75,22 @@ return {
         delete = "Supprimer cette branche",
         
         -- Messages de succès
-        create_success = "Branche '%{name}' créée avec succès",
-        checkout_success = "Basculé vers la branche '%{name}'",
-        merge_success = "Branche '%{name}' fusionnée avec succès",
-        delete_success = "Branche '%{name}' supprimée avec succès",
+        success = {
+            created = "Branche '%{name}' créée avec succès",
+            switched = "Basculé vers la branche '%{name}'",
+            merged = "Branche '%{name}' fusionnée avec succès",
+            deleted = "Branche '%{name}' supprimée avec succès"
+        },
         
         -- Messages d'erreur
-        create_error = "Erreur lors de la création de la branche '%{name}'",
-        checkout_error = "Erreur lors du basculement vers la branche '%{name}'",
-        merge_error = "Erreur lors de la fusion de la branche '%{name}'",
-        merge_conflict = "Conflits détectés lors de la fusion de '%{name}'",
-        delete_error = "Erreur lors de la suppression de la branche '%{name}'"
+        error = {
+            invalid_name = "Le nom de la branche est invalide",
+            create_failed = "Erreur lors de la création de la branche '%{name}'",
+            switch_failed = "Erreur lors du basculement vers la branche '%{name}'",
+            merge_failed = "Erreur lors de la fusion de la branche '%{name}'",
+            delete_failed = "Erreur lors de la suppression de la branche '%{name}'",
+            merge_conflict = "Conflits détectés lors de la fusion de '%{name}'"
+        }
     },
 
     -- Gestion des remotes
