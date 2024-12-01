@@ -22,10 +22,14 @@ jobs:
           luarocks install busted
           luarocks install luacov
           luarocks install luacov-coveralls
+          luarocks install luafilesystem
 
       - name: Run Tests
+        env:
+          LUA_PATH: "./lua/?.lua;./lua/?/init.lua;./?.lua;$LUA_PATH"
+          GITPILOT_TEST: "1"
         run: |
-          busted --coverage --helper=test/init.lua
+          busted -v --coverage test/gitpilot/features/
 
       - name: Upload coverage to Coveralls
         env:
