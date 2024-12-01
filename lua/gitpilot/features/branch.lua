@@ -1,6 +1,7 @@
 -- lua/gitpilot/features/branch.lua
 
 local M = {}
+<<<<<<< HEAD
 local config = {}
 local i18n = require("gitpilot.i18n")
 
@@ -14,6 +15,18 @@ local function git_command(cmd, callback)
             callback(result)
         end
         return result
+=======
+local vim = vim
+local i18n = require('gitpilot.i18n')
+local utils = require('gitpilot.utils')
+
+-- Liste toutes les branches
+M.list_branches = function()
+    local cmd = "git branch --all"
+    local output = utils.execute_command(cmd)
+    if not output then
+        return {}
+>>>>>>> 979b8f4 (feat: Ajout du module de gestion des branches et configuration des tests)
     end
     return nil
 end
@@ -21,6 +34,7 @@ end
 -- Obtenir la liste des branches
 function M.list_branches()
     local branches = {}
+<<<<<<< HEAD
     local current = ""
     
     git_command("git branch --all", function(output)
@@ -151,6 +165,87 @@ end
 -- Configuration du module
 function M.setup(opts)
     config = opts or {}
+=======
+    for line in output:gmatch("[^\r\n]+") do
+        local branch = line:match("^%s*%*?%s*(.+)$")
+        if branch then
+            table.insert(branches, branch)
+        end
+    end
+    return branches
+end
+
+-- Crée une nouvelle branche
+M.create_branch = function(branch_name)
+    if not branch_name or branch_name == "" then
+        return false, i18n.t("branch.error.invalid_name")
+    end
+    
+    local cmd = string.format("git checkout -b %s", branch_name)
+    local success = utils.execute_command(cmd)
+    
+    if success then
+        return true, i18n.t("branch.success.created", {name = branch_name})
+    else
+        return false, i18n.t("branch.error.create_failed", {name = branch_name})
+    end
+end
+
+-- Change de branche
+M.switch_branch = function(branch_name)
+    if not branch_name or branch_name == "" then
+        return false, i18n.t("branch.error.invalid_name")
+    end
+    
+    local cmd = string.format("git checkout %s", branch_name)
+    local success = utils.execute_command(cmd)
+    
+    if success then
+        return true, i18n.t("branch.success.switched", {name = branch_name})
+    else
+        return false, i18n.t("branch.error.switch_failed", {name = branch_name})
+    end
+end
+
+-- Fusionne une branche
+M.merge_branch = function(branch_name)
+    if not branch_name or branch_name == "" then
+        return false, i18n.t("branch.error.invalid_name")
+    end
+    
+    local cmd = string.format("git merge %s", branch_name)
+    local success = utils.execute_command(cmd)
+    
+    if success then
+        return true, i18n.t("branch.success.merged", {name = branch_name})
+    else
+        return false, i18n.t("branch.error.merge_failed", {name = branch_name})
+    end
+>>>>>>> 979b8f4 (feat: Ajout du module de gestion des branches et configuration des tests)
+end
+
+-- Supprime une branche
+M.delete_branch = function(branch_name, force)
+    if not branch_name or branch_name == "" then
+        return false, i18n.t("branch.error.invalid_name")
+    end
+    
+    local flag = force and "-D" or "-d"
+    local cmd = string.format("git branch %s %s", flag, branch_name)
+    local success = utils.execute_command(cmd)
+    
+    if success then
+        return true, i18n.t("branch.success.deleted", {name = branch_name})
+    else
+        return false, i18n.t("branch.error.delete_failed", {name = branch_name})
+    end
+end
+
+-- Obtient le nom de la branche courante
+M.get_current_branch = function()
+    local cmd = "git rev-parse --abbrev-ref HEAD"
+    local output = utils.execute_command(cmd)
+    return output and output:match("^(.-)%s*$")
 end
 
 return M

@@ -1,7 +1,14 @@
 # GitPilot.nvim
 
+<<<<<<< HEAD
 [![Test](https://github.com/bensaadmucret/gitpilot.nvim/actions/workflows/test.yml/badge.svg)](https://github.com/bensaadmucret/gitpilot.nvim/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/bensaadmucret/gitpilot.nvim/badge.svg?branch=main)](https://coveralls.io/github/bensaadmucret/gitpilot.nvim?branch=main)
+=======
+[![Coverage Status](https://coveralls.io/repos/github/bensaadmucret/gitpilot.nvim/badge.svg?branch=main)](https://coveralls.io/github/bensaadmucret/gitpilot.nvim?branch=main)
+[![Tests](https://github.com/bensaadmucret/gitpilot.nvim/workflows/Tests/badge.svg)](https://github.com/bensaadmucret/gitpilot.nvim/actions)
+[![Neovim v0.5.0+](https://img.shields.io/badge/Neovim-v0.5.0+-blueviolet.svg)](https://neovim.io)
+[![Lua](https://img.shields.io/badge/Lua-5.1-blue.svg)](https://lua.org)
+>>>>>>> 979b8f4 (feat: Ajout du module de gestion des branches et configuration des tests)
 
 Un plugin Neovim puissant pour la gestion Git avec support multilingue (Français/Anglais).
 
