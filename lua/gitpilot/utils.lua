@@ -6,7 +6,8 @@ local uv = vim.loop
 local config = {
     git = {
         cmd = "git",
-        timeout = 5000
+        timeout = 5000,
+        test_mode = false
     }
 }
 
@@ -33,262 +34,103 @@ local allowed_commands = {
 
 -- Setup function
 M.setup = function(opts)
-    if opts then
-        if opts.git then
-            config.git.cmd = opts.git.cmd or config.git.cmd
-            config.git.timeout = opts.git.timeout or config.git.timeout
-        end
-    end
+    config = vim.tbl_deep_extend('force', config, opts or {})
 end
 
--- Valide une commande git
-local function validate_git_command(cmd)
-    if not cmd or cmd == "" then
-        return false, "Invalid git command"
-    end
-
-    -- Vérifier les caractères dangereux
-    if cmd:match("[;|>&$`]") then
-        return false, "Command contains unsafe characters"
-    end
-
-    -- Extraire la commande principale
-    local main_cmd = cmd:match("^%s*([%-%w]+)")
-    if not main_cmd then
-        return false, "Invalid git command"
-    end
-
-    -- Vérifier si la commande est autorisée
-    if not allowed_commands[main_cmd] then
-        return false, string.format("Git command '%s' not allowed", main_cmd)
-    end
-
-    return true
-end
-
--- Fonction utilitaire pour la gestion des erreurs
-local function handle_error(error_type, error_msg, level)
-    level = level or vim.log.levels.ERROR
-    local error_prefix = "[GitPilot] "
-    
-    -- Log l'erreur
-    vim.schedule(function()
-        vim.notify(error_prefix .. error_msg, level)
-    end)
-    
-    -- Retourner une structure d'erreur cohérente
-    return {
-        success = false,
-        error_type = error_type,
-        message = error_msg
-    }
-end
-
--- Exécute une commande git et retourne le résultat
+-- Git command with error handling
 M.git_command = function(command)
-    -- Validation des entrées
-    if not command or command == "" then
-        return handle_error("INVALID_INPUT", "Command cannot be empty")
-    end
-    
-    -- Valider la commande
-    local valid, err = validate_git_command(command)
-    if not valid then
-        return {
-            success = false,
-            output = "",
-            error = err
-        }
-    end
-    
-    -- Pour les tests, simuler certaines commandes
-    if vim.env.GITPILOT_TEST then
-        if command == "--version" then
-            return {
-                success = true,
-                output = "git version 2.30.1",
-                error = ""
-            }
-        elseif command == "invalid-command" then
-            return {
-                success = false,
-                error_type = "COMMAND_ERROR",
-                error = "git: 'invalid-command' is not a git command. See 'git --help'."
-            }
-        elseif command == "status" and config.git.timeout == 1 then
-            return {
-                success = false,
-                error_type = "TIMEOUT",
-                message = "Command timed out"
-            }
+    if config.git.test_mode then
+        -- In test mode, return GIT_RESPONSE from environment
+        local response = vim.env.GIT_RESPONSE or ""
+        if response:match("^fatal:") or response:match("^error:") then
+            return false, response
         end
+        return true, response
     end
-    
-    -- Exécution de la commande
-    local cmd = config.git.cmd .. " " .. command
-    local output = ""
-    local error_output = ""
-    local completed = false
-    local timed_out = false
-    
-    local handle = io.popen(cmd .. " 2>&1")
-    if not handle then
-        return handle_error("COMMAND_ERROR", "Failed to execute command: " .. cmd)
-    end
-    
-    local result = handle:read("*a")
-    local success = handle:close()
-    
-    if not success then
-        return {
-            success = false,
-            error_type = "COMMAND_ERROR",
-            error = result
-        }
-    end
-    
-    return {
-        success = true,
-        output = result,
-        error = ""
-    }
-end
 
--- Vérifie si un chemin est dans un dépôt git
-M.is_git_repo = function()
-    local result = M.git_command("rev-parse --is-inside-work-tree")
-    return result and result.success and result.output ~= ""
-end
+    -- Check if command is allowed
+    local cmd_name = command:match("^(%S+)")
+    if not allowed_commands[cmd_name] then
+        return false, "Command not allowed: " .. cmd_name
+    end
 
--- Vérifie si un fichier est suivi par git
-M.is_tracked = function(file)
-    if not file then
-        return handle_error("INVALID_INPUT", "File path cannot be empty")
-    end
-    
-    local result = M.git_command("ls-files --error-unmatch " .. file)
-    if not result.success then
-        return result
-    end
-    
-    return {
-        success = true,
-        tracked = true,
-        path = file
-    }
-end
+    -- Execute git command
+    local full_cmd = config.git.cmd .. " " .. command
+    local output = fn.system(full_cmd)
+    local success = fn.v:shell_error == 0
 
--- Obtient le statut d'un fichier
-M.get_file_status = function(file)
-    if not file or file == "" then
-        return handle_error("INVALID_INPUT", "File path cannot be empty")
-    end
-    
-    -- Pour les tests, simuler certains cas
-    if vim.env.GITPILOT_TEST then
-        if file == "/path/to/nonexistent/file" then
-            return {
-                success = false,
-                error_type = "FILE_ERROR",
-                message = "File does not exist"
-            }
-        end
-        
-        -- Pour un fichier temporaire créé pendant les tests
-        if os.getenv("TMPDIR") and file:match("^" .. os.getenv("TMPDIR")) then
-            return {
-                success = true,
-                status = "?? " .. file
-            }
-        end
-    end
-    
-    -- Vérifier si le fichier existe
-    if not vim.loop.fs_stat(file) then
-        return handle_error("FILE_ERROR", "File does not exist: " .. file)
-    end
-    
-    -- Obtenir le statut git du fichier
-    local result = M.git_command("status --porcelain " .. file)
-    if not result.success then
-        return result
-    end
-    
-    return {
-        success = true,
-        status = result.output
-    }
-end
-
--- Exécute une commande git et retourne le statut et l'erreur éventuelle
-M.git_command_with_error = function(command)
-    local git_cmd = config.git.cmd .. " " .. command
-    local output = vim.fn.system(git_cmd)
-    local success = vim.v.shell_error == 0
-    
     if not success then
         return false, output
     end
-    
     return true, output
 end
 
--- Vérifie si un fichier existe
-M.file_exists = function(path)
-    local stat = uv.fs_stat(path)
-    return stat and stat.type == "file"
-end
-
--- Vérifie si un répertoire existe
-M.dir_exists = function(path)
-    local stat = uv.fs_stat(path)
-    return stat and stat.type == "directory"
-end
-
--- Crée un répertoire récursivement
-M.mkdir_p = function(path)
-    local current = ""
-    for dir in path:gmatch("[^/]+") do
-        current = current .. "/" .. dir
-        if not M.dir_exists(current) then
-            uv.fs_mkdir(current, 493) -- 0755 en octal
-        end
+-- Get git version
+M.get_git_version = function()
+    local success, output = M.git_command("--version")
+    if not success then
+        return nil
     end
+    return output:match("git version ([%d%.]+)")
 end
 
--- Obtient le répertoire git racine
-M.get_git_root = function()
-    local result = M.git_command("rev-parse --show-toplevel")
-    if result.success and result.output then
-        return result.output:gsub("\n", "")
-    end
-    return nil
+-- Check if path is in a git repository
+M.is_git_repo = function()
+    local success = M.git_command("rev-parse --is-inside-work-tree")
+    return success
 end
 
--- Obtient la branche courante
+-- Get current branch
 M.get_current_branch = function()
-    local branch = M.git_command("symbolic-ref --short HEAD")
-    if branch then
-        return branch.output:gsub("\n", "")
+    local success, output = M.git_command("branch --show-current")
+    if not success then
+        return nil
     end
-    return nil
+    return output:gsub("\n", "")
 end
 
--- Vérifie si un fichier a des modifications
-M.is_modified = function(file)
-    local result = M.git_command("diff --name-only " .. file)
-    return result and result.success and result.output ~= ""
+-- Get repository root
+M.get_repo_root = function()
+    local success, output = M.git_command("rev-parse --show-toplevel")
+    if not success then
+        return nil
+    end
+    return output:gsub("\n", "")
 end
 
--- Formate une commande git
-M.format_command = function(cmd, ...)
-    local args = {...}
-    for i, arg in ipairs(args) do
-        if arg:match("%s") then
-            args[i] = string.format('"%s"', arg)
-        end
+-- Get file status
+M.get_file_status = function(file)
+    if not file or file == "" then
+        return nil, "File path cannot be empty"
     end
-    return string.format(cmd, unpack(args))
+    
+    local success, output = M.git_command("status --porcelain " .. file)
+    if not success then
+        return nil, output
+    end
+    
+    if output == "" then
+        return "unmodified"
+    end
+    
+    local status = output:sub(1, 2)
+    if status:match("M") then
+        return "modified"
+    elseif status:match("A") then
+        return "added"
+    elseif status:match("D") then
+        return "deleted"
+    elseif status:match("R") then
+        return "renamed"
+    elseif status:match("C") then
+        return "copied"
+    elseif status:match("U") then
+        return "updated"
+    elseif status:match("%?%?") then
+        return "untracked"
+    else
+        return "unknown"
+    end
 end
 
 return M
