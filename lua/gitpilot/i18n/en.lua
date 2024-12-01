@@ -65,9 +65,16 @@ return {
 
     -- Branch management
     branch = {
-        title = " Branch Management",
+        title = "🌿 Branch Management",
         current = "Current branch: %s",
         none = "No branches found",
+        create_new = "Create new branch",
+        enter_name = "New branch name:",
+        select_branch = "Select a branch:",
+        select_action = "Choose an action:",
+        checkout = "Switch to this branch",
+        merge = "Merge this branch",
+        delete = "Delete this branch",
         create = {
             title = "Create Branch",
             prompt = "New branch name:",
@@ -94,7 +101,16 @@ return {
             prompt = "Select branch to merge:",
             success = "Branch '%s' merged successfully",
             error = "Error merging branch: %s"
-        }
+        },
+        create_success = "Branch '%{name}' created successfully",
+        checkout_success = "Switched to branch '%{name}'",
+        merge_success = "Branch '%{name}' merged successfully",
+        delete_success = "Branch '%{name}' deleted successfully",
+        create_error = "Error creating branch '%{name}'",
+        checkout_error = "Error switching to branch '%{name}'",
+        merge_error = "Error merging branch '%{name}'",
+        merge_conflict = "Conflicts detected while merging '%{name}'",
+        delete_error = "Error deleting branch '%{name}'"
     },
 
     -- Remote management

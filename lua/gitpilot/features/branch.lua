@@ -1,169 +1,156 @@
+-- lua/gitpilot/features/branch.lua
+
 local M = {}
-local utils = require('gitpilot.utils')
-local ui = require('gitpilot.ui')
-local i18n = require('gitpilot.i18n')
+local config = {}
+local i18n = require("gitpilot.i18n")
 
--- Configuration par défaut
-local config = {
-    git_cmd = 'git',
-    timeout = 5000,
-    test_mode = false
-}
-
--- Configure le module
-M.setup = function(opts)
-    config = vim.tbl_deep_extend('force', config, opts or {})
-    -- Si nous sommes en mode test, on initialise l'environnement de test
-    if config.test_mode then
-        utils.setup(config)
+-- Fonction utilitaire pour exécuter des commandes git
+local function git_command(cmd, callback)
+    local handle = io.popen(cmd)
+    if handle then
+        local result = handle:read("*a")
+        handle:close()
+        if callback then
+            callback(result)
+        end
+        return result
     end
+    return nil
 end
 
--- Liste toutes les branches
-M.list_branches = function()
-    -- En mode test, on simule une liste de branches
-    if config.test_mode then
-        if vim.env.GITPILOT_TEST_NONEXISTENT == "1" then
-            return {
-                success = true,
-                output = {"main", "develop"}
-            }
+-- Obtenir la liste des branches
+function M.list_branches()
+    local branches = {}
+    local current = ""
+    
+    git_command("git branch --all", function(output)
+        for line in output:gmatch("[^\r\n]+") do
+            local branch = line:match("^%s*%*?%s*(.+)$")
+            if branch then
+                if line:match("^%s*%*") then
+                    current = branch
+                end
+                table.insert(branches, branch)
+            end
         end
-        return {
-            success = true,
-            output = {"main", "develop", "feature/test", "feature/test-switch"}
-        }
-    end
+    end)
+    
+    return branches, current
+end
 
-    local success, output = pcall(utils.git_command, 'branch')
-    if not success or not output then
-        return {
-            success = false,
-            error = i18n.t("branch.error.list"),
-            output = {}
-        }
+-- Créer une nouvelle branche
+function M.create_branch(name, start_point)
+    local cmd = string.format("git branch %s", name)
+    if start_point then
+        cmd = cmd .. " " .. start_point
     end
     
-    local branches = {}
-    for line in output:gmatch("[^\r\n]+") do
-        local branch = line:gsub("^%s*%*?%s*", "")
-        table.insert(branches, branch)
-    end
-    return {
-        success = true,
-        output = branches
-    }
-end
-
--- Crée une nouvelle branche
-M.create_branch = function(branch_name)
-    if not branch_name or branch_name == "" then
-        return {
-            success = false,
-            error = i18n.t("branch.create.invalid_name")
-        }
-    end
-
-    -- En mode test, on simule un conflit si demandé
-    if config.test_mode and vim.env.GITPILOT_TEST_CONFLICTS == "1" then
-        return {
-            success = false,
-            error = i18n.t("branch.error.already_exists")
-        }
-    end
-
-    local success, output = pcall(utils.git_command, 'branch ' .. branch_name)
-    if not success then
-        return {
-            success = false,
-            error = i18n.t("branch.create.error", { name = branch_name })
-        }
-    end
-
-    return {
-        success = true,
-        output = i18n.t("branch.create.success", { name = branch_name })
-    }
-end
-
--- Supprime une branche
-M.delete_branch = function(branch_name)
-    if not branch_name or branch_name == "" then
-        return {
-            success = false,
-            error = i18n.t("branch.delete.invalid_name")
-        }
-    end
-
-    -- Vérifie si la branche existe
-    local exists = false
-    local branches = M.list_branches().output
-    for _, branch in ipairs(branches) do
-        if branch == branch_name then
-            exists = true
-            break
+    git_command(cmd, function(output)
+        if output and output:match("error") then
+            vim.notify(i18n.t("branch.create_error", {name = name}), vim.log.levels.ERROR)
+        else
+            vim.notify(i18n.t("branch.create_success", {name = name}), vim.log.levels.INFO)
         end
-    end
-
-    if not exists then
-        return {
-            success = false,
-            error = i18n.t("branch.error.not_found", { name = branch_name })
-        }
-    end
-
-    local success, output = pcall(utils.git_command, 'branch -D ' .. branch_name)
-    if not success then
-        return {
-            success = false,
-            error = i18n.t("branch.delete.error", { name = branch_name })
-        }
-    end
-
-    return {
-        success = true,
-        output = i18n.t("branch.delete.success", { name = branch_name })
-    }
+    end)
 end
 
--- Change de branche
-M.switch_branch = function(branch_name)
-    if not branch_name or branch_name == "" then
-        return {
-            success = false,
-            error = i18n.t("branch.switch.invalid_name")
-        }
-    end
-
-    -- Vérifie si la branche existe
-    local exists = false
-    local branches = M.list_branches().output
-    for _, branch in ipairs(branches) do
-        if branch == branch_name then
-            exists = true
-            break
+-- Changer de branche
+function M.checkout_branch(name)
+    git_command(string.format("git checkout %s", name), function(output)
+        if output and output:match("error") then
+            vim.notify(i18n.t("branch.checkout_error", {name = name}), vim.log.levels.ERROR)
+        else
+            vim.notify(i18n.t("branch.checkout_success", {name = name}), vim.log.levels.INFO)
         end
-    end
+    end)
+end
 
-    if not exists then
-        return {
-            success = false,
-            error = i18n.t("branch.error.not_found", { name = branch_name })
-        }
-    end
+-- Fusionner une branche
+function M.merge_branch(name)
+    git_command(string.format("git merge %s", name), function(output)
+        if output and output:match("CONFLICT") then
+            vim.notify(i18n.t("branch.merge_conflict", {name = name}), vim.log.levels.WARN)
+        elseif output and output:match("error") then
+            vim.notify(i18n.t("branch.merge_error", {name = name}), vim.log.levels.ERROR)
+        else
+            vim.notify(i18n.t("branch.merge_success", {name = name}), vim.log.levels.INFO)
+        end
+    end)
+end
 
-    local success, output = pcall(utils.git_command, 'checkout ' .. branch_name)
-    if not success then
-        return {
-            success = false,
-            error = i18n.t("branch.switch.error", { name = branch_name })
-        }
-    end
+-- Supprimer une branche
+function M.delete_branch(name, force)
+    local flag = force and "-D" or "-d"
+    git_command(string.format("git branch %s %s", flag, name), function(output)
+        if output and output:match("error") then
+            vim.notify(i18n.t("branch.delete_error", {name = name}), vim.log.levels.ERROR)
+        else
+            vim.notify(i18n.t("branch.delete_success", {name = name}), vim.log.levels.INFO)
+        end
+    end)
+end
 
-    return {
-        success = true,
-        output = i18n.t("branch.switch.success", { name = branch_name })
+-- Interface utilisateur pour la gestion des branches
+function M.show()
+    local branches, current = M.list_branches()
+    
+    -- Créer le menu
+    local menu_items = {
+        { text = i18n.t("branch.create_new"), action = function()
+            vim.ui.input({ prompt = i18n.t("branch.enter_name") }, function(name)
+                if name then
+                    M.create_branch(name)
+                end
+            end)
+        end },
+        { text = "─────────────────────" },
     }
+    
+    -- Ajouter les branches au menu
+    for _, branch in ipairs(branches) do
+        local is_current = branch == current
+        table.insert(menu_items, {
+            text = (is_current and "* " or "  ") .. branch,
+            action = function()
+                -- Sous-menu pour chaque branche
+                local branch_menu = {
+                    { text = i18n.t("branch.checkout"), action = function()
+                        M.checkout_branch(branch)
+                    end },
+                    { text = i18n.t("branch.merge"), action = function()
+                        M.merge_branch(branch)
+                    end },
+                    { text = i18n.t("branch.delete"), action = function()
+                        M.delete_branch(branch)
+                    end },
+                }
+                -- Afficher le sous-menu
+                vim.ui.select(branch_menu, {
+                    prompt = i18n.t("branch.select_action"),
+                    format_item = function(item) return item.text end
+                }, function(choice)
+                    if choice then
+                        choice.action()
+                    end
+                end)
+            end
+        })
+    end
+    
+    -- Afficher le menu principal
+    vim.ui.select(menu_items, {
+        prompt = i18n.t("branch.select_branch"),
+        format_item = function(item) return item.text end
+    }, function(choice)
+        if choice and choice.action then
+            choice.action()
+        end
+    end)
+end
+
+-- Configuration du module
+function M.setup(opts)
+    config = opts or {}
 end
 
 return M

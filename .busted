@@ -1,12 +1,6 @@
 return {
-  _all = {
-    root = ".",
-    pattern = "_spec%.lua$",
-    helper = "test/init.lua",
-    lpath = "./lua/?.lua;./lua/?/init.lua",
-    verbose = true
-  },
-  default = {
-    helper = "test/init.lua"
-  }
+    _all = {
+        lpath = "./lua/?.lua",
+        coverage = true
+    }
 }

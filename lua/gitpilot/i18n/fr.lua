@@ -66,35 +66,26 @@ return {
     -- Gestion des branches
     branch = {
         title = "🌿 Gestion des Branches",
-        current = "Branche actuelle : %s",
-        none = "Aucune branche trouvée",
-        create = {
-            title = "Créer une branche",
-            prompt = "Nom de la nouvelle branche :",
-            success = "Branche '%s' créée avec succès",
-            error = "Erreur lors de la création de la branche : %s",
-            exists = "La branche '%s' existe déjà"
-        },
-        delete = {
-            title = "Supprimer une branche",
-            prompt = "Sélectionnez la branche à supprimer :",
-            confirm = "Supprimer la branche '%s' ? Cette action est irréversible !",
-            success = "Branche '%s' supprimée avec succès",
-            error = "Erreur lors de la suppression de la branche : %s",
-            current = "Impossible de supprimer la branche courante"
-        },
-        switch = {
-            title = "Changer de branche",
-            prompt = "Sélectionnez la branche :",
-            success = "Changement vers la branche '%s' effectué",
-            error = "Erreur lors du changement de branche : %s"
-        },
-        merge = {
-            title = "Fusionner une branche",
-            prompt = "Sélectionnez la branche à fusionner :",
-            success = "Fusion de la branche '%s' effectuée",
-            error = "Erreur lors de la fusion : %s"
-        }
+        create_new = "Créer une nouvelle branche",
+        enter_name = "Nom de la nouvelle branche :",
+        select_branch = "Sélectionnez une branche :",
+        select_action = "Choisissez une action :",
+        checkout = "Basculer vers cette branche",
+        merge = "Fusionner cette branche",
+        delete = "Supprimer cette branche",
+        
+        -- Messages de succès
+        create_success = "Branche '%{name}' créée avec succès",
+        checkout_success = "Basculé vers la branche '%{name}'",
+        merge_success = "Branche '%{name}' fusionnée avec succès",
+        delete_success = "Branche '%{name}' supprimée avec succès",
+        
+        -- Messages d'erreur
+        create_error = "Erreur lors de la création de la branche '%{name}'",
+        checkout_error = "Erreur lors du basculement vers la branche '%{name}'",
+        merge_error = "Erreur lors de la fusion de la branche '%{name}'",
+        merge_conflict = "Conflits détectés lors de la fusion de '%{name}'",
+        delete_error = "Erreur lors de la suppression de la branche '%{name}'"
     },
 
     -- Gestion des remotes
