@@ -1,28 +1,35 @@
 local M = {}
-local utils = require('gitpilot.utils')
-local ui = require('gitpilot.ui')
-local i18n = require('gitpilot.i18n')
 
 -- Configuration par défaut
 local config = {
-    git_cmd = 'git',
-    timeout = 5000,
-    test_mode = false
+    git = {
+        cmd = 'git',
+        timeout = 5000,
+        test_mode = false
+    }
 }
+
+-- Modules requis
+local function get_deps()
+    return {
+        utils = require('gitpilot.utils'),
+        ui = require('gitpilot.ui'),
+        i18n = require('gitpilot.i18n')
+    }
+end
 
 -- Configure le module
 M.setup = function(opts)
-    config = vim.tbl_deep_extend('force', config, opts or {})
-    -- Si nous sommes en mode test, on initialise l'environnement de test
-    if config.test_mode then
-        utils.setup(config)
+    if opts then
+        config = vim.tbl_deep_extend('force', config, opts or {})
     end
 end
 
 -- Liste toutes les branches
 M.list_branches = function()
+    local deps = get_deps()
     -- En mode test, on simule une liste de branches
-    if config.test_mode then
+    if config.git.test_mode then
         if vim.env.GITPILOT_TEST_NONEXISTENT == "1" then
             return {
                 success = true,
@@ -35,11 +42,11 @@ M.list_branches = function()
         }
     end
 
-    local success, output = pcall(utils.git_command, 'branch')
+    local success, output = pcall(deps.utils.git_command, 'branch')
     if not success or not output then
         return {
             success = false,
-            error = i18n.t("branch.error.list"),
+            error = deps.i18n.t("branch.error.list"),
             output = {}
         }
     end
@@ -55,43 +62,45 @@ M.list_branches = function()
     }
 end
 
--- Crée une nouvelle branche
+-- Créer une nouvelle branche
 M.create_branch = function(branch_name)
+    local deps = get_deps()
     if not branch_name or branch_name == "" then
         return {
             success = false,
-            error = i18n.t("branch.create.invalid_name")
+            error = deps.i18n.t("branch.create.invalid_name")
         }
     end
 
     -- En mode test, on simule un conflit si demandé
-    if config.test_mode and vim.env.GITPILOT_TEST_CONFLICTS == "1" then
+    if config.git.test_mode and vim.env.GITPILOT_TEST_CONFLICTS == "1" then
         return {
             success = false,
-            error = i18n.t("branch.error.already_exists")
+            error = deps.i18n.t("branch.error.already_exists")
         }
     end
 
-    local success, output = pcall(utils.git_command, 'branch ' .. branch_name)
+    local success, output = pcall(deps.utils.git_command, 'branch ' .. branch_name)
     if not success then
         return {
             success = false,
-            error = i18n.t("branch.create.error", { name = branch_name })
+            error = deps.i18n.t("branch.create.error", { name = branch_name })
         }
     end
 
     return {
         success = true,
-        output = i18n.t("branch.create.success", { name = branch_name })
+        output = deps.i18n.t("branch.create.success", { name = branch_name })
     }
 end
 
 -- Supprime une branche
 M.delete_branch = function(branch_name)
+    local deps = get_deps()
     if not branch_name or branch_name == "" then
         return {
             success = false,
-            error = i18n.t("branch.delete.invalid_name")
+            error = deps.i18n.t("branch.delete.invalid_name")
         }
     end
 
@@ -108,30 +117,31 @@ M.delete_branch = function(branch_name)
     if not exists then
         return {
             success = false,
-            error = i18n.t("branch.error.not_found", { name = branch_name })
+            error = deps.i18n.t("branch.error.not_found", { name = branch_name })
         }
     end
 
-    local success, output = pcall(utils.git_command, 'branch -D ' .. branch_name)
+    local success, output = pcall(deps.utils.git_command, 'branch -D ' .. branch_name)
     if not success then
         return {
             success = false,
-            error = i18n.t("branch.delete.error", { name = branch_name })
+            error = deps.i18n.t("branch.delete.error", { name = branch_name })
         }
     end
 
     return {
         success = true,
-        output = i18n.t("branch.delete.success", { name = branch_name })
+        output = deps.i18n.t("branch.delete.success", { name = branch_name })
     }
 end
 
 -- Change de branche
 M.switch_branch = function(branch_name)
+    local deps = get_deps()
     if not branch_name or branch_name == "" then
         return {
             success = false,
-            error = i18n.t("branch.switch.invalid_name")
+            error = deps.i18n.t("branch.switch.invalid_name")
         }
     end
 
@@ -148,21 +158,21 @@ M.switch_branch = function(branch_name)
     if not exists then
         return {
             success = false,
-            error = i18n.t("branch.error.not_found", { name = branch_name })
+            error = deps.i18n.t("branch.error.not_found", { name = branch_name })
         }
     end
 
-    local success, output = pcall(utils.git_command, 'checkout ' .. branch_name)
+    local success, output = pcall(deps.utils.git_command, 'checkout ' .. branch_name)
     if not success then
         return {
             success = false,
-            error = i18n.t("branch.switch.error", { name = branch_name })
+            error = deps.i18n.t("branch.switch.error", { name = branch_name })
         }
     end
 
     return {
         success = true,
-        output = i18n.t("branch.switch.success", { name = branch_name })
+        output = deps.i18n.t("branch.switch.success", { name = branch_name })
     }
 end
 
