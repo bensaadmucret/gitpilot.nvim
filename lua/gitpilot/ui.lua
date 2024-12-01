@@ -5,109 +5,199 @@ local config = {
             width = 60,
             height = 20,
             border = 'rounded'
-        }
+        },
+        test_mode = false
     }
 }
 local i18n = require('gitpilot.i18n')
 
 M.setup = function(opts)
     if opts then
-        if opts.ui then
-            if opts.ui.window then
-                config.ui.window.width = opts.ui.window.width or config.ui.window.width
-                config.ui.window.height = opts.ui.window.height or config.ui.window.height
-                config.ui.window.border = opts.ui.window.border or config.ui.window.border
-            end
-        end
+        config = vim.tbl_deep_extend('force', config, opts or {})
     end
 end
 
 -- Fonction de notification
-M.notify = function(msg, level)
+M.notify = function(msg, level, opts)
     level = level or "info"
+    opts = opts or {}
+
     -- Map string levels to vim.log.levels
     local level_map = {
         ["error"] = vim.log.levels.ERROR,
         ["warn"] = vim.log.levels.WARN,
         ["info"] = vim.log.levels.INFO,
+        ["debug"] = vim.log.levels.DEBUG,
+        ["trace"] = vim.log.levels.TRACE
     }
 
-    -- Store the original string level for testing
+    -- Store notification for testing
     M.last_notification = {
         message = msg,
-        level = type(level) == "string" and level or "info"
+        level = level,
+        opts = opts
     }
+
+    -- In test mode, only store notification
+    if config.test_mode then
+        return
+    end
 
     -- Convert level to numeric if it's a string
     local numeric_level = type(level) == "string" and level_map[level] or level
-    
-    vim.notify(msg, numeric_level, {
+
+    -- Add default options
+    opts = vim.tbl_extend('keep', opts, {
         title = "GitPilot",
         icon = "🚀"
     })
+
+    vim.notify(msg, numeric_level, opts)
 end
 
--- Création d'une fenêtre flottante
-M.create_floating_window = function(title, lines, opts)
+-- Input dialog with test mode support
+M.input = function(opts, callback)
     opts = opts or {}
+    
+    -- In test mode, use environment variables
+    if config.test_mode then
+        local response = vim.env.UI_INPUT_RESPONSE or ""
+        if callback then
+            callback(response)
+        end
+        return response
+    end
+
+    -- Add default options
+    opts = vim.tbl_extend('keep', opts, {
+        prompt = "Input: ",
+        default = "",
+        completion = "file"
+    })
+
+    return vim.ui.input(opts, callback)
+end
+
+-- Select dialog with test mode support
+M.select = function(items, opts, callback)
+    opts = opts or {}
+    
+    -- In test mode, use environment variables
+    if config.test_mode then
+        local index = tonumber(vim.env.UI_SELECT_INDEX) or 1
+        local selected = items[index]
+        if callback then
+            callback(selected, index)
+        end
+        return selected, index
+    end
+
+    -- Add default options
+    opts = vim.tbl_extend('keep', opts, {
+        prompt = "Select: ",
+        format_item = function(item)
+            return tostring(item)
+        end
+    })
+
+    return vim.ui.select(items, opts, callback)
+end
+
+-- Create floating window
+M.create_floating_window = function(title, content, opts)
+    opts = opts or {}
+    
+    -- In test mode, just store window content
+    if config.test_mode then
+        M.last_window = {
+            title = title,
+            content = content,
+            opts = opts
+        }
+        return 0, 0
+    end
+
+    -- Calculate window size
     local width = opts.width or config.ui.window.width
     local height = opts.height or config.ui.window.height
-    local border = opts.border or config.ui.window.border
 
-    -- For testing purposes, return window configuration instead of creating real window
-    if vim.env.GITPILOT_TEST then
-        return {
-            title = title,
-            lines = lines,
-            width = width,
-            height = height,
-            border = border
-        }
+    -- Create buffer
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+
+    -- Set content
+    if type(content) == "string" then
+        content = vim.split(content, "\n")
     end
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
 
-    local row = math.floor((vim.o.lines - height) / 2)
-    local col = math.floor((vim.o.columns - width) / 2)
-    
+    -- Calculate position
+    local ui = vim.api.nvim_list_uis()[1]
     local win_opts = {
         relative = 'editor',
-        row = row,
-        col = col,
         width = width,
         height = height,
+        col = (ui.width - width) / 2,
+        row = (ui.height - height) / 2,
         style = 'minimal',
-        border = border
+        border = config.ui.window.border
     }
-    
-    local buf = vim.api.nvim_create_buf(false, true)
+
+    -- Create window
     local win = vim.api.nvim_open_win(buf, true, win_opts)
-    
-    -- Configuration de la fenêtre
-    vim.api.nvim_win_set_option(win, 'winhl', 'Normal:GitSimpleNormal,FloatBorder:GitSimpleBorder')
-    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
-    vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
-    
-    -- Ajout du titre et des lignes
-    local content = {}
+
+    -- Set window options
+    vim.api.nvim_win_set_option(win, 'wrap', false)
+    vim.api.nvim_win_set_option(win, 'cursorline', true)
+
+    -- Set buffer options
+    vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+    vim.api.nvim_buf_set_option(buf, 'filetype', 'gitpilot')
+
+    -- Set title
     if title then
-        table.insert(content, title)
-        table.insert(content, string.rep('-', width - 2))
+        vim.api.nvim_buf_set_name(buf, title)
     end
-    
-    if lines then
-        for _, line in ipairs(lines) do
-            table.insert(content, line)
-        end
-    end
-    
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
-    
+
     return buf, win
+end
+
+-- Fonction de confirmation
+M.confirm = function(message, callback)
+    if not config.ui.confirm_actions then
+        callback(true)
+        return
+    end
+
+    local buf, win = M.create_floating_window(i18n.t("confirm"), {
+        message,
+        "",
+        i18n.t("confirm.yes") .. " (y)",
+        i18n.t("confirm.no") .. " (n)"
+    })
+
+    local opts = {buffer = buf, noremap = true, silent = true}
+    
+    vim.keymap.set('n', 'y', function()
+        vim.api.nvim_win_close(win, true)
+        callback(true)
+    end, opts)
+    
+    vim.keymap.set('n', 'n', function()
+        vim.api.nvim_win_close(win, true)
+        callback(false)
+    end, opts)
+    
+    vim.keymap.set('n', '<Esc>', function()
+        vim.api.nvim_win_close(win, true)
+        callback(false)
+    end, opts)
 end
 
 -- Show menu in floating window
 M.show_menu = function(title, items)
     -- For testing purposes, return menu configuration instead of creating real menu
-    if vim.env.GITPILOT_TEST then
+    if config.test_mode then
         return {
             title = title,
             items = items
@@ -291,61 +381,6 @@ M.show_stash_menu = function()
             end
         }
     })
-end
-
--- Fonction de confirmation
-M.confirm = function(message, callback)
-    if not config.ui.confirm_actions then
-        callback(true)
-        return
-    end
-
-    local buf, win = M.create_floating_window(i18n.t("confirm"), {
-        message,
-        "",
-        i18n.t("confirm.yes") .. " (y)",
-        i18n.t("confirm.no") .. " (n)"
-    })
-
-    local opts = {buffer = buf, noremap = true, silent = true}
-    
-    vim.keymap.set('n', 'y', function()
-        vim.api.nvim_win_close(win, true)
-        callback(true)
-    end, opts)
-    
-    vim.keymap.set('n', 'n', function()
-        vim.api.nvim_win_close(win, true)
-        callback(false)
-    end, opts)
-    
-    vim.keymap.set('n', '<Esc>', function()
-        vim.api.nvim_win_close(win, true)
-        callback(false)
-    end, opts)
-end
-
--- Fonction d'input
-M.input = function(prompt, callback)
-    local buf, win = M.create_floating_window(prompt)
-    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
-    
-    -- Activer le mode insertion
-    vim.cmd('startinsert')
-    
-    local opts = {buffer = buf, noremap = true, silent = true}
-    
-    vim.keymap.set('i', '<CR>', function()
-        local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-        local input = table.concat(lines, '\n')
-        vim.api.nvim_win_close(win, true)
-        callback(input)
-    end, opts)
-    
-    vim.keymap.set('i', '<Esc>', function()
-        vim.api.nvim_win_close(win, true)
-        callback(nil)
-    end, opts)
 end
 
 return M

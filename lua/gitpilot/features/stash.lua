@@ -1,6 +1,22 @@
 local M = {}
 local utils = require('gitpilot.utils')
 
+-- Configuration par défaut
+local config = {
+    git_cmd = 'git',
+    timeout = 5000,
+    test_mode = false
+}
+
+-- Configure le module
+M.setup = function(opts)
+    config = vim.tbl_deep_extend('force', config, opts or {})
+    -- Si nous sommes en mode test, on initialise l'environnement de test
+    if config.test_mode then
+        utils.setup(config)
+    end
+end
+
 ---Liste tous les stashs disponibles
 ---@return table Liste des stashs avec {ref, hash, message}
 M.list_stash = function()

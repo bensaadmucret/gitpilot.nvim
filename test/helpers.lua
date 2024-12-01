@@ -1,250 +1,119 @@
--- Mock de l'API Neovim pour les tests
 local M = {}
 
--- Table pour stocker les mocks
-local mocks = {
-    api = {},
-    fn = {},
-    cmd = {},
-    g = {},
-    env = {},
-    o = {},
-    log = {},
-    levels = {},
-    notify = {},
-    schedule = {}
+-- Mock modules
+local mock = {
+    notifications = {},
+    ui_inputs = {},
+    ui_selects = {},
+    git_responses = {},
+    windows = {}
 }
 
--- Mock de base de l'API Neovim
-local api = {
-    nvim_create_buf = function(listed, scratch)
-        return 1
-    end,
-    nvim_buf_set_lines = function(bufnr, start, end_, strict, lines)
-        return true
-    end,
-    nvim_win_get_cursor = function(win)
-        return {1, 0}
-    end,
-    nvim_win_set_cursor = function(win, pos)
-        return true
-    end,
-    nvim_buf_get_lines = function(bufnr, start, end_, strict)
-        return {}
-    end,
-    nvim_command = function(cmd)
-        return true
-    end,
-    nvim_get_current_buf = function()
-        return 1
-    end,
-    nvim_get_current_win = function()
-        return 1
-    end,
-    nvim_win_get_buf = function(win)
-        return 1
-    end,
-    nvim_buf_get_name = function(bufnr)
-        return ""
-    end,
-    nvim_create_namespace = function(name)
-        return 1
-    end,
-    nvim_buf_set_extmark = function(bufnr, ns_id, line, col, opts)
-        return 1
-    end,
-    nvim_echo = function(chunks, history, opts)
-        return true
-    end,
-    nvim_err_writeln = function(msg)
-        return true
-    end,
-    nvim_open_win = function(buf, enter, config)
-        return 1
-    end,
-    nvim_win_set_config = function(win, config)
-        return true
-    end,
-    nvim_win_close = function(win, force)
-        return true
-    end,
-    nvim_buf_set_option = function(buf, name, value)
-        return true
-    end,
-    nvim_win_set_option = function(win, name, value)
-        return true
-    end,
-    nvim_create_augroup = function(name, opts)
-        return 1
-    end,
-    nvim_create_autocmd = function(events, opts)
-        return 1
-    end,
-    nvim_win_get_height = function(win)
-        return 24
-    end,
-    nvim_win_get_width = function(win)
-        return 80
-    end
-}
+-- Setup test environment
+M.setup = function()
+    -- Set test mode
+    vim.env.GITPILOT_TEST = "1"
+    
+    -- Configure UI module for testing
+    local ui = require('gitpilot.ui')
+    ui.setup({ ui = { test_mode = true } })
 
--- Mock des fonctions Vim
-local fn = {
-    bufwinnr = function(buf)
-        return 1
-    end,
-    expand = function(expr)
-        return ""
-    end,
-    fnamemodify = function(fname, mods)
-        return fname
-    end,
-    getcwd = function()
-        return "/test/path"
-    end,
-    systemlist = function(cmd)
-        return {}
-    end,
-    system = function(cmd)
-        return ""
-    end
-}
+    -- Configure i18n module for testing
+    local i18n = require('gitpilot.i18n')
+    i18n.setup({ test_mode = true })
 
--- Mock des options Vim
-local o = {
-    columns = 80,
-    lines = 24,
-    cmdheight = 1
-}
-
--- Mock du système de log
-local log = {
-    info = function(msg) end,
-    warn = function(msg) end,
-    error = function(msg) end,
-    debug = function(msg) end,
-    levels = {
-        DEBUG = 0,
-        INFO = 1,
-        WARN = 2,
-        ERROR = 3
-    }
-}
-
--- Mock de la fonction notify
-local notify = function(msg, level, opts)
-    return 1
+    -- Reset mocks
+    mock.notifications = {}
+    mock.ui_inputs = {}
+    mock.ui_selects = {}
+    mock.git_responses = {}
+    mock.windows = {}
 end
 
--- Mock de la fonction schedule
-local schedule = function(fn)
-    fn()
+-- Reset test environment
+M.teardown = function()
+    vim.env.GITPILOT_TEST = nil
+    vim.env.UI_INPUT_RESPONSE = nil
+    vim.env.UI_SELECT_INDEX = nil
+    vim.env.GIT_RESPONSE = nil
 end
 
--- Utilitaires pour la manipulation des tables
-local function tbl_extend(behavior, ...)
-    local result = {}
-    for i = 1, select('#', ...) do
-        local t = select(i, ...)
-        for k, v in pairs(t) do
-            result[k] = v
+-- Mock UI input response
+M.mock_input = function(response)
+    vim.env.UI_INPUT_RESPONSE = response
+end
+
+-- Mock UI select response
+M.mock_select = function(index)
+    vim.env.UI_SELECT_INDEX = tostring(index)
+end
+
+-- Mock git command response
+M.mock_git = function(response)
+    vim.env.GIT_RESPONSE = response
+end
+
+-- Get last notification
+M.get_last_notification = function()
+    local ui = require('gitpilot.ui')
+    return ui.last_notification
+end
+
+-- Get last window
+M.get_last_window = function()
+    local ui = require('gitpilot.ui')
+    return ui.last_window
+end
+
+-- Assert notification was sent
+M.assert_notification = function(expected_msg, expected_level)
+    local notification = M.get_last_notification()
+    assert(notification, "No notification was sent")
+    assert(notification.message == expected_msg, 
+        string.format("Expected notification message '%s', got '%s'", 
+            expected_msg, notification.message))
+    if expected_level then
+        assert(notification.level == expected_level,
+            string.format("Expected notification level '%s', got '%s'",
+                expected_level, notification.level))
+    end
+end
+
+-- Assert window was created
+M.assert_window = function(expected_title, expected_content)
+    local window = M.get_last_window()
+    assert(window, "No window was created")
+    if expected_title then
+        assert(window.title == expected_title,
+            string.format("Expected window title '%s', got '%s'",
+                expected_title, window.title))
+    end
+    if expected_content then
+        if type(expected_content) == "string" then
+            expected_content = vim.split(expected_content, "\n")
         end
+        assert(vim.deep_equal(window.content, expected_content),
+            string.format("Expected window content '%s', got '%s'",
+                vim.inspect(expected_content), vim.inspect(window.content)))
     end
-    return result
 end
 
-local function tbl_deep_extend(behavior, ...)
-    local result = {}
-    for i = 1, select('#', ...) do
-        local t = select(i, ...)
-        if type(t) == 'table' then
-            for k, v in pairs(t) do
-                if type(v) == 'table' and type(result[k]) == 'table' then
-                    result[k] = tbl_deep_extend(behavior, result[k], v)
-                else
-                    result[k] = v
-                end
-            end
-        end
-    end
-    return result
+-- Create temporary directory
+M.create_temp_dir = function()
+    local handle = io.popen("mktemp -d")
+    local temp_dir = handle:read("*a"):gsub("\n", "")
+    handle:close()
+    return temp_dir
 end
 
--- Configuration initiale de l'environnement de test
-function M.setup()
-    -- Initialise _G.vim s'il n'existe pas
-    if not _G.vim then
-        _G.vim = {}
-    end
-
-    -- Mock des fonctions de base
-    _G.vim.tbl_extend = tbl_extend
-    _G.vim.tbl_deep_extend = tbl_deep_extend
-    _G.vim.split = function(s, sep, opts)
-        local result = {}
-        local pattern = string.format("[^%s]+", sep)
-        for word in string.gmatch(s, pattern) do
-            table.insert(result, word)
-        end
-        return result
-    end
-    _G.vim.stdpath = function(what)
-        return "/test/path/" .. what
-    end
-    _G.vim.notify = notify
-    _G.vim.schedule = schedule
-
-    -- Mock des composants principaux
-    _G.vim.api = tbl_extend("force", api, mocks.api)
-    _G.vim.fn = tbl_extend("force", fn, mocks.fn)
-    _G.vim.cmd = function(cmd) return true end
-    _G.vim.g = mocks.g
-    _G.vim.env = mocks.env
-    _G.vim.o = tbl_extend("force", o, mocks.o)
-    _G.vim.log = tbl_extend("force", log, mocks.log)
-    _G.vim.levels = log.levels
+-- Remove temporary directory
+M.remove_temp_dir = function(dir)
+    os.execute("rm -rf " .. dir)
 end
 
--- Réinitialise tous les mocks
-function M.reset()
-    mocks.api = {}
-    mocks.fn = {}
-    mocks.cmd = {}
-    mocks.g = {}
-    mocks.env = {}
-    mocks.o = {}
-    mocks.log = {}
-    mocks.levels = {}
-    mocks.notify = {}
-    mocks.schedule = {}
-    M.setup()
+-- Initialize git repository
+M.init_git_repo = function(dir)
+    os.execute(string.format("cd %s && git init", dir))
 end
-
--- Configure un mock spécifique
-function M.mock(category, name, implementation)
-    if category == "api" then
-        mocks.api[name] = implementation
-    elseif category == "fn" then
-        mocks.fn[name] = implementation
-    elseif category == "cmd" then
-        mocks.cmd[name] = implementation
-    elseif category == "g" then
-        mocks.g[name] = implementation
-    elseif category == "env" then
-        mocks.env[name] = implementation
-    elseif category == "o" then
-        mocks.o[name] = implementation
-    elseif category == "log" then
-        mocks.log[name] = implementation
-    elseif category == "notify" then
-        mocks.notify[name] = implementation
-    elseif category == "schedule" then
-        mocks.schedule[name] = implementation
-    end
-    M.setup()
-end
-
--- Initialise l'environnement de test
-M.setup()
 
 return M
