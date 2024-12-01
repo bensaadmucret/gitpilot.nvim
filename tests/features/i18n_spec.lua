@@ -91,8 +91,14 @@ describe("I18n Module", function()
     describe("language management", function()
         it("should list available languages", function()
             local langs = i18n.get_available_languages()
-            assert.contains(langs, "en")
-            assert.contains(langs, "fr")
+            local has_en = false
+            local has_fr = false
+            for _, lang in ipairs(langs) do
+                if lang == "en" then has_en = true end
+                if lang == "fr" then has_fr = true end
+            end
+            assert.is_true(has_en, "English language should be available")
+            assert.is_true(has_fr, "French language should be available")
         end)
         
         it("should change language successfully", function()
