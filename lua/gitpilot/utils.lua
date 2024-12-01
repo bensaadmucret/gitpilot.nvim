@@ -29,6 +29,7 @@ local allowed_commands = {
     ["log"] = true,
     ["diff"] = true,
     ["reset"] = true,
+    ["rev-parse"] = true,
     ["--version"] = true
 }
 
@@ -57,6 +58,10 @@ M.git_command = function(command)
 
     -- Check if command is allowed
     local cmd_name = command:match("^(%S+)")
+    if not cmd_name then
+        return false, "Invalid command format"
+    end
+
     if not allowed_commands[cmd_name] then
         return false, "Command not allowed: " .. cmd_name
     end
@@ -64,7 +69,8 @@ M.git_command = function(command)
     -- Execute git command
     local full_cmd = config.git.cmd .. " " .. command
     local output = fn.system(full_cmd)
-    local success = fn.v:shell_error == 0
+    local shell_error = fn.v:shell_error
+    local success = shell_error == 0
 
     if not success then
         return false, output
@@ -78,7 +84,11 @@ M.get_git_version = function()
     if not success then
         return nil, output
     end
-    return output:match("git version ([%d%.]+)")
+    local version = output:match("git version ([%d%.]+)")
+    if not version then
+        return nil, "Could not parse git version"
+    end
+    return version
 end
 
 -- Check if path is git repository
@@ -104,7 +114,7 @@ M.get_branches = function()
     end
     
     local branches = {}
-    for branch in output:gmatch("[%s*]([^%s]+)") do
+    for branch in output:gmatch("[%s*]+([^%s]+)") do
         table.insert(branches, branch)
     end
     return branches
@@ -118,7 +128,7 @@ M.get_remotes = function()
     end
     
     local remotes = {}
-    for remote in output:gmatch("([^%s]+)") do
+    for remote in output:gmatch("[^%s]+") do
         table.insert(remotes, remote)
     end
     return remotes
