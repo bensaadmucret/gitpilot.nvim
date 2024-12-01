@@ -1,28 +1,60 @@
+-- Mock des fonctions Neovim
+local mock = {
+    fn = {
+        system = function(cmd) return "mock output" end,
+        getcwd = function() return "/mock/path" end
+    },
+    v = { shell_error = 0 },
+    api = {
+        nvim_err_writeln = function(msg) end,
+        nvim_command = function(cmd) end,
+        nvim_echo = function(chunks, history, opts) end
+    },
+    notify = function(msg, level, opts) end,
+    tbl_deep_extend = function(mode, t1, t2)
+        local result = {}
+        for k, v in pairs(t1) do result[k] = v end
+        for k, v in pairs(t2) do result[k] = v end
+        return result
+    end,
+    loop = {
+        fs_stat = function(path) return { type = "directory" } end
+    },
+    log = {
+        levels = {
+            ERROR = 1,
+            WARN = 2,
+            INFO = 3,
+            DEBUG = 4
+        }
+    }
+}
+
+-- Initialiser le mock vim avant de charger les modules
+_G.vim = mock
+
 describe("Branch Module", function()
     local branch = require("gitpilot.features.branch")
     local utils = require("gitpilot.utils")
     local i18n = require("gitpilot.i18n")
     
-    -- Mock des fonctions
-    local mock = {
-        notify = function(msg, level) end
-    }
-    
+    -- Sauvegarde des fonctions originales
     local original = {
-        execute_command = utils.execute_command,
-        notify = vim.notify
+        vim = mock,
+        execute_command = utils.execute_command
     }
     
     before_each(function()
+        _G.vim = mock
         utils.execute_command = function(cmd)
             return "mock output"
         end
-        vim.notify = mock.notify
     end)
     
     after_each(function()
+        _G.vim = original.vim
         utils.execute_command = original.execute_command
-        vim.notify = original.notify
+        mock.v.shell_error = 0
     end)
     
     describe("list_branches", function()

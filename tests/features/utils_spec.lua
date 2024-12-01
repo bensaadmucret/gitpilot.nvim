@@ -1,23 +1,44 @@
+-- Mock des fonctions Neovim
+local mock = {
+    fn = {
+        system = function(cmd) return "mock output" end,
+        getcwd = function() return "/mock/path" end
+    },
+    v = { shell_error = 0 },
+    api = {
+        nvim_err_writeln = function(msg) end,
+        nvim_command = function(cmd) end,
+        nvim_echo = function(chunks, history, opts) end
+    },
+    notify = function(msg, level, opts) end,
+    tbl_deep_extend = function(mode, t1, t2)
+        local result = {}
+        for k, v in pairs(t1) do result[k] = v end
+        for k, v in pairs(t2) do result[k] = v end
+        return result
+    end,
+    loop = {
+        fs_stat = function(path) return { type = "directory" } end
+    },
+    log = {
+        levels = {
+            ERROR = 1,
+            WARN = 2,
+            INFO = 3,
+            DEBUG = 4
+        }
+    }
+}
+
+-- Initialiser le mock vim avant de charger les modules
+_G.vim = mock
+
 describe("Utils Module", function()
     local utils = require("gitpilot.utils")
     
-    -- Mock des fonctions Neovim
-    local mock = {
-        fn = {
-            system = function(cmd) return "mock output" end
-        },
-        v = { shell_error = 0 },
-        api = {
-            nvim_err_writeln = function(msg) end
-        },
-        tbl_deep_extend = function(mode, t1, t2)
-            return vim.tbl_deep_extend(mode, t1, t2)
-        end
-    }
-    
     -- Sauvegarde des fonctions originales
     local original = {
-        vim = _G.vim,
+        vim = mock,
         popen = io.popen
     }
     
