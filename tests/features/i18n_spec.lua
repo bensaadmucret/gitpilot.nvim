@@ -25,11 +25,20 @@ local mock = {
 _G.vim = mock
 
 describe("I18n Module", function()
-    local i18n = require("gitpilot.i18n")
-    
+    local i18n
+    local original_getenv
+
     before_each(function()
-        -- Reset to default language
-        i18n.set_language("en")
+        -- Sauvegarder l'original os.getenv
+        original_getenv = os.getenv
+        -- Reset le module pour chaque test
+        package.loaded["gitpilot.i18n"] = nil
+        i18n = require("gitpilot.i18n")
+    end)
+
+    after_each(function()
+        -- Restaurer l'original os.getenv
+        os.getenv = original_getenv
     end)
     
     describe("setup", function()
@@ -52,6 +61,16 @@ describe("I18n Module", function()
         it("should use English as default when no system language", function()
             os.getenv = function(var) return nil end
             i18n.setup({})
+            assert.equals("en", i18n.get_language())
+        end)
+
+        it("should handle empty options", function()
+            i18n.setup({})
+            assert.equals("en", i18n.get_language())
+        end)
+
+        it("should handle nil options", function()
+            i18n.setup(nil)
             assert.equals("en", i18n.get_language())
         end)
     end)
@@ -86,6 +105,24 @@ describe("I18n Module", function()
             local result = i18n.t("branch.success.created", nil)
             assert.matches("%%{name}", result)
         end)
+
+        it("should handle multiple nested keys", function()
+            local result = i18n.t("branch.error.not_found")
+            assert.is_not.equals("branch.error.not_found", result)
+        end)
+
+        it("should fallback to English for missing translations in current language", function()
+            i18n.set_language("fr")
+            -- Utiliser une clé qui existe en anglais mais pas en français
+            local result = i18n.t("some.english.only.key")
+            assert.equals("some.english.only.key", result)
+        end)
+
+        it("should handle multiple variable substitutions", function()
+            local result = i18n.t("branch.success.merged", { source = "feature", target = "main" })
+            assert.not_matches("%%{source}", result)
+            assert.not_matches("%%{target}", result)
+        end)
     end)
     
     describe("language management", function()
@@ -109,6 +146,17 @@ describe("I18n Module", function()
         it("should fail to change to unsupported language", function()
             assert.is_false(i18n.set_language("es"))
             assert.equals("en", i18n.get_language())
+        end)
+
+        it("should handle nil language in set_language", function()
+            assert.is_false(i18n.set_language(nil))
+            assert.equals("en", i18n.get_language())
+        end)
+
+        it("should maintain current language when change fails", function()
+            i18n.set_language("fr")
+            assert.is_false(i18n.set_language("invalid"))
+            assert.equals("fr", i18n.get_language())
         end)
     end)
 end)
