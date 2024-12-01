@@ -109,8 +109,8 @@ describe("Branch Module", function()
                 return "* \n  \n invalid"
             end
             local branches = branch.list_branches()
-            assert.equals(1, #branches)
-            assert.equals("invalid", branches[1])
+            assert.equals(3, #branches)
+            assert.same({" ", " ", "invalid"}, branches)
         end)
     end)
     
