@@ -24,34 +24,33 @@ local default_config = {
 M.config = {}
 
 -- Fonction d'initialisation du plugin
-M.setup = function(opts)
+function M.setup(opts)
     -- Fusion des options utilisateur avec les valeurs par défaut
     M.config = vim.tbl_deep_extend("force", default_config, opts or {})
     
     -- Initialisation des modules de base
-    require('gitpilot.utils').setup(M.config)
-    require('gitpilot.i18n').setup(M.config)
-    require('gitpilot.ui').setup(M.config)
+    local ok, err = pcall(function()
+        -- Chargement des modules de base
+        local utils = require('gitpilot.utils')
+        local i18n = require('gitpilot.i18n')
+        local ui = require('gitpilot.ui')
+        local commands = require('gitpilot.commands')
+        
+        -- Configuration des modules de base
+        utils.setup(M.config)
+        i18n.setup(M.config)
+        ui.setup(M.config)
+        commands.setup(M.config)
+        
+        -- Création des commandes utilisateur
+        vim.api.nvim_create_user_command('GitPilot', function()
+            ui.show_main_menu()
+        end, {})
+    end)
     
-    -- Initialisation des commandes
-    require('gitpilot.commands').setup(M.config)
-    
-    -- Initialisation des fonctionnalités
-    local features = {
-        'branch',
-        'commit',
-        'remote',
-        'tags',
-        'stash',
-        'search',
-        'rebase'
-    }
-    
-    for _, feature in ipairs(features) do
-        local ok, module = pcall(require, 'gitpilot.features.' .. feature)
-        if ok and module then
-            module.setup(M.config)
-        end
+    if not ok then
+        vim.notify('GitPilot: Error during initialization - ' .. tostring(err), vim.log.levels.ERROR)
+        return
     end
 end
 
