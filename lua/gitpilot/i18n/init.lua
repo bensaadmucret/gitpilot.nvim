@@ -18,12 +18,7 @@ M.setup = function(opts)
                 string.format("Language '%s' not supported, falling back to English", opts.language),
                 vim.log.levels.WARN
             )
-        end
-    else
-        -- Try to detect system language
-        local sys_lang = os.getenv("LANG") or ""
-        if sys_lang:match("^fr") then
-            current_lang = "fr"
+            current_lang = 'en'  -- Always fallback to English
         end
     end
 end
@@ -91,7 +86,7 @@ M.t = function(key, vars)
     -- Handle variable substitution
     if vars then
         str = str:gsub("%%{([^}]+)}", function(var)
-            return vars[var] or ("%%{" .. var .. "}")
+            return vars[var] or ""  -- Return empty string for missing variables
         end)
     end
     
@@ -109,8 +104,7 @@ M.set_language = function(lang)
         current_lang = lang
         return true
     end
-    current_lang = "en"
-    return false
+    return false  -- Ne pas changer la langue si invalide
 end
 
 -- List available languages (new name)
