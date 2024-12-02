@@ -8,10 +8,10 @@ install-deps:
 
 # Exécution des tests
 test:
-	busted -c --output=gtest lua/tests/*_spec.lua
+	LUA_PATH="./lua/?.lua;./lua/?/init.lua;./tests/?.lua;./tests/?/init.lua;./?.lua;./?/init.lua;$(LUA_PATH)" busted -c --output=gtest tests/features/*_spec.lua
 
 # Exécution des tests avec couverture
 coverage:
-	busted -c --coverage --output=gtest lua/tests/*_spec.lua
+	busted -c --coverage --output=gtest tests/features/*_spec.lua
 	luacov
 	cat luacov.report.out

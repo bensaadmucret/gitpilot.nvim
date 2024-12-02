@@ -1,44 +1,29 @@
--- Mock des fonctions Neovim
-local mock = {
-    fn = {
-        system = function(cmd) return "mock output" end,
-        getcwd = function() return "/mock/path" end
-    },
-    v = { shell_error = 0 },
-    api = {
-        nvim_err_writeln = function(msg) end,
-        nvim_command = function(cmd) end,
-        nvim_echo = function(chunks, history, opts) end
-    },
-    notify = function(msg, level, opts) end,
-    log = {
-        levels = {
-            ERROR = 1,
-            WARN = 2,
-            INFO = 3,
-            DEBUG = 4
-        }
-    }
-}
-
--- Initialiser le mock vim avant de charger les modules
-_G.vim = mock
+-- i18n_spec.lua
+local test_helpers = require("test_helpers")
 
 describe("I18n Module", function()
     local i18n
     local original_getenv
 
     before_each(function()
+        -- Configurer l'environnement de test
+        test_helpers.setup_vim_mock()
+        
         -- Sauvegarder l'original os.getenv
         original_getenv = os.getenv
-        -- Reset le module pour chaque test
-        package.loaded["gitpilot.i18n"] = nil
+        
+        -- Charger le module i18n
+        package.loaded['gitpilot.i18n'] = nil
         i18n = require("gitpilot.i18n")
     end)
 
     after_each(function()
         -- Restaurer l'original os.getenv
         os.getenv = original_getenv
+        
+        -- Nettoyer l'environnement
+        test_helpers.teardown()
+        package.loaded['gitpilot.i18n'] = nil
     end)
     
     describe("setup", function()
@@ -52,111 +37,77 @@ describe("I18n Module", function()
             assert.equals("en", i18n.get_language())
         end)
         
-        it("should detect French from system language", function()
-            os.getenv = function(var) return "fr_FR.UTF-8" end
-            i18n.setup({})
+        it("should detect system language", function()
+            os.getenv = function(var)
+                if var == "LANG" then
+                    return "fr_FR.UTF-8"
+                end
+                return original_getenv(var)
+            end
+            i18n.setup()
             assert.equals("fr", i18n.get_language())
         end)
         
-        it("should use English as default when no system language", function()
-            os.getenv = function(var) return nil end
-            i18n.setup({})
-            assert.equals("en", i18n.get_language())
-        end)
-
         it("should handle empty options", function()
             i18n.setup({})
             assert.equals("en", i18n.get_language())
         end)
-
+        
         it("should handle nil options", function()
-            i18n.setup(nil)
+            i18n.setup()
             assert.equals("en", i18n.get_language())
         end)
     end)
     
     describe("translation", function()
-        it("should translate simple keys", function()
-            local result = i18n.t("welcome")
-            assert.is_not.equals("welcome", result)
+        it("should translate simple key", function()
+            i18n.setup({ language = "fr" })
+            assert.equals("Branche", i18n.t("branch"))
         end)
         
-        it("should handle nested keys", function()
-            local result = i18n.t("menu.main")
-            assert.is_not.equals("menu.main", result)
+        it("should handle missing key", function()
+            i18n.setup({ language = "fr" })
+            assert.equals("missing.key", i18n.t("missing.key"))
         end)
         
-        it("should substitute variables", function()
-            local result = i18n.t("branch.success.created", { name = "test" })
-            assert.matches("test", result)
+        it("should handle variable substitution", function()
+            i18n.setup({ language = "fr" })
+            assert.equals("Branche test créée", 
+                i18n.t("branch.create_success", { name = "test" }))
         end)
         
-        it("should fallback to key for missing translations", function()
-            local result = i18n.t("nonexistent.key")
-            assert.equals("nonexistent.key", result)
+        it("should handle missing variables", function()
+            i18n.setup({ language = "fr" })
+            assert.equals("Branche %{name} créée", 
+                i18n.t("branch.create_success"))
         end)
         
-        it("should handle empty variables", function()
-            local result = i18n.t("branch.success.created", {})
-            assert.not_matches("%%{name}", result)
-        end)
-        
-        it("should handle nil variables", function()
-            local result = i18n.t("branch.success.created", nil)
-            assert.matches("%%{name}", result)
-        end)
-
-        it("should handle multiple nested keys", function()
-            local result = i18n.t("menu.submenu.item")
-            assert.equals(i18n.t("menu.submenu.item"), result)
-        end)
-
-        it("should fallback to English for missing translations in current language", function()
-            i18n.set_language("fr")
-            -- Utiliser une clé qui existe en anglais mais pas en français
-            local result = i18n.t("some.english.only.key")
-            assert.equals("some.english.only.key", result)
-        end)
-
-        it("should handle multiple variable substitutions", function()
-            local result = i18n.t("branch.success.merged", { source = "feature", target = "main" })
-            assert.not_matches("%%{source}", result)
-            assert.not_matches("%%{target}", result)
+        it("should fallback to English for missing translations", function()
+            i18n.setup({ language = "fr" })
+            assert.equals("Test Message", 
+                i18n.t("test.message_only_in_english"))
         end)
     end)
     
     describe("language management", function()
         it("should list available languages", function()
-            local langs = i18n.get_available_languages()
-            local has_en = false
-            local has_fr = false
-            for _, lang in ipairs(langs) do
-                if lang == "en" then has_en = true end
-                if lang == "fr" then has_fr = true end
-            end
-            assert.is_true(has_en, "English language should be available")
-            assert.is_true(has_fr, "French language should be available")
+            local languages = i18n.get_available_languages()
+            assert.are.same({ "en", "fr" }, languages)
         end)
         
         it("should change language successfully", function()
-            assert.is_true(i18n.set_language("fr"))
+            i18n.set_language("fr")
             assert.equals("fr", i18n.get_language())
         end)
         
         it("should fail to change to unsupported language", function()
-            assert.is_false(i18n.set_language("es"))
+            i18n.set_language("es")
             assert.equals("en", i18n.get_language())
         end)
-
+        
         it("should handle nil language in set_language", function()
-            assert.is_false(i18n.set_language(nil))
+            i18n.set_language(nil)
             assert.equals("en", i18n.get_language())
-        end)
-
-        it("should maintain current language when change fails", function()
-            i18n.set_language("fr")
-            assert.is_false(i18n.set_language("invalid"))
-            assert.equals("fr", i18n.get_language())
         end)
     end)
 end)

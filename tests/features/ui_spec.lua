@@ -2,132 +2,139 @@
 
 describe("UI Module", function()
     local ui
-    local mock_api = {
-        nvim_create_buf = function() return 1 end,
-        nvim_buf_set_option = function() end,
-        nvim_buf_set_lines = function() end,
-        nvim_open_win = function() return 1 end,
-        nvim_win_set_option = function() end,
-        nvim_buf_set_keymap = function() end
-    }
+    local mock_i18n
+    local mock_vim
     
     before_each(function()
-        -- Sauvegarde l'API originale
-        _G._saved_vim = vim
+        -- Mock i18n
+        mock_i18n = {
+            t = function(key, vars) 
+                return vars and string.format("%s with vars", key) or key
+            end
+        }
+        package.loaded['gitpilot.i18n'] = mock_i18n
+
         -- Mock vim global
-        _G.vim = {
-            api = mock_api,
-            split = function(str, sep)
-                local t = {}
-                for s in string.gmatch(str, "[^"..sep.."]+") do
-                    table.insert(t, s)
-                end
-                return t
-            end,
-            tbl_deep_extend = function(behavior, ...)
-                local result = {}
-                for i = 1, select("#", ...) do
-                    local t = select(i, ...)
-                    for k, v in pairs(t) do
-                        result[k] = v
-                    end
-                end
-                return result
-            end,
-            fn = {
-                strdisplaywidth = function(str) return #str end
+        mock_vim = {
+            notify = function() end,
+            log = {
+                levels = {
+                    ERROR = 1,
+                    WARN = 2,
+                    INFO = 3
+                }
             },
-            o = {
-                lines = 24,
-                columns = 80
+            ui = {
+                select = function() end
             }
         }
+        _G.vim = mock_vim
         
+        -- Setup spies
+        spy.on(mock_vim, "notify")
+        spy.on(mock_vim.ui, "select")
+        spy.on(mock_i18n, "t")
+        
+        -- Charger le module UI
+        package.loaded['gitpilot.ui'] = nil
         ui = require('gitpilot.ui')
     end)
     
     after_each(function()
-        -- Restore l'API originale
-        _G.vim = _G._saved_vim
+        -- Cleanup
+        package.loaded['gitpilot.i18n'] = nil
         package.loaded['gitpilot.ui'] = nil
+        _G.vim = nil
     end)
-    
-    describe("create_floating_window", function()
-        it("should create a window with single line content", function()
-            local content = "Test message"
-            local buf, win = ui.create_floating_window(content)
-            
-            assert.is_not_nil(buf)
-            assert.is_not_nil(win)
-            assert.equals(1, buf)
-            assert.equals(1, win)
+
+    describe("notifications", function()
+        it("should show error message", function()
+            ui.show_error("test.error", { var = "value" })
+            assert.spy(mock_i18n.t).was.called_with("test.error", { var = "value" })
+            assert.spy(mock_vim.notify).was.called_with(
+                "test.error with vars",
+                mock_vim.log.levels.ERROR
+            )
         end)
-        
-        it("should create a window with multiline content", function()
-            local content = "Line 1\nLine 2\nLine 3"
-            local buf, win = ui.create_floating_window(content)
-            
-            assert.is_not_nil(buf)
-            assert.is_not_nil(win)
+
+        it("should show info message", function()
+            ui.show_info("test.info", { var = "value" })
+            assert.spy(mock_i18n.t).was.called_with("test.info", { var = "value" })
+            assert.spy(mock_vim.notify).was.called_with(
+                "test.info with vars",
+                mock_vim.log.levels.INFO
+            )
         end)
-        
-        it("should create a window with custom options", function()
-            local opts = {
-                title = "Custom Title",
-                border = "single"
-            }
-            local buf, win = ui.create_floating_window("Test", opts)
-            
-            assert.is_not_nil(buf)
-            assert.is_not_nil(win)
+
+        it("should show warning message", function()
+            ui.show_warning("test.warning", { var = "value" })
+            assert.spy(mock_i18n.t).was.called_with("test.warning", { var = "value" })
+            assert.spy(mock_vim.notify).was.called_with(
+                "test.warning with vars",
+                mock_vim.log.levels.WARN
+            )
         end)
-    end)
-    
-    describe("show_error", function()
-        it("should display error message", function()
-            local title = "Error"
-            local message = "Test error message"
-            
-            spy.on(mock_api, "nvim_buf_set_lines")
-            
-            ui.show_error(title, message)
-            
-            assert.spy(mock_api.nvim_buf_set_lines).was_called()
-        end)
-        
-        it("should handle multiline error messages", function()
-            local title = "Error"
-            local message = "Line 1\nLine 2\nLine 3"
-            
-            spy.on(mock_api, "nvim_buf_set_lines")
-            
-            ui.show_error(title, message)
-            
-            assert.spy(mock_api.nvim_buf_set_lines).was_called()
+
+        it("should handle messages without variables", function()
+            ui.show_info("test.simple")
+            assert.spy(mock_i18n.t).was.called_with("test.simple")
+            assert.spy(mock_vim.notify).was.called_with(
+                "test.simple",
+                mock_vim.log.levels.INFO
+            )
         end)
     end)
-    
-    describe("show_info", function()
-        it("should display info message", function()
-            local title = "Info"
-            local message = "Test info message"
-            
-            spy.on(mock_api, "nvim_buf_set_lines")
-            
-            ui.show_info(title, message)
-            
-            assert.spy(mock_api.nvim_buf_set_lines).was_called()
+
+    describe("select", function()
+        it("should handle empty items list", function()
+            ui.select({}, {}, function() end)
+            assert.spy(mock_vim.notify).was.called_with(
+                "ui.no_items",
+                mock_vim.log.levels.ERROR
+            )
         end)
-        
-        it("should handle multiline info messages", function()
-            local title = "Info"
-            local message = "Line 1\nLine 2\nLine 3"
+
+        it("should handle nil items", function()
+            ui.select(nil, {}, function() end)
+            assert.spy(mock_vim.notify).was.called_with(
+                "ui.no_items",
+                mock_vim.log.levels.ERROR
+            )
+        end)
+
+        it("should call vim.ui.select with valid items", function()
+            local items = {"item1", "item2"}
+            local opts = {prompt = "Select:"}
+            local callback = function() end
+
+            ui.select(items, opts, callback)
+            assert.spy(mock_vim.ui.select).was.called_with(items, opts, match.is_function())
+        end)
+
+        it("should handle selection callback", function()
+            local called_with = nil
+            local callback = function(choice) called_with = choice end
+
+            ui.select({"item1"}, {}, callback)
             
-            spy.on(mock_api, "nvim_buf_set_lines")
+            -- Get the callback function that was passed to select
+            local select_callback = mock_vim.ui.select.calls[1].refs[3]
+            select_callback("item1")
             
-            ui.show_info(title, message)
+            assert.equals("item1", called_with)
+        end)
+
+        it("should not call callback when nothing is selected", function()
+            local was_called = false
+            local callback = function() was_called = true end
+
+            ui.select({"item1"}, {}, callback)
             
-            assert.spy(mock_api.nvim_buf_set_lines).was_called()
+            -- Get the callback function that was passed to select
+            local select_callback = mock_vim.ui.select.calls[1].refs[3]
+            select_callback(nil)
+            
+            assert.is_false(was_called)
         end)
     end)
 end)

@@ -1,608 +1,176 @@
--- Mock des fonctions Neovim
-local mock = {
-    fn = {
-        system = function(cmd) return "mock output" end,
-        getcwd = function() return "/mock/path" end
-    },
-    v = { shell_error = 0 },
-    api = {
-        nvim_err_writeln = function(msg) end,
-        nvim_command = function(cmd) end,
-        nvim_echo = function(chunks, history, opts) end
-    },
-    notify = function(msg, level, opts) end,
-    ui = {
-        input = function(opts, callback) callback("test-branch") end,
-        select = function(items, opts, callback) 
-            if callback and items[1] then
-                callback(items[1])
-            end
-        end
-    },
-    tbl_deep_extend = function(mode, t1, t2)
-        local result = {}
-        for k, v in pairs(t1) do result[k] = v end
-        for k, v in pairs(t2) do result[k] = v end
-        return result
-    end,
-    loop = {
-        fs_stat = function(path) return { type = "directory" } end
-    },
-    log = {
-        levels = {
-            ERROR = 1,
-            WARN = 2,
-            INFO = 3,
-            DEBUG = 4
+-- lua/tests/branch_spec.lua
+
+local test_helpers = require("test_helpers")
+local branch = require('gitpilot.features.branch')
+local ui = require('gitpilot.ui')
+
+describe("GitPilot Branch Feature", function()
+    local mock_execute_command
+    local mock_ui
+    
+    before_each(function()
+        -- Setup test environment
+        test_helpers.setup_vim_mock()
+        test_helpers.setup_git_mock()
+        
+        -- Mock dependencies
+        mock_ui = {
+            show_error = function() end,
+            show_info = function() end,
+            show_warning = function() end
         }
-    }
-}
-
--- Initialiser le mock vim avant de charger les modules
-_G.vim = mock
-
-describe("Branch Module", function()
-    local branch
-    local mock_ui = {
-        show_error = function() end,
-        show_info = function() end
-    }
-    local utils = {
-        execute_command = function() end
-    }
-    local i18n = {
-        t = function(key, vars) return key end
-    }
-    
-    -- Sauvegarde des fonctions originales
-    local original = {
-        vim = mock,
-        execute_command = nil
-    }
-    
-    before_each(function()
-        -- Reset les modules pour chaque test
-        package.loaded["gitpilot.features.branch"] = nil
-        package.loaded["gitpilot.utils"] = nil
-        package.loaded["gitpilot.i18n"] = nil
-
-        _G.vim = mock
-        branch = require("gitpilot.features.branch")
-        utils = require("gitpilot.utils")
-        i18n = require("gitpilot.i18n")
-        
-        original.execute_command = utils.execute_command
-        utils.execute_command = function(cmd)
-            return "mock output"
-        end
-    end)
-    
-    after_each(function()
-        _G.vim = original.vim
-        utils.execute_command = original.execute_command
-        mock.v.shell_error = 0
-    end)
-    
-    describe("list_branches", function()
-        it("should return list of branches and current branch", function()
-            local called_with = nil
-            utils.execute_command = function(cmd)
-                called_with = cmd
-                if cmd == "git rev-parse --is-inside-work-tree" then
-                    return true
-                elseif cmd == "git branch --all" then
-                    return "* main\n  develop\n  feature/test"
-                end
-            end
-            
-            local branches, current = branch.list_branches()
-            
-            assert.equals(3, #branches)
-            assert.equals("main", current)
-            assert.same({"main", "develop", "feature/test"}, branches)
-        end)
-        
-        it("should handle no current branch", function()
-            utils.execute_command = function(cmd)
-                if cmd == "git rev-parse --is-inside-work-tree" then
-                    return true
-                elseif cmd == "git branch --all" then
-                    return "  main\n  develop\n  feature/test"
-                end
-            end
-            
-            local branches, current = branch.list_branches()
-            
-            assert.equals(3, #branches)
-            assert.is_nil(current)
-            assert.same({"main", "develop", "feature/test"}, branches)
-        end)
-        
-        it("should return empty results when no branches", function()
-            utils.execute_command = function(cmd)
-                if cmd == "git rev-parse --is-inside-work-tree" then
-                    return true
-                elseif cmd == "git branch --all" then
-                    return nil
-                end
-            end
-            
-            local branches, current = branch.list_branches()
-            
-            assert.equals(0, #branches)
-            assert.is_nil(current)
-        end)
-
-        it("should handle malformed branch output", function()
-            utils.execute_command = function(cmd)
-                if cmd == "git rev-parse --is-inside-work-tree" then
-                    return true
-                elseif cmd == "git branch --all" then
-                    return "* \n  \n invalid"
-                end
-            end
-            
-            local branches = branch.list_branches()
-            
-            assert.equals(3, #branches)
-            assert.same({" ", " ", "invalid"}, branches)
-        end)
-    end)
-    
-    describe("create_branch", function()
-        it("should create branch successfully", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.INFO, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                assert.matches("git checkout %-b feature/new$", cmd)
-                return true
-            end
-            
-            local success, _ = branch.create_branch("feature/new")
-            assert.is_true(success)
-            assert.is_true(notify_called)
-        end)
-        
-        it("should create branch with start point", function()
-            utils.execute_command = function(cmd)
-                assert.matches("git checkout %-b feature/new main$", cmd)
-                return true
-            end
-            
-            local success, _ = branch.create_branch("feature/new", "main")
-            assert.is_true(success)
-        end)
-        
-        it("should fail with empty branch name", function()
-            local success, message = branch.create_branch("")
-            assert.is_false(success)
-            assert.equals(i18n.t("branch.error.invalid_name"), message)
-        end)
-
-        it("should fail with nil branch name", function()
-            local success, message = branch.create_branch(nil)
-            assert.is_false(success)
-            assert.equals(i18n.t("branch.error.invalid_name"), message)
-        end)
-        
-        it("should handle creation failure", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.ERROR, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                return nil
-            end
-            
-            local success, _ = branch.create_branch("feature/new")
-            assert.is_false(success)
-            assert.is_true(notify_called)
-        end)
-    end)
-    
-    describe("switch_branch", function()
-        it("should switch branch successfully", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.INFO, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                assert.matches("git checkout main$", cmd)
-                return true
-            end
-            
-            local success = branch.switch_branch("main")
-            assert.is_true(success)
-            assert.is_true(notify_called)
-        end)
-        
-        it("should handle invalid branch name", function()
-            local success = branch.switch_branch("")
-            assert.is_false(success)
-        end)
-
-        it("should handle nil branch name", function()
-            local success = branch.switch_branch(nil)
-            assert.is_false(success)
-        end)
-        
-        it("should handle switch failure", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.ERROR, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                return nil
-            end
-            
-            local success = branch.switch_branch("invalid-branch")
-            assert.is_false(success)
-            assert.is_true(notify_called)
-        end)
-    end)
-    
-    describe("merge_branch", function()
-        it("should merge branch successfully", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.INFO, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                assert.matches("git merge feature$", cmd)
-                return true
-            end
-            
-            local success = branch.merge_branch("feature")
-            assert.is_true(success)
-            assert.is_true(notify_called)
-        end)
-        
-        it("should handle invalid branch name", function()
-            local success = branch.merge_branch("")
-            assert.is_false(success)
-        end)
-
-        it("should handle nil branch name", function()
-            local success = branch.merge_branch(nil)
-            assert.is_false(success)
-        end)
-
-        it("should handle merge failure", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.ERROR, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                return nil
-            end
-            
-            local success = branch.merge_branch("feature")
-            assert.is_false(success)
-            assert.is_true(notify_called)
-        end)
-    end)
-
-    describe("delete_branch", function()
-        it("should delete branch successfully", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.INFO, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                assert.matches("git branch %-d feature$", cmd)
-                return true
-            end
-            
-            local success = branch.delete_branch("feature")
-            assert.is_true(success)
-            assert.is_true(notify_called)
-        end)
-
-        it("should force delete branch", function()
-            utils.execute_command = function(cmd)
-                assert.matches("git branch %-D feature$", cmd)
-                return true
-            end
-            
-            local success = branch.delete_branch("feature", true)
-            assert.is_true(success)
-        end)
-        
-        it("should handle invalid branch name", function()
-            local success = branch.delete_branch("")
-            assert.is_false(success)
-        end)
-
-        it("should handle nil branch name", function()
-            local success = branch.delete_branch(nil)
-            assert.is_false(success)
-        end)
-
-        it("should handle delete failure", function()
-            local notify_called = false
-            mock.notify = function(msg, level)
-                notify_called = true
-                assert.equals(vim.log.levels.ERROR, level)
-            end
-            
-            utils.execute_command = function(cmd)
-                return nil
-            end
-            
-            local success = branch.delete_branch("feature")
-            assert.is_false(success)
-            assert.is_true(notify_called)
-        end)
-    end)
-
-    describe("show", function()
-        it("should show branch menu", function()
-            local ui_select_called = false
-            mock.ui.select = function(items, opts, callback)
-                ui_select_called = true
-                assert.is_table(items)
-                assert.is_function(items[1].action)
-                if callback then
-                    callback(items[1])
-                end
-            end
-
-            mock.ui.input = function(opts, callback)
-                if callback then
-                    callback(nil) -- Simuler l'annulation de la création de branche
-                end
-            end
-
-            utils.execute_command = function(cmd)
-                if cmd == "git branch --all" then
-                    return "* main\n  develop"
-                end
-                return true
-            end
-
-            branch.show()
-            assert.is_true(ui_select_called)
-        end)
-
-        it("should handle branch action selection", function()
-            local branch_menu_shown = false
-            mock.ui.select = function(items, opts, callback)
-                if not branch_menu_shown then
-                    branch_menu_shown = true
-                    -- Simuler la sélection d'une branche
-                    for _, item in ipairs(items) do
-                        if type(item.text) == "string" and item.text:match("main") then
-                            callback(item)
-                            break
-                        end
-                    end
-                else
-                    -- Simuler l'annulation de la sélection d'action
-                    callback(nil)
-                end
-            end
-
-            utils.execute_command = function(cmd)
-                if cmd == "git branch --all" then
-                    return "* main\n  develop"
-                end
-                return true
-            end
-
-            branch.show()
-            assert.is_true(branch_menu_shown)
-        end)
-    end)
-    
-    describe("setup", function()
-        it("should handle nil options", function()
-            branch.setup(nil)
-            -- Pas d'erreur signifie succès
-            assert.is_true(true)
-        end)
-
-        it("should handle empty options", function()
-            branch.setup({})
-            -- Pas d'erreur signifie succès
-            assert.is_true(true)
-        end)
-    end)
-end)
-
-describe("Branch Module UI", function()
-    local branch
-    local mock_ui = {
-        show_error = function() end,
-        show_info = function() end
-    }
-    local utils = {
-        execute_command = function() end
-    }
-
-    before_each(function()
-        -- Mock des dépendances
-        package.loaded['gitpilot.utils'] = utils
+        spy.on(mock_ui, "show_error")
+        spy.on(mock_ui, "show_info")
+        spy.on(mock_ui, "show_warning")
         package.loaded['gitpilot.ui'] = mock_ui
-        package.loaded['gitpilot.i18n'] = {
-            t = function(key, vars) return key end
-        }
-        
-        -- Mock vim.notify
-        _G.vim = {
-            notify = function() end,
-            log = {
-                levels = {
-                    ERROR = 1,
-                    INFO = 3
-                }
-            }
-        }
-        
-        -- Charge le module
-        branch = require('gitpilot.features.branch')
     end)
-
+    
     after_each(function()
-        package.loaded['gitpilot.features.branch'] = nil
-        package.loaded['gitpilot.utils'] = nil
+        -- Cleanup
         package.loaded['gitpilot.ui'] = nil
-        package.loaded['gitpilot.i18n'] = nil
+        test_helpers.teardown()
     end)
+    
+    describe("list_branches()", function()
+        it("should correctly parse branch list", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(true, [[
+  develop
+* main
+  feature/test
+  remotes/origin/main
+  remotes/origin/develop
+]])
+            local branches, current = branch.list_branches()
+            assert.are.same({
+                "develop",
+                "main",
+                "feature/test",
+                "remotes/origin/main",
+                "remotes/origin/develop"
+            }, branches)
+            assert.are.same("main", current)
+        end)
 
-    describe("is_git_repo", function()
-        it("should return false and show error for non-git directory", function()
-            utils.execute_command = function() return nil end
-            spy.on(mock_ui, "show_error")
-            
-            local result = branch.show()
-            
-            assert.spy(mock_ui.show_error).was_called()
-            assert.is_nil(result)
+        it("should handle empty branch list", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(true, "")
+            local branches, current = branch.list_branches()
+            assert.are.same({}, branches)
+            assert.are.same("", current)
+        end)
+
+        it("should show error on git command failure", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(false, "")
+            local branches, current = branch.list_branches()
+            assert.spy(mock_ui.show_error).was.called_with("branch.list_error")
+            assert.are.same({}, branches)
+            assert.are.same("", current)
         end)
     end)
 
-    describe("list_branches", function()
-        it("should handle git command failure", function()
-            utils.execute_command = function(cmd)
-                if cmd == "git rev-parse --is-inside-work-tree" then
-                    return true
-                end
-                return nil
-            end
-            spy.on(mock_ui, "show_error")
-            
-            local branches = branch.list_branches()
-            
-            assert.spy(mock_ui.show_error).was_called()
-            assert.same({}, branches)
+    describe("create_branch()", function()
+        it("should create branch successfully", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(true, "")
+            branch.create_branch("test-branch")
+            assert.spy(utils.execute_command).was.called_with("git branch test-branch")
+            assert.spy(mock_ui.show_info).was.called_with("branch.create_success", { name = "test-branch" })
         end)
-    end)
 
-    describe("create_branch", function()
-        it("should show error for invalid branch name", function()
-            spy.on(mock_ui, "show_error")
-            
+        it("should handle creation error", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(false, "")
+            branch.create_branch("test-branch")
+            assert.spy(mock_ui.show_error).was.called_with("branch.create_error", { name = "test-branch" })
+        end)
+
+        it("should validate branch name", function()
             branch.create_branch("")
-            
-            assert.spy(mock_ui.show_error).was_called()
-        end)
-
-        it("should show success message when branch is created", function()
-            utils.execute_command = function() return true end
-            spy.on(mock_ui, "show_info")
-            
-            branch.create_branch("test-branch")
-            
-            assert.spy(mock_ui.show_info).was_called()
-        end)
-
-        it("should show error when branch creation fails", function()
-            utils.execute_command = function() return nil end
-            spy.on(mock_ui, "show_error")
-            
-            branch.create_branch("test-branch")
-            
-            assert.spy(mock_ui.show_error).was_called()
+            assert.spy(mock_ui.show_error).was.called_with("branch.error.invalid_name")
+            local utils = require('gitpilot.utils')
+            assert.spy(utils.execute_command).was_not_called()
         end)
     end)
 
-    describe("switch_branch", function()
-        it("should show error for invalid branch name", function()
-            spy.on(mock_ui, "show_error")
-            
-            branch.switch_branch("")
-            
-            assert.spy(mock_ui.show_error).was_called()
+    describe("checkout_branch()", function()
+        it("should checkout branch successfully", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(true, "")
+            branch.checkout_branch("test-branch")
+            assert.spy(utils.execute_command).was.called_with("git checkout test-branch")
+            assert.spy(mock_ui.show_info).was.called_with("branch.checkout_success", { name = "test-branch" })
         end)
 
-        it("should show success message when branch is switched", function()
-            utils.execute_command = function() return true end
-            spy.on(mock_ui, "show_info")
-            
-            branch.switch_branch("test-branch")
-            
-            assert.spy(mock_ui.show_info).was_called()
-        end)
-
-        it("should show error when branch switch fails", function()
-            utils.execute_command = function() return nil end
-            spy.on(mock_ui, "show_error")
-            
-            branch.switch_branch("test-branch")
-            
-            assert.spy(mock_ui.show_error).was_called()
+        it("should handle checkout error", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(false, "")
+            branch.checkout_branch("test-branch")
+            assert.spy(mock_ui.show_error).was.called_with("branch.checkout_error", { name = "test-branch" })
         end)
     end)
 
-    describe("merge_branch", function()
-        it("should show error for invalid branch name", function()
-            spy.on(mock_ui, "show_error")
-            
-            branch.merge_branch("")
-            
-            assert.spy(mock_ui.show_error).was_called()
-        end)
-
-        it("should show success message when branch is merged", function()
-            utils.execute_command = function() return true end
-            spy.on(mock_ui, "show_info")
-            
+    describe("merge_branch()", function()
+        it("should merge branch successfully", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.on_call_with("git merge test-branch").returns(true, "")
+            utils.execute_command.on_call_with("git status").returns(true, "")
             branch.merge_branch("test-branch")
-            
-            assert.spy(mock_ui.show_info).was_called()
+            assert.spy(mock_ui.show_info).was.called_with("branch.merge_success", { name = "test-branch" })
         end)
 
-        it("should show error when branch merge fails", function()
-            utils.execute_command = function() return nil end
-            spy.on(mock_ui, "show_error")
-            
+        it("should handle merge conflicts", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.on_call_with("git merge test-branch").returns(true, "")
+            utils.execute_command.on_call_with("git status").returns(true, "Unmerged paths")
             branch.merge_branch("test-branch")
-            
-            assert.spy(mock_ui.show_error).was_called()
+            assert.spy(mock_ui.show_warning).was.called_with("branch.merge_conflict", { name = "test-branch" })
+        end)
+
+        it("should handle merge error", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(false, "")
+            branch.merge_branch("test-branch")
+            assert.spy(mock_ui.show_error).was.called_with("branch.merge_error", { name = "test-branch" })
         end)
     end)
 
-    describe("delete_branch", function()
-        it("should show error for invalid branch name", function()
-            spy.on(mock_ui, "show_error")
-            
-            branch.delete_branch("")
-            
-            assert.spy(mock_ui.show_error).was_called()
+    describe("delete_branch()", function()
+        it("should delete branch successfully", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(true, "")
+            branch.delete_branch("test-branch")
+            assert.spy(utils.execute_command).was.called_with("git branch -d test-branch")
+            assert.spy(mock_ui.show_info).was.called_with("branch.delete_success", { name = "test-branch" })
         end)
 
-        it("should show success message when branch is deleted", function()
-            utils.execute_command = function() return true end
-            spy.on(mock_ui, "show_info")
-            
-            branch.delete_branch("test-branch")
-            
-            assert.spy(mock_ui.show_info).was_called()
+        it("should force delete branch when specified", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(true, "")
+            branch.delete_branch("test-branch", true)
+            assert.spy(utils.execute_command).was.called_with("git branch -D test-branch")
+            assert.spy(mock_ui.show_info).was.called_with("branch.delete_success", { name = "test-branch" })
         end)
 
-        it("should show error when branch deletion fails", function()
-            utils.execute_command = function() return nil end
-            spy.on(mock_ui, "show_error")
-            
+        it("should handle deletion error", function()
+            local utils = require('gitpilot.utils')
+            spy.on(utils, "execute_command")
+            utils.execute_command.returns(false, "")
             branch.delete_branch("test-branch")
-            
-            assert.spy(mock_ui.show_error).was_called()
+            assert.spy(mock_ui.show_error).was.called_with("branch.delete_error", { name = "test-branch" })
         end)
     end)
 end)

@@ -1,9 +1,35 @@
 -- lua/gitpilot/ui/init.lua
 
 local M = {}
-local api = vim.api
-local fn = vim.fn
-local i18n = require('gitpilot.i18n')
+
+-- Check if we're in Neovim
+local function check_neovim()
+    local has_nvim, _ = pcall(function() return vim ~= nil and vim.api ~= nil end)
+    if not has_nvim then
+        error("GitPilot requires Neovim")
+    end
+end
+
+-- Default notification levels
+M.levels = {
+    ERROR = 3,
+    WARN = 2,
+    INFO = 1,
+    DEBUG = 0
+}
+
+-- Initialize the module with vim levels if available
+local function init_levels()
+    if vim and vim.log and vim.log.levels then
+        M.levels = vim.log.levels
+    end
+end
+
+-- Initialize the module
+function M.setup()
+    check_neovim()
+    init_levels()
+end
 
 -- Configuration par défaut de la fenêtre
 local default_opts = {
@@ -77,34 +103,33 @@ function M.create_floating_window(content, opts)
     return buf, win
 end
 
--- Notification levels
-local levels = {
-    ERROR = vim.log.levels.ERROR,
-    INFO = vim.log.levels.INFO,
-    WARN = vim.log.levels.WARN
-}
-
 -- Show notification with translation
 local function show_notification(key, vars, level)
+    if not level then level = M.levels.INFO end
+    
+    local i18n = require('gitpilot.i18n')
     local message = i18n.t(key, vars)
+    
     if message then
-        vim.notify(message, level)
+        if vim and vim.notify then
+            vim.notify(message, level)
+        end
     end
 end
 
 -- Show error message
 function M.show_error(key, vars)
-    show_notification(key, vars, levels.ERROR)
+    show_notification(key, vars, M.levels.ERROR)
 end
 
 -- Show info message
 function M.show_info(key, vars)
-    show_notification(key, vars, levels.INFO)
+    show_notification(key, vars, M.levels.INFO)
 end
 
 -- Show warning message
-function M.show_warning(key, vars)
-    show_notification(key, vars, levels.WARN)
+function M.show_warn(key, vars)
+    show_notification(key, vars, M.levels.WARN)
 end
 
 -- Select from a list of items
@@ -142,5 +167,8 @@ function M.notify(message, level, opts)
         vim.notify(message, level, opts)
     end
 end
+
+-- Ensure module is initialized
+M.setup()
 
 return M
