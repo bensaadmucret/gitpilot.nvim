@@ -89,7 +89,8 @@ return {
             switch_failed = "Erreur lors du basculement vers la branche '%{name}'",
             merge_failed = "Erreur lors de la fusion de la branche '%{name}'",
             delete_failed = "Erreur lors de la suppression de la branche '%{name}'",
-            merge_conflict = "Conflits détectés lors de la fusion de '%{name}'"
+            merge_conflict = "Conflits détectés lors de la fusion de '%{name}'",
+            list_failed = "Impossible de lister les branches"
         }
     },
 
@@ -211,6 +212,12 @@ return {
             none = "Aucune branche trouvée",
             results = "Branches trouvées",
             switched = "Changé pour la branche"
+        }
+    },
+    git = {
+        error = {
+            not_repo = "Ce dossier n'est pas un dépôt Git",
+            command_failed = "La commande Git a échoué"
         }
     }
 }

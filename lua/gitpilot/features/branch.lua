@@ -6,11 +6,24 @@ local vim = vim
 local i18n = require('gitpilot.i18n')
 local utils = require('gitpilot.utils')
 
+-- Vérifie si on est dans un dépôt Git
+local function is_git_repo()
+    local cmd = "git rev-parse --is-inside-work-tree"
+    local success = utils.execute_command(cmd)
+    return success ~= nil
+end
+
 -- Liste toutes les branches
 function M.list_branches()
+    if not is_git_repo() then
+        vim.notify(i18n.t("git.error.not_repo"), vim.log.levels.ERROR)
+        return {}, nil
+    end
+
     local cmd = "git branch --all"
     local output = utils.execute_command(cmd)
     if not output then
+        vim.notify(i18n.t("branch.error.list_failed"), vim.log.levels.ERROR)
         return {}, nil
     end
     
@@ -19,7 +32,7 @@ function M.list_branches()
     
     for line in output:gmatch("[^\r\n]+") do
         local branch = line:match("^%s*%*?%s*(.+)$")
-        if branch then
+        if branch and branch:match("%S") then  -- Ignore les lignes qui ne contiennent que des espaces
             if line:match("^%s*%*") then
                 current = branch
             end
@@ -108,42 +121,56 @@ end
 
 -- Interface utilisateur pour la gestion des branches
 function M.show()
+    if not is_git_repo() then
+        vim.notify(i18n.t("git.error.not_repo"), vim.log.levels.ERROR)
+        return
+    end
+
     local branches, current = M.list_branches()
     
     -- Créer le menu
-    local menu_items = {
-        { text = i18n.t("branch.create_new"), action = function()
+    local menu_items = {}
+    
+    -- Option pour créer une nouvelle branche
+    table.insert(menu_items, {
+        name = i18n.t("branch.create_new"),
+        action = function()
             vim.ui.input({ prompt = i18n.t("branch.enter_name") }, function(name)
                 if name then
                     M.create_branch(name)
                 end
             end)
-        end },
-        { text = "─────────────────────" },
-    }
+        end
+    })
+    
+    -- Séparateur
+    table.insert(menu_items, {
+        name = "─────────────────────",
+        action = function() end
+    })
     
     -- Ajouter les branches au menu
     for _, branch in ipairs(branches) do
         local is_current = branch == current
         table.insert(menu_items, {
-            text = (is_current and "* " or "  ") .. branch,
+            name = (is_current and "* " or "  ") .. branch,
             action = function()
                 -- Sous-menu pour chaque branche
                 local branch_menu = {
-                    { text = i18n.t("branch.checkout"), action = function()
+                    { name = i18n.t("branch.checkout"), action = function()
                         M.switch_branch(branch)
                     end },
-                    { text = i18n.t("branch.merge"), action = function()
+                    { name = i18n.t("branch.merge"), action = function()
                         M.merge_branch(branch)
                     end },
-                    { text = i18n.t("branch.delete"), action = function()
+                    { name = i18n.t("branch.delete"), action = function()
                         M.delete_branch(branch)
-                    end },
+                    end }
                 }
                 -- Afficher le sous-menu
                 vim.ui.select(branch_menu, {
                     prompt = i18n.t("branch.select_action"),
-                    format_item = function(item) return item.text end
+                    format_item = function(item) return item.name end
                 }, function(choice)
                     if choice then
                         choice.action()
@@ -156,7 +183,7 @@ function M.show()
     -- Afficher le menu principal
     vim.ui.select(menu_items, {
         prompt = i18n.t("branch.select_branch"),
-        format_item = function(item) return item.text end
+        format_item = function(item) return item.name end
     }, function(choice)
         if choice and choice.action then
             choice.action()
