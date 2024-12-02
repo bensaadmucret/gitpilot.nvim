@@ -85,38 +85,65 @@ describe("Branch Module", function()
     
     describe("list_branches", function()
         it("should return list of branches and current branch", function()
+            local called_with = nil
             utils.execute_command = function(cmd)
-                assert.equals("git branch --all", cmd)
-                return "* main\n  develop\n  feature/test"
+                called_with = cmd
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git branch --all" then
+                    return "* main\n  develop\n  feature/test"
+                end
             end
+            
             local branches, current = branch.list_branches()
-            assert.are.same({"main", "develop", "feature/test"}, branches)
+            
+            assert.equals(3, #branches)
             assert.equals("main", current)
+            assert.same({"main", "develop", "feature/test"}, branches)
         end)
         
         it("should handle no current branch", function()
             utils.execute_command = function(cmd)
-                return "  main\n  develop\n  feature/test"
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git branch --all" then
+                    return "  main\n  develop\n  feature/test"
+                end
             end
+            
             local branches, current = branch.list_branches()
-            assert.are.same({"main", "develop", "feature/test"}, branches)
+            
+            assert.equals(3, #branches)
             assert.is_nil(current)
+            assert.same({"main", "develop", "feature/test"}, branches)
         end)
         
         it("should return empty results when no branches", function()
             utils.execute_command = function(cmd)
-                return nil
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git branch --all" then
+                    return nil
+                end
             end
+            
             local branches, current = branch.list_branches()
-            assert.are.same({}, branches)
+            
+            assert.equals(0, #branches)
             assert.is_nil(current)
         end)
 
         it("should handle malformed branch output", function()
             utils.execute_command = function(cmd)
-                return "* \n  \n invalid"
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git branch --all" then
+                    return "* \n  \n invalid"
+                end
             end
+            
             local branches = branch.list_branches()
+            
             assert.equals(3, #branches)
             assert.same({" ", " ", "invalid"}, branches)
         end)
@@ -414,6 +441,17 @@ describe("Branch Module UI", function()
         package.loaded['gitpilot.ui'] = mock_ui
         package.loaded['gitpilot.i18n'] = {
             t = function(key, vars) return key end
+        }
+        
+        -- Mock vim.notify
+        _G.vim = {
+            notify = function() end,
+            log = {
+                levels = {
+                    ERROR = 1,
+                    INFO = 3
+                }
+            }
         }
         
         -- Charge le module

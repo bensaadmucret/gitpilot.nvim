@@ -22,6 +22,17 @@ _G.vim = {
     ui = {
         select = function() end,
         input = function() end
+    },
+    fn = {
+        system = function(cmd)
+            return git_output
+        end
+    },
+    api = {
+        nvim_err_writeln = function() end
+    },
+    v = {
+        shell_error = 0
     }
 }
 
