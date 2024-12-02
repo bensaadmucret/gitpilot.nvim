@@ -64,30 +64,34 @@ return {
     },
 
     -- Gestion des branches
-    branch = {
+    branch = "Branche",
+    branch_actions = {
+        create_success = "Branche %{name} créée",
+        checkout_success = "Branche %{name} sélectionnée",
+        delete_success = "Branche %{name} supprimée",
+        merge_success = "Branche %{name} fusionnée",
+        
+        -- Interface utilisateur
         title = "🌿 Gestion des Branches",
         create_new = "Créer une nouvelle branche",
         enter_name = "Nom de la nouvelle branche :",
-        select_branch = "Sélectionnez une branche :",
-        select_action = "Choisissez une action :",
-        checkout = "Basculer vers cette branche",
-        merge = "Fusionner cette branche",
-        delete = "Supprimer cette branche",
+        checkout = "Changer de branche",
+        delete = "Supprimer une branche",
+        merge = "Fusionner une branche",
+        refresh = "Rafraîchir la liste des branches",
         
         -- Messages de succès
         success = {
             created = "Branche '%{name}' créée avec succès",
-            switched = "Basculé vers la branche '%{name}'",
+            checked_out = "Basculé sur la branche '%{name}'",
             merged = "Branche '%{name}' fusionnée avec succès",
-            deleted = "Branche '%{name}' supprimée avec succès"
+            deleted = "Branche '%{name}' supprimée"
         },
         
         -- Messages d'erreur
         error = {
-            invalid_name = "Le nom de la branche est invalide",
             create_failed = "Erreur lors de la création de la branche '%{name}'",
-            switch_failed = "Erreur lors du basculement vers la branche '%{name}'",
-            merge_failed = "Erreur lors de la fusion de la branche '%{name}'",
+            checkout_failed = "Erreur lors du basculement vers la branche '%{name}'",
             delete_failed = "Erreur lors de la suppression de la branche '%{name}'",
             merge_conflict = "Conflits détectés lors de la fusion de '%{name}'",
             list_failed = "Impossible de lister les branches"
@@ -219,5 +223,10 @@ return {
             not_repo = "Ce dossier n'est pas un dépôt Git",
             command_failed = "La commande Git a échoué"
         }
+    },
+    
+    -- Tests
+    test = {
+        message_only_in_english = "Test Message"
     }
 }

@@ -28,27 +28,70 @@ M.setup = function(opts)
     end
 end
 
--- Translation function with variable substitution
-M.t = function(key, vars)
-    local lang_table = translations[current_lang]
-    
-    -- Split the key by dots to access nested tables
-    local result = lang_table
-    for k in string.gmatch(key, "[^.]+") do
-        if type(result) ~= "table" then
-            result = translations['en'][key] or key
-            break
-        end
-        result = result[k]
+-- Helper function to get nested value
+local function get_nested_value(tbl, key)
+    local parts = {}
+    for part in key:gmatch("[^.]+") do
+        table.insert(parts, part)
     end
     
-    -- Get the translation string
-    local str = result or translations['en'][key] or key
+    local current = tbl
+    for _, part in ipairs(parts) do
+        if type(current) ~= "table" then
+            return nil
+        end
+        current = current[part]
+        if current == nil then
+            return nil
+        end
+    end
+    return current
+end
+
+-- Translation function with variable substitution
+M.t = function(key, vars)
+    local function get_translation(lang, k)
+        -- First try direct key access
+        local direct = translations[lang][k]
+        if type(direct) == "string" then
+            return direct
+        end
+        
+        -- Then try nested access with branch_actions prefix
+        if k:find("^branch%.") then
+            local nested_key = k:gsub("^branch%.", "branch_actions.")
+            local nested = get_nested_value(translations[lang], nested_key)
+            if type(nested) == "string" then
+                return nested
+            end
+        end
+        
+        -- Finally try normal nested access
+        local nested = get_nested_value(translations[lang], k)
+        if type(nested) == "string" then
+            return nested
+        end
+        
+        return nil
+    end
+
+    -- Get translation from current language
+    local str = get_translation(current_lang, key)
     
-    -- If we have variables to substitute
+    -- Fallback to English if not found
+    if str == nil then
+        str = get_translation('en', key)
+    end
+    
+    -- If still not found, return the key
+    if str == nil then
+        return key
+    end
+    
+    -- Handle variable substitution
     if vars then
-        str = str:gsub("%%{(.-)}", function(var)
-            return vars[var] or ""
+        str = str:gsub("%%{([^}]+)}", function(var)
+            return vars[var] or ("%%{" .. var .. "}")
         end)
     end
     
@@ -60,22 +103,26 @@ M.get_language = function()
     return current_lang
 end
 
--- Change language
+-- Set language
 M.set_language = function(lang)
-    if translations[lang] then
+    if lang and translations[lang] then
         current_lang = lang
         return true
     end
+    current_lang = "en"
     return false
 end
 
--- Get available languages
-M.get_available_languages = function()
+-- List available languages (new name)
+M.list_languages = function()
     local langs = {}
     for lang, _ in pairs(translations) do
         table.insert(langs, lang)
     end
     return langs
 end
+
+-- Get available languages (old name for compatibility)
+M.get_available_languages = M.list_languages
 
 return M
