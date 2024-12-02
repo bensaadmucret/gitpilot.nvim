@@ -1,51 +1,47 @@
 -- lua/gitpilot/features/branch.lua
 
 local M = {}
-local config = {}
-local vim = vim
-local i18n = require('gitpilot.i18n')
 local utils = require('gitpilot.utils')
+local i18n = require('gitpilot.i18n')
 local ui = require('gitpilot.ui')
 
--- Check if we're in a Git repository
+-- Setup function
+M.setup = function(opts)
+    opts = opts or {}
+end
+
+-- Check if current directory is a git repository
 local function is_git_repo()
-    local result = utils.execute_command("git rev-parse --is-inside-work-tree")
-    if not result then
-        ui.show_error("git.not_repo")
+    local result = utils.execute_command('git rev-parse --is-inside-work-tree')
+    if not result.success then
+        ui.show_error("error.not_git_repo")
         return false
     end
     return true
 end
 
--- Setup function to initialize the module
-function M.setup(opts)
-    config = vim.tbl_deep_extend('force', {
-        notifications = true
-    }, opts or {})
-end
-
--- List all branches
-function M.list_branches()
+-- List branches
+M.list_branches = function()
     if not is_git_repo() then
-        return {}, ""
+        return {}, nil
     end
 
-    local output = utils.execute_command("git branch --all")
-    if not output then
-        ui.show_error("branch.list_error")
-        return {}, ""
+    local result = utils.execute_command('git branch')
+    if not result.success then
+        return {}, nil
     end
 
     local branches = {}
-    local current = ""
-
-    for line in output:gmatch("[^\r\n]+") do
-        local branch = line:gsub("^%s*", ""):gsub("%s*$", "")
-        if branch:sub(1, 1) == "*" then
-            branch = branch:sub(2):gsub("^%s*", "")
-            current = branch
-        end
-        if branch ~= "" then
+    local current = nil
+    for line in result.stdout:gmatch("[^\r\n]+") do
+        local branch = line:match("^%s*(.+)$")
+        if branch then
+            if branch:sub(1, 1) == "*" then
+                branch = branch:sub(3)
+                current = branch
+            else
+                branch = branch:gsub("^%s+", "")
+            end
             table.insert(branches, branch)
         end
     end
@@ -53,148 +49,159 @@ function M.list_branches()
     return branches, current
 end
 
--- Create a new branch
-function M.create_branch(name)
-    if not is_git_repo() then return end
-    
+-- Create branch
+M.create_branch = function(name, start_point)
     if not name or name == "" then
         ui.show_error("branch.error.invalid_name")
-        return
+        return false
     end
 
-    local result = utils.execute_command(string.format("git branch %s", name))
-    if result then
-        ui.show_info("branch.create_success", { name = name })
+    if not is_git_repo() then
+        return false
+    end
+
+    local cmd = 'git checkout -b ' .. utils.escape_string(name)
+    if start_point then
+        cmd = cmd .. ' ' .. utils.escape_string(start_point)
+    end
+
+    local result = utils.execute_command(cmd)
+    if result.success then
+        ui.show_info("branch.success.created", {name = name})
+        return true
     else
-        ui.show_error("branch.create_error", { name = name })
+        ui.show_error("branch.error.create_failed", {name = name})
+        return false
     end
 end
 
--- Checkout (switch to) a branch
-function M.checkout_branch(name)
-    if not is_git_repo() then return end
-
+-- Switch branch
+M.switch_branch = function(name)
     if not name or name == "" then
         ui.show_error("branch.error.invalid_name")
-        return
+        return false
     end
 
-    local result = utils.execute_command(string.format("git checkout %s", name))
-    if result then
-        ui.show_info("branch.checkout_success", { name = name })
+    if not is_git_repo() then
+        return false
+    end
+
+    local result = utils.execute_command('git checkout ' .. utils.escape_string(name))
+    if result.success then
+        ui.show_info("branch.success.checked_out", {name = name})
+        return true
     else
-        ui.show_error("branch.checkout_error", { name = name })
+        ui.show_error("branch.error.checkout_failed", {name = name})
+        return false
     end
 end
 
--- Switch to a branch
-function M.switch_branch(name)
-    if not is_git_repo() then return end
-
+-- Merge branch
+M.merge_branch = function(name)
     if not name or name == "" then
         ui.show_error("branch.error.invalid_name")
-        return
+        return false
     end
 
-    local result = utils.execute_command(string.format("git checkout %s", name))
-    if result then
-        ui.show_info("branch.switch_success", { name = name })
+    if not is_git_repo() then
+        return false
+    end
+
+    local result = utils.execute_command('git merge ' .. utils.escape_string(name))
+    if result.success then
+        ui.show_info("branch.success.merged", {name = name})
+        return true
     else
-        ui.show_error("branch.switch_error", { name = name })
+        ui.show_error("branch.error.merge_failed", {name = name})
+        return false
     end
 end
 
--- Merge a branch into the current branch
-function M.merge_branch(name)
-    if not is_git_repo() then return end
-
+-- Delete branch
+M.delete_branch = function(name, force)
     if not name or name == "" then
         ui.show_error("branch.error.invalid_name")
-        return
+        return false
     end
 
-    local result = utils.execute_command(string.format("git merge %s", name))
-    if not result then
-        ui.show_error("branch.merge_error", { name = name })
-        return
+    if not is_git_repo() then
+        return false
     end
 
-    -- Check for merge conflicts
-    local status = utils.execute_command("git status")
-    if status and status:match("Unmerged paths") then
-        ui.show_warning("branch.merge_conflict", { name = name })
+    local flag = force and '-D' or '-d'
+    local result = utils.execute_command('git branch ' .. flag .. ' ' .. utils.escape_string(name))
+    if result.success then
+        ui.show_info("branch.success.deleted", {name = name})
+        return true
     else
-        ui.show_info("branch.merge_success", { name = name })
-    end
-end
-
--- Delete a branch
-function M.delete_branch(name, force)
-    if not is_git_repo() then return end
-
-    if not name or name == "" then
-        ui.show_error("branch.error.invalid_name")
-        return
-    end
-
-    local flag = force and "-D" or "-d"
-    local result = utils.execute_command(string.format("git branch %s %s", flag, name))
-    if result then
-        ui.show_info("branch.delete_success", { name = name })
-    else
-        ui.show_error("branch.delete_error", { name = name })
+        ui.show_error("branch.error.delete_failed", {name = name})
+        return false
     end
 end
 
 -- Show branch menu
-function M.show()
+M.show = function()
     if not is_git_repo() then
         return
     end
 
-    local branches, current = M.list_branches()  -- Utilise list_branches() qui utilise déjà git branch --all
-    if #branches == 0 then
-        ui.show_info("branch.no_branches")
+    local branches, current = M.list_branches()
+    if not branches then
+        ui.show_error("branch.error.list_failed")
         return
     end
 
     local actions = {
-        { label = i18n.t("branch.create"), action = "create" },
-        { label = i18n.t("branch.switch"), action = "switch" },
-        { label = i18n.t("branch.merge"), action = "merge" },
-        { label = i18n.t("branch.delete"), action = "delete" }
+        i18n.t("branch.create_new"),
+        i18n.t("branch.checkout"),
+        i18n.t("branch.merge"),
+        i18n.t("branch.delete"),
+        i18n.t("branch.refresh")
     }
 
     ui.select(actions, {
-        prompt = i18n.t("branch.select_action"),
-        format_item = function(item) return item.label end
+        prompt = i18n.t("branch.title")
     }, function(choice)
         if not choice then return end
-        
-        if choice.action == "create" then
+
+        if choice == actions[1] then  -- Create new
             vim.ui.input({
                 prompt = i18n.t("branch.enter_name")
             }, function(name)
-                if name then M.create_branch(name) end
+                if name then
+                    M.create_branch(name)
+                end
             end)
-        elseif choice.action == "switch" then
+        elseif choice == actions[2] then  -- Checkout
             ui.select(branches, {
-                prompt = i18n.t("branch.select_switch")
+                prompt = i18n.t("branch.checkout")
             }, function(branch)
-                if branch then M.switch_branch(branch) end
+                if branch then
+                    M.switch_branch(branch)
+                end
             end)
-        elseif choice.action == "merge" then
+        elseif choice == actions[3] then  -- Merge
             ui.select(branches, {
-                prompt = i18n.t("branch.select_merge")
+                prompt = i18n.t("branch.merge")
             }, function(branch)
-                if branch then M.merge_branch(branch) end
+                if branch then
+                    M.merge_branch(branch)
+                end
             end)
-        elseif choice.action == "delete" then
+        elseif choice == actions[4] then  -- Delete
             ui.select(branches, {
-                prompt = i18n.t("branch.select_delete")
+                prompt = i18n.t("branch.delete")
             }, function(branch)
-                if branch then M.delete_branch(branch) end
+                if branch then
+                    if branch == current then
+                        ui.show_error("branch.error.delete_current")
+                        return
+                    end
+                    M.delete_branch(branch)
+                end
             end)
+        elseif choice == actions[5] then  -- Refresh
+            M.show()
         end
     end)
 end

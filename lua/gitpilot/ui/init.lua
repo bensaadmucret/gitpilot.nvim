@@ -3,6 +3,7 @@
 local M = {}
 local api = vim.api
 local fn = vim.fn
+local i18n = require('gitpilot.i18n')
 
 -- Configuration par défaut de la fenêtre
 local default_opts = {
@@ -76,44 +77,70 @@ function M.create_floating_window(content, opts)
     return buf, win
 end
 
--- Affiche un message d'erreur dans une fenêtre modale
-function M.show_error(title, message)
-    local lines = {}
-    -- Ajoute une ligne vide au début
-    table.insert(lines, "")
-    -- Ajoute le message d'erreur
-    for line in message:gmatch("[^\r\n]+") do
-        table.insert(lines, " " .. line)
+-- Notification levels
+local levels = {
+    ERROR = vim.log.levels.ERROR,
+    INFO = vim.log.levels.INFO,
+    WARN = vim.log.levels.WARN
+}
+
+-- Show notification with translation
+local function show_notification(key, vars, level)
+    local message = i18n.t(key, vars)
+    if message then
+        vim.notify(message, level)
     end
-    -- Ajoute une ligne vide à la fin
-    table.insert(lines, "")
-    -- Ajoute une instruction pour fermer
-    table.insert(lines, " Appuyez sur 'q' ou <Esc> pour fermer")
-    
-    M.create_floating_window(lines, {
-        title = " " .. title .. " ",
-        border = 'rounded',
-    })
 end
 
--- Affiche un message d'information dans une fenêtre modale
-function M.show_info(title, message)
-    local lines = {}
-    -- Ajoute une ligne vide au début
-    table.insert(lines, "")
-    -- Ajoute le message
-    for line in message:gmatch("[^\r\n]+") do
-        table.insert(lines, " " .. line)
+-- Show error message
+function M.show_error(key, vars)
+    show_notification(key, vars, levels.ERROR)
+end
+
+-- Show info message
+function M.show_info(key, vars)
+    show_notification(key, vars, levels.INFO)
+end
+
+-- Show warning message
+function M.show_warning(key, vars)
+    show_notification(key, vars, levels.WARN)
+end
+
+-- Select from a list of items
+function M.select(items, opts, on_choice)
+    opts = opts or {}
+    if not items or #items == 0 then
+        M.show_warning("ui.no_items")
+        return
     end
-    -- Ajoute une ligne vide à la fin
-    table.insert(lines, "")
-    -- Ajoute une instruction pour fermer
-    table.insert(lines, " Appuyez sur 'q' ou <Esc> pour fermer")
-    
-    M.create_floating_window(lines, {
-        title = " " .. title .. " ",
-        border = 'single',
-    })
+
+    vim.ui.select(items, {
+        prompt = opts.prompt or "",
+        format_item = opts.format_item or function(item) return item end
+    }, function(choice)
+        if choice and on_choice then
+            on_choice(choice)
+        end
+    end)
+end
+
+-- Format message with variables
+function M.format_message(message, vars)
+    if not message then return "" end
+    if not vars then return message end
+
+    return message:gsub("%%{([^}]+)}", function(var)
+        return vars[var] or ""
+    end)
+end
+
+-- Notify wrapper for compatibility
+function M.notify(message, level, opts)
+    opts = opts or {}
+    if type(message) == "string" then
+        vim.notify(message, level, opts)
+    end
 end
 
 return M
