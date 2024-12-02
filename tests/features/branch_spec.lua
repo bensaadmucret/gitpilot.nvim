@@ -43,8 +43,16 @@ _G.vim = mock
 
 describe("Branch Module", function()
     local branch
-    local utils
-    local i18n
+    local mock_ui = {
+        show_error = function() end,
+        show_info = function() end
+    }
+    local utils = {
+        execute_command = function() end
+    }
+    local i18n = {
+        t = function(key, vars) return key end
+    }
     
     -- Sauvegarde des fonctions originales
     local original = {
@@ -386,6 +394,177 @@ describe("Branch Module", function()
             branch.setup({})
             -- Pas d'erreur signifie succès
             assert.is_true(true)
+        end)
+    end)
+end)
+
+describe("Branch Module UI", function()
+    local branch
+    local mock_ui = {
+        show_error = function() end,
+        show_info = function() end
+    }
+    local utils = {
+        execute_command = function() end
+    }
+
+    before_each(function()
+        -- Mock des dépendances
+        package.loaded['gitpilot.utils'] = utils
+        package.loaded['gitpilot.ui'] = mock_ui
+        package.loaded['gitpilot.i18n'] = {
+            t = function(key, vars) return key end
+        }
+        
+        -- Charge le module
+        branch = require('gitpilot.features.branch')
+    end)
+
+    after_each(function()
+        package.loaded['gitpilot.features.branch'] = nil
+        package.loaded['gitpilot.utils'] = nil
+        package.loaded['gitpilot.ui'] = nil
+        package.loaded['gitpilot.i18n'] = nil
+    end)
+
+    describe("is_git_repo", function()
+        it("should return false and show error for non-git directory", function()
+            utils.execute_command = function() return nil end
+            spy.on(mock_ui, "show_error")
+            
+            local result = branch.show()
+            
+            assert.spy(mock_ui.show_error).was_called()
+            assert.is_nil(result)
+        end)
+    end)
+
+    describe("list_branches", function()
+        it("should handle git command failure", function()
+            utils.execute_command = function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                end
+                return nil
+            end
+            spy.on(mock_ui, "show_error")
+            
+            local branches = branch.list_branches()
+            
+            assert.spy(mock_ui.show_error).was_called()
+            assert.same({}, branches)
+        end)
+    end)
+
+    describe("create_branch", function()
+        it("should show error for invalid branch name", function()
+            spy.on(mock_ui, "show_error")
+            
+            branch.create_branch("")
+            
+            assert.spy(mock_ui.show_error).was_called()
+        end)
+
+        it("should show success message when branch is created", function()
+            utils.execute_command = function() return true end
+            spy.on(mock_ui, "show_info")
+            
+            branch.create_branch("test-branch")
+            
+            assert.spy(mock_ui.show_info).was_called()
+        end)
+
+        it("should show error when branch creation fails", function()
+            utils.execute_command = function() return nil end
+            spy.on(mock_ui, "show_error")
+            
+            branch.create_branch("test-branch")
+            
+            assert.spy(mock_ui.show_error).was_called()
+        end)
+    end)
+
+    describe("switch_branch", function()
+        it("should show error for invalid branch name", function()
+            spy.on(mock_ui, "show_error")
+            
+            branch.switch_branch("")
+            
+            assert.spy(mock_ui.show_error).was_called()
+        end)
+
+        it("should show success message when branch is switched", function()
+            utils.execute_command = function() return true end
+            spy.on(mock_ui, "show_info")
+            
+            branch.switch_branch("test-branch")
+            
+            assert.spy(mock_ui.show_info).was_called()
+        end)
+
+        it("should show error when branch switch fails", function()
+            utils.execute_command = function() return nil end
+            spy.on(mock_ui, "show_error")
+            
+            branch.switch_branch("test-branch")
+            
+            assert.spy(mock_ui.show_error).was_called()
+        end)
+    end)
+
+    describe("merge_branch", function()
+        it("should show error for invalid branch name", function()
+            spy.on(mock_ui, "show_error")
+            
+            branch.merge_branch("")
+            
+            assert.spy(mock_ui.show_error).was_called()
+        end)
+
+        it("should show success message when branch is merged", function()
+            utils.execute_command = function() return true end
+            spy.on(mock_ui, "show_info")
+            
+            branch.merge_branch("test-branch")
+            
+            assert.spy(mock_ui.show_info).was_called()
+        end)
+
+        it("should show error when branch merge fails", function()
+            utils.execute_command = function() return nil end
+            spy.on(mock_ui, "show_error")
+            
+            branch.merge_branch("test-branch")
+            
+            assert.spy(mock_ui.show_error).was_called()
+        end)
+    end)
+
+    describe("delete_branch", function()
+        it("should show error for invalid branch name", function()
+            spy.on(mock_ui, "show_error")
+            
+            branch.delete_branch("")
+            
+            assert.spy(mock_ui.show_error).was_called()
+        end)
+
+        it("should show success message when branch is deleted", function()
+            utils.execute_command = function() return true end
+            spy.on(mock_ui, "show_info")
+            
+            branch.delete_branch("test-branch")
+            
+            assert.spy(mock_ui.show_info).was_called()
+        end)
+
+        it("should show error when branch deletion fails", function()
+            utils.execute_command = function() return nil end
+            spy.on(mock_ui, "show_error")
+            
+            branch.delete_branch("test-branch")
+            
+            assert.spy(mock_ui.show_error).was_called()
         end)
     end)
 end)
