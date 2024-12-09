@@ -1,250 +1,175 @@
 return {
     -- General messages
-    welcome = "Welcome to GitPilot!",
-    select_action = "Select an action:",
-    confirm = {
-        title = "Confirmation Required",
-        yes = "Yes",
-        no = "No"
-    },
-    cancel = "Cancel",
-    success = "Success!",
-    error = "Error",
-    warning = "Warning",
+    ["welcome"] = "Welcome to GitPilot!",
+    ["select_action"] = "Select an action:",
+    ["confirm.title"] = "Confirmation Required",
+    ["confirm.yes"] = "Yes",
+    ["confirm.no"] = "No",
+    ["cancel"] = "Cancel",
+    ["success"] = "Success!",
+    ["error"] = "Error",
+    ["warning"] = "Warning",
+    
+    -- Information messages
+    ["info.branch_created"] = "Branch '%{name}' has been created",
     
     -- Main menu
-    menu = {
-        main_title = " GitPilot - Main Menu",
-        main = "Main Menu",
-        commits = "Commit Operations",
-        commits_title = " Commit Management",
-        branches = "Branch Operations",
-        branches_title = " Branch Management",
-        remotes = "Remote Operations",
-        remotes_title = " Remote Management",
-        tags = "Tag Operations",
-        tags_title = " Tag Management",
-        stash = "Stash Operations",
-        stash_title = " Stash Management",
-        search = "Search Operations",
-        search_title = " Search",
-        rebase = "Rebase Operations",
-        rebase_title = " Rebase"
-    },
-
+    ["menu.main_title"] = " GitPilot - Main Menu",
+    ["menu.main"] = "Main Menu",
+    ["menu.commits"] = "Commit Operations",
+    ["menu.commits_title"] = " Commit Management",
+    ["menu.branches"] = "Branch Operations",
+    ["menu.branches_title"] = " Branch Management",
+    ["menu.remotes"] = "Remote Operations",
+    ["menu.remotes_title"] = " Remote Management",
+    ["menu.tags"] = "Tag Operations",
+    ["menu.tags_title"] = " Tag Management",
+    ["menu.stash"] = "Stash Operations",
+    ["menu.stash_title"] = " Stash Management",
+    ["menu.search"] = "Search Operations",
+    ["menu.search_title"] = " Search",
+    ["menu.rebase"] = "Rebase Operations",
+    ["menu.rebase_title"] = " Rebase",
+    
     -- Commit management
-    commit = {
-        title = " Commit Management",
-        create = "Create commit",
-        amend = "Amend last commit",
-        files = {
-            none = "No files to commit",
-            select = "Select files to commit:"
-        },
-        type = {
-            select = "Select commit type:",
-            feat = "New feature",
-            fix = "Bug fix",
-            docs = "Documentation",
-            style = "Code style",
-            refactor = "Code refactoring",
-            test = "Tests",
-            chore = "Maintenance"
-        },
-        message = {
-            prompt = "Commit message:",
-            empty = "Commit message cannot be empty"
-        },
-        action = {
-            success = "Commit created successfully",
-            error = "Error creating commit: %s",
-            amend_success = "Commit amended successfully",
-            amend_error = "Error amending commit: %s"
-        }
-    },
-
+    ["commit.title"] = " Commit Management",
+    ["commit.create"] = "Create commit",
+    ["commit.amend"] = "Amend last commit",
+    ["commit.files.none"] = "No files to commit",
+    ["commit.files.select"] = "Select files to commit:",
+    ["commit.type.select"] = "Select commit type:",
+    ["commit.type.feat"] = "New feature",
+    ["commit.type.fix"] = "Bug fix",
+    ["commit.type.docs"] = "Documentation",
+    ["commit.type.style"] = "Code style",
+    ["commit.type.refactor"] = "Code refactoring",
+    ["commit.type.test"] = "Tests",
+    ["commit.type.chore"] = "Maintenance",
+    ["commit.message.prompt"] = "Commit message:",
+    ["commit.message.empty"] = "Commit message cannot be empty",
+    ["commit.action.success"] = "Commit created successfully",
+    ["commit.action.error"] = "Error creating commit: %s",
+    ["commit.action.amend_success"] = "Commit amended successfully",
+    ["commit.action.amend_error"] = "Error amending commit: %s",
+    
     -- Branch management
-    branch = {
-        title = "🌿 Branch Management",
-        current = "Current branch: %s",
-        none = "No branches found",
-        create_new = "Create new branch",
-        enter_name = "New branch name:",
-        select_branch = "Select a branch:",
-        select_action = "Choose an action:",
-        checkout = "Switch to this branch",
-        merge = "Merge this branch",
-        delete = "Delete this branch",
-        create = {
-            title = "Create Branch",
-            prompt = "New branch name:",
-            success = "Branch '%s' created successfully",
-            error = "Error creating branch: %s",
-            exists = "Branch '%s' already exists"
-        },
-        delete = {
-            title = "Delete Branch",
-            prompt = "Select branch to delete:",
-            confirm = "Delete branch '%s'? This action cannot be undone!",
-            success = "Branch '%s' deleted successfully",
-            error = "Error deleting branch: %s",
-            current = "Cannot delete current branch"
-        },
-        switch = {
-            title = "Switch Branch",
-            prompt = "Select branch:",
-            success = "Switched to branch '%s'",
-            error = "Error switching branch: %s"
-        },
-        merge = {
-            title = "Merge Branch",
-            prompt = "Select branch to merge:",
-            success = "Branch '%s' merged successfully",
-            error = "Error merging branch: %s"
-        },
-        success = {
-            created = "Branch '%{name}' created successfully",
-            switched = "Switched to branch '%{name}'",
-            merged = "Branch '%{name}' merged successfully",
-            deleted = "Branch '%{name}' deleted successfully"
-        },
-        error = {
-            invalid_name = "Branch name is invalid",
-            create_failed = "Failed to create branch '%{name}'",
-            switch_failed = "Failed to switch to branch '%{name}'",
-            merge_failed = "Failed to merge branch '%{name}'",
-            delete_failed = "Failed to delete branch '%{name}'",
-            merge_conflict = "Conflicts detected while merging '%{name}'"
-        },
-        create_success = "Branch '%{name}' created successfully",
-        checkout_success = "Switched to branch '%{name}'",
-        merge_success = "Branch '%{name}' merged successfully",
-        delete_success = "Branch '%{name}' deleted successfully",
-        create_error = "Error creating branch '%{name}'",
-        checkout_error = "Error switching to branch '%{name}'",
-        merge_error = "Error merging branch '%{name}'",
-        merge_conflict = "Conflicts detected while merging '%{name}'",
-        delete_error = "Error deleting branch '%{name}'"
-    },
-
+    ["branch.title"] = " Branch Management",
+    ["branch.current"] = "Current branch: %s",
+    ["branch.none"] = "No branches found",
+    ["branch.create_new"] = "Create new branch",
+    ["branch.enter_name"] = "New branch name:",
+    ["branch.select_branch"] = "Select a branch:",
+    ["branch.select_action"] = "Choose an action:",
+    ["branch.checkout"] = "Switch to this branch",
+    ["branch.merge"] = "Merge this branch",
+    ["branch.delete"] = "Delete this branch",
+    ["branch.create.title"] = "Create Branch",
+    ["branch.create.prompt"] = "New branch name:",
+    ["branch.create.success"] = "Branch '%s' created successfully",
+    ["branch.create.error"] = "Error creating branch: %s",
+    ["branch.create.exists"] = "Branch '%s' already exists",
+    ["branch.delete.title"] = "Delete Branch",
+    ["branch.delete.prompt"] = "Select branch to delete:",
+    ["branch.delete.confirm"] = "Delete branch '%s'? This action cannot be undone!",
+    ["branch.delete.success"] = "Branch '%s' deleted successfully",
+    ["branch.delete.error"] = "Error deleting branch: %s",
+    ["branch.delete.current"] = "Cannot delete current branch",
+    ["branch.switch.title"] = "Switch Branch",
+    ["branch.switch.prompt"] = "Select branch:",
+    ["branch.switch.success"] = "Switched to branch '%s'",
+    ["branch.switch.error"] = "Error switching branch: %s",
+    ["branch.merge.title"] = "Merge Branch",
+    ["branch.merge.prompt"] = "Select branch to merge:",
+    ["branch.merge.success"] = "Branch '%s' merged successfully",
+    ["branch.merge.error"] = "Error merging branch: %s",
+    
     -- Remote management
-    remote = {
-        title = " Remote Management",
-        add = "Add remote",
-        remove = "Remove remote",
-        push = "Push changes",
-        pull = "Pull changes",
-        none = "No remotes found",
-        name = {
-            prompt = "Remote name:"
-        },
-        url = {
-            prompt = "Remote URL:"
-        },
-        added = "Remote added successfully",
-        deleted = "Remote deleted",
-        fetched = "Remote updated",
-        url = "URL",
-        tracking_info = "Tracking Information",
-        details_title = "Remote Details",
-        push = {
-            normal = "Normal (default)",
-            force = "Force (--force)",
-            force_lease = "Force with lease (--force-with-lease)"
-        },
-        action = {
-            success = "Remote operation completed successfully",
-            error = "Error performing remote operation: %s"
-        }
-    },
-
+    ["remote.title"] = " Remote Management",
+    ["remote.add"] = "Add remote",
+    ["remote.remove"] = "Remove remote",
+    ["remote.push"] = "Push changes",
+    ["remote.pull"] = "Pull changes",
+    ["remote.none"] = "No remotes found",
+    ["remote.name.prompt"] = "Remote name:",
+    ["remote.url.prompt"] = "Remote URL:",
+    ["remote.added"] = "Remote added successfully",
+    ["remote.deleted"] = "Remote deleted",
+    ["remote.fetched"] = "Remote updated",
+    ["remote.url"] = "URL",
+    ["remote.tracking_info"] = "Tracking Information",
+    ["remote.details_title"] = "Remote Details",
+    ["remote.push.normal"] = "Normal (default)",
+    ["remote.push.force"] = "Force (--force)",
+    ["remote.push.force_lease"] = "Force with lease (--force-with-lease)",
+    ["remote.action.success"] = "Remote operation completed successfully",
+    ["remote.action.error"] = "Error performing remote operation: %s",
+    
     -- Tag management
-    tag = {
-        title = " Tag Management",
-        none = "No tags found",
-        message = "Message",
-        commit_info = "Commit Information",
-        details_title = "Tag Details",
-        create = {
-            title = "Create Tag",
-            name_prompt = "Tag name:",
-            message_prompt = "Message (optional):",
-            success = "Tag '%s' created successfully",
-            error = "Error creating tag: %s",
-            exists = "Tag '%s' already exists"
-        },
-        delete = {
-            title = "Delete Tag",
-            prompt = "Select tag to delete:",
-            confirm = "Delete tag '%s'? This action cannot be undone!",
-            success = "Tag '%s' deleted successfully",
-            error = "Error deleting tag: %s"
-        },
-        push = {
-            title = "Push Tags",
-            prompt = "Select tags to push:",
-            confirm = "Push selected tags?",
-            success = "Tags pushed successfully",
-            error = "Error pushing tags: %s"
-        }
-    },
-
+    ["tag.title"] = " Tag Management",
+    ["tag.none"] = "No tags found",
+    ["tag.message"] = "Message",
+    ["tag.commit_info"] = "Commit Information",
+    ["tag.details_title"] = "Tag Details",
+    ["tag.create.title"] = "Create Tag",
+    ["tag.create.name_prompt"] = "Tag name:",
+    ["tag.create.message_prompt"] = "Message (optional):",
+    ["tag.create.success"] = "Tag '%s' created successfully",
+    ["tag.create.error"] = "Error creating tag: %s",
+    ["tag.create.exists"] = "Tag '%s' already exists",
+    ["tag.delete.title"] = "Delete Tag",
+    ["tag.delete.prompt"] = "Select tag to delete:",
+    ["tag.delete.confirm"] = "Delete tag '%s'? This action cannot be undone!",
+    ["tag.delete.success"] = "Tag '%s' deleted successfully",
+    ["tag.delete.error"] = "Error deleting tag: %s",
+    ["tag.push.title"] = "Push Tags",
+    ["tag.push.prompt"] = "Select tags to push:",
+    ["tag.push.confirm"] = "Push selected tags?",
+    ["tag.push.success"] = "Tags pushed successfully",
+    ["tag.push.error"] = "Error pushing tags: %s",
+    
     -- Stash management
-    stash = {
-        title = " Stash Management",
-        none = "No stashes found",
-        create = {
-            title = "Create Stash",
-            message_prompt = "Stash message (optional):",
-            success = "Stash created successfully",
-            error = "Error creating stash: %s",
-            no_changes = "No changes to stash"
-        },
-        apply = {
-            title = "Apply Stash",
-            prompt = "Select stash to apply:",
-            success = "Stash applied successfully",
-            error = "Error applying stash: %s"
-        },
-        delete = {
-            title = "Delete Stash",
-            prompt = "Select stash to delete:",
-            confirm = "Delete selected stash? This action cannot be undone!",
-            success = "Stash deleted successfully",
-            error = "Error deleting stash: %s"
-        }
-    },
-
+    ["stash.title"] = " Stash Management",
+    ["stash.none"] = "No stashes found",
+    ["stash.create.title"] = "Create Stash",
+    ["stash.create.message_prompt"] = "Stash message (optional):",
+    ["stash.create.success"] = "Stash created successfully",
+    ["stash.create.error"] = "Error creating stash: %s",
+    ["stash.create.no_changes"] = "No changes to stash",
+    ["stash.apply.title"] = "Apply Stash",
+    ["stash.apply.prompt"] = "Select stash to apply:",
+    ["stash.apply.success"] = "Stash applied successfully",
+    ["stash.apply.error"] = "Error applying stash: %s",
+    ["stash.delete.title"] = "Delete Stash",
+    ["stash.delete.prompt"] = "Select stash to delete:",
+    ["stash.delete.confirm"] = "Delete selected stash? This action cannot be undone!",
+    ["stash.delete.success"] = "Stash deleted successfully",
+    ["stash.delete.error"] = "Error deleting stash: %s",
+    
     -- Search
-    search = {
-        title = " Search",
-        prompt = "Enter your search:",
-        no_results = "No results found",
-        commits = {
-            title = "Search in commits",
-            prompt = "Enter search term:",
-            empty = "Search term cannot be empty",
-            none = "No commits found",
-            no_results = "No results found for this search",
-            details_error = "Error retrieving commit details",
-            details_title = "Commit Details %s",
-            details = "Details"
-        },
-        files = {
-            prompt = "Enter search pattern:",
-            none = "No files found",
-            results = "Search Results"
-        },
-        author = {
-            prompt = "Enter author name:",
-            none = "No commits found for this author",
-            results = "Commits by %s"
-        },
-        branches = {
-            prompt = "Enter search pattern:",
-            none = "No branches found",
-            results = "Found Branches",
-            switched = "Switched to branch"
-        }
-    }
+    ["search.title"] = " Search",
+    ["search.prompt"] = "Enter your search:",
+    ["search.no_results"] = "No results found",
+    ["search.commits.title"] = "Search in commits",
+    ["search.commits.prompt"] = "Enter search term:",
+    ["search.commits.empty"] = "Search term cannot be empty",
+    ["search.commits.none"] = "No commits found",
+    ["search.commits.no_results"] = "No results found for this search",
+    ["search.commits.details_error"] = "Error retrieving commit details",
+    ["search.commits.details_title"] = "Commit Details %s",
+    ["search.commits.details"] = "Details",
+    ["search.files.prompt"] = "Enter search pattern:",
+    ["search.files.none"] = "No files found",
+    ["search.files.results"] = "Search Results",
+    ["search.author.prompt"] = "Enter author name:",
+    ["search.author.none"] = "No commits found for this author",
+    ["search.author.results"] = "Commits by %s",
+    ["search.branches.prompt"] = "Enter search pattern:",
+    ["search.branches.none"] = "No branches found",
+    ["search.branches.results"] = "Found Branches",
+    ["search.branches.switched"] = "Switched to branch",
+    
+    -- UI messages
+    ["ui.no_items"] = "No items to select",
+    ["ui.select_not_available"] = "Selection not available",
+    ["test.message_only_in_english"] = "Test Message"
 }

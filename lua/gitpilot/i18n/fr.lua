@@ -21,6 +21,9 @@ return {
     ["warning"] = "Avertissement",
     ["cancel"] = "Annuler",
 
+    -- Messages d'information
+    ["info.branch_created"] = "La branche '%{name}' a été créée",
+
     -- Messages de succès
     ["success.branch_created"] = "Branche créée avec succès",
     ["success.branch_deleted"] = "Branche supprimée avec succès",
