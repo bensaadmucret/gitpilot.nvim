@@ -8,11 +8,13 @@
 - [ ] Support multi-plateformes (GitHub, GitLab, Bitbucket)
 
 ## 2. Gestion des Conflits Améliorée
-- [ ] Interface visuelle pour la résolution des conflits
-- [ ] Comparaison côte à côte des versions
-- [ ] Outils de merge interactifs
-- [ ] Historique des résolutions précédentes
-- [ ] Prévisualisation des résultats de merge
+- [x] Interface visuelle pour la résolution des conflits
+- [x] Comparaison côte à côte des versions
+- [x] Outils de merge interactifs
+- [x] Historique des résolutions précédentes
+- [x] Prévisualisation des résultats de merge
+- [ ] Tests unitaires pour la gestion des conflits
+- [ ] Documentation utilisateur pour la résolution des conflits
 
 ## 3. Git Flow Integration
 - [ ] Support complet du workflow Git Flow
@@ -29,11 +31,11 @@
 - [ ] Export des rapports
 
 ## 5. Gestion des Issues
-- [ ] Création et gestion des issues GitHub/GitLab
-- [ ] Lien automatique entre commits et issues
-- [ ] Templates personnalisables
-- [ ] Dashboard des issues
-- [ ] Filtres et recherche avancée
+- [x] Création et gestion des issues GitHub/GitLab
+- [x] Lien automatique entre commits et issues
+- [x] Templates personnalisables
+- [x] Dashboard des issues
+- [x] Filtres et recherche avancée
 
 ## 6. Git Hooks Améliorés
 - [ ] Interface pour configurer les hooks
@@ -50,11 +52,11 @@
 - [ ] Gestion des dépendances
 
 ## 8. Historique Interactif
-- [ ] Navigation visuelle dans l'historique
-- [ ] Recherche avancée dans l'historique
-- [ ] Filtrage par auteur/date/fichier
-- [ ] Visualisation des branches
-- [ ] Timeline interactive
+- [x] Navigation visuelle dans l'historique
+- [x] Recherche avancée dans l'historique
+- [x] Filtrage par auteur/date/fichier
+- [x] Visualisation des branches
+- [x] Timeline interactive
 
 ## 9. Gestion des Tags Avancée
 - [ ] Création de releases avec notes
@@ -85,11 +87,11 @@
 - [ ] Configuration LFS
 
 ## 13. Gestion des Backups
-- [ ] Sauvegarde automatique des branches
-- [ ] Restauration de versions précédentes
-- [ ] Export/Import de patches
-- [ ] Mirror repositories
-- [ ] Planification des backups
+- [x] Sauvegarde automatique des branches
+- [x] Restauration de versions précédentes
+- [x] Export/Import de patches
+- [x] Mirror repositories
+- [x] Planification des backups
 
 ## 14. Gestion des Alias Git
 - [ ] Interface pour créer/modifier les alias
@@ -104,6 +106,31 @@
 - [ ] Commentaires inline
 - [ ] Suggestions de code
 - [ ] Workflow de review
+
+## Fonctionnalités Complétées
+
+### Gestion des Sauvegardes
+- [x] Sauvegardes automatiques
+- [x] Restauration de versions
+- [x] Export/Import de patches
+- [x] Gestion des dépôts miroirs
+- [x] Interface utilisateur pour les sauvegardes
+- [x] Planification des sauvegardes
+
+### Historique Interactif
+- [x] Navigation dans l'historique des commits
+- [x] Recherche et filtrage
+- [x] Visualisation des branches
+- [x] Informations détaillées des commits
+- [x] Interface utilisateur intuitive
+
+### Gestion des Issues
+- [x] Création et gestion des issues
+- [x] Support GitHub et GitLab
+- [x] Liaison avec les commits
+- [x] Templates d'issues
+- [x] Recherche et filtrage avancés
+- [x] Interface utilisateur complète
 
 ## Notes d'Implémentation
 - Prioriser les fonctionnalités selon l'utilité et la complexité

@@ -41,7 +41,8 @@ local menus = {
             { id = "tag", text = "menu.tags", icon = "🏷️" },
             { id = "stash", text = "menu.stash", icon = "📦" },
             { id = "search", text = "menu.search", icon = "🔍" },
-            { id = "rebase", text = "menu.rebase", icon = "♻️" }
+            { id = "rebase", text = "menu.rebase", icon = "♻️" },
+            { id = "backup", text = "menu.backup", icon = "💾" }
         }
     },
     branch = {
@@ -122,6 +123,15 @@ local menus = {
             { id = "files", text = "search.files", icon = "📄" },
             { id = "branches", text = "search.branches", icon = "🌿" },
             { id = "tags", text = "search.tags", icon = "🏷️" },
+            { id = "back", text = "menu.back", icon = "⬅️" }
+        }
+    },
+    backup = {
+        title = "menu.backup_title",
+        items = {
+            { id = "create", text = "backup.create", icon = "➕" },
+            { id = "restore", text = "backup.restore", icon = "🔄" },
+            { id = "delete", text = "backup.delete", icon = "🗑️" },
             { id = "back", text = "menu.back", icon = "⬅️" }
         }
     }

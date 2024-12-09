@@ -2,44 +2,115 @@
 
 local M = {}
 
+-- Version du plugin
+M.version = "1.0.0"
+
 -- Configuration par défaut
-M.defaults = {
-    language = "fr",  -- langue par défaut
-    ui = {
-        icons = true,
-        help = true,
-        confirm_actions = true,
-        window = {
-            width = 60,
-            height = 20,
-            border = "rounded"
-        }
+local default_config = {
+    use_icons = true,
+    confirm_actions = true,
+    auto_refresh = true,
+    language = "en",
+    window = {
+        width = 60,
+        height = 20,
+        border = "rounded",
+        title = true,
+        footer = true
     },
     git = {
-        cmd = "git",
-        timeout = 5000
+        timeout = 5000,
+        command = "git"
     }
 }
 
--- Configuration active
-M.config = {}
+-- État global du plugin
+local state = {
+    initialized = false,
+    config = vim.deepcopy(default_config)
+}
 
--- Fonction d'initialisation
-function M.setup(opts)
-    -- Fusionner les options utilisateur avec les valeurs par défaut
-    M.config = vim.tbl_deep_extend("force", {}, M.defaults, opts or {})
+-- Initialise les modules
+local function init_modules(config)
+    -- Initialise l'internationalisation
+    require('gitpilot.i18n').setup({
+        language = config.language
+    })
     
-    -- Charger le module de traduction
-    local i18n = require("gitpilot.i18n")
-    i18n.setup(M.config.language)
+    -- Initialise l'interface utilisateur
+    require('gitpilot.ui').setup({
+        use_icons = config.use_icons,
+        window = config.window
+    })
     
-    -- Initialiser les fonctionnalités de base
-    require("gitpilot.features").setup(M.config)
+    -- Initialise les utilitaires
+    require('gitpilot.utils').setup({
+        git = config.git
+    })
+    
+    -- Initialise les menus
+    require('gitpilot.menu').setup({
+        confirm_actions = config.confirm_actions,
+        auto_refresh = config.auto_refresh
+    })
+    
+    -- Initialise les actions
+    require('gitpilot.actions').setup({
+        confirm_actions = config.confirm_actions,
+        auto_refresh = config.auto_refresh
+    })
+    
+    -- Initialise le planificateur de sauvegarde
+    require('gitpilot.features.backup_scheduler').setup()
+    
+    -- Initialise la gestion des mirrors
+    require('gitpilot.features.mirror').setup()
+    
+    -- Initialise le module de patch
+    require("gitpilot.features.patch_ui").setup()
+    
+    -- Initialise l'historique interactif
+    require("gitpilot.features.history_ui").setup()
+    
+    -- Initialise la gestion des issues
+    require("gitpilot.features.issues_ui").setup()
 end
 
--- Fonction pour obtenir la configuration actuelle
-function M.get_config()
-    return M.config
+-- Configure le plugin
+function M.setup(opts)
+    -- Fusionne les configurations
+    state.config = vim.tbl_deep_extend("force", default_config, opts or {})
+    
+    -- Initialise les modules
+    init_modules(state.config)
+    
+    -- Crée la commande GitPilot
+    vim.api.nvim_create_user_command('GitPilot', function(args)
+        M.show_menu()
+    end, {
+        desc = 'Open GitPilot menu'
+    })
+    
+    -- Marque comme initialisé
+    state.initialized = true
+end
+
+-- Affiche le menu principal
+function M.show_menu()
+    if not state.initialized then
+        local ui = require('gitpilot.ui')
+        ui.show_error("GitPilot not initialized. Please call setup() first.")
+        return
+    end
+    
+    require('gitpilot.menu').show_menu()
+end
+
+-- Réinitialise l'état
+function M.reset()
+    state.initialized = false
+    state.config = vim.deepcopy(default_config)
+    require('gitpilot.menu').reset()
 end
 
 return M

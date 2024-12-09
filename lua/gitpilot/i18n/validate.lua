@@ -5,26 +5,28 @@ M.validate_translations = function()
     local en = require('gitpilot.i18n.en')
     local fr = require('gitpilot.i18n.fr')
     local missing = {}
+    local seen = {}
 
-    local function check_keys(en_table, fr_table, prefix)
-        for key, value in pairs(en_table) do
+    local function check_keys(source_table, target_table, target_lang, prefix)
+        for key, value in pairs(source_table) do
             local full_key = prefix and (prefix .. "." .. key) or key
-            if type(value) == "table" then
-                if type(fr_table[key]) ~= "table" then
-                    table.insert(missing, {lang = "fr", key = full_key})
-                else
-                    check_keys(value, fr_table[key], full_key)
+            if not seen[full_key] then
+                seen[full_key] = true
+                if type(value) == "table" then
+                    if type(target_table[key]) ~= "table" then
+                        table.insert(missing, {lang = target_lang, key = full_key})
+                    else
+                        check_keys(value, target_table[key], target_lang, full_key)
+                    end
+                elseif target_table[key] == nil then
+                    table.insert(missing, {lang = target_lang, key = full_key})
                 end
-            elseif fr_table[key] == nil then
-                table.insert(missing, {lang = "fr", key = full_key})
             end
         end
     end
 
-    -- Vérifier les clés anglaises dans le français
-    check_keys(en, fr)
-    -- Vérifier les clés françaises dans l'anglais
-    check_keys(fr, en)
+    -- Vérifier uniquement les clés anglaises dans le français
+    check_keys(en, fr, "fr")
 
     return missing
 end

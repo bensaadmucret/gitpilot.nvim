@@ -173,8 +173,283 @@ return {
     ["search.branches.results"] = "Found Branches",
     ["search.branches.switched"] = "Switched to branch",
     
+    -- Version messages
+    ["version.restore"] = "Restore Version",
+    ["version.select_commit"] = "Select a commit to restore:",
+    ["version.confirm_restore"] = "Do you want to restore this commit to a new branch?",
+    ["version.enter_branch_name"] = "New branch name:",
+    
+    -- Version success messages
+    ["version.success.restored"] = "Version restored to branch '%{branch}'",
+    
+    -- Version error messages
+    ["version.error.no_commits"] = "No commits found",
+    ["version.error.commit_not_found"] = "Commit not found",
+    ["version.error.restore_failed"] = "Failed to restore version: %{error}",
+    
+    -- Backup messages
+    ["backup.title"] = "Backup Management",
+    ["backup.create"] = "Create Backup",
+    ["backup.restore"] = "Restore Backup",
+    ["backup.list"] = "List Backups",
+    ["backup.export"] = "Export as Patch",
+    ["backup.import"] = "Import Patch",
+    ["backup.mirror"] = "Configure Mirror",
+    ["backup.sync"] = "Sync Mirror",
+    ["backup.delete"] = "Delete Backup",
+    
+    -- Backup success messages
+    ["backup.success.created"] = "Backup '%{name}' created successfully",
+    ["backup.success.restored"] = "Backup restored to branch '%{name}'",
+    ["backup.success.deleted"] = "Backup deleted successfully",
+    ["backup.success.patch_exported"] = "Patch exported successfully to '%{path}'",
+    ["backup.success.patch_imported"] = "Patch imported successfully",
+    ["backup.success.mirror_configured"] = "Mirror configured successfully",
+    ["backup.success.mirror_synced"] = "Mirror synchronized successfully",
+    
+    -- Backup error messages
+    ["backup.error.repo_name"] = "Unable to determine repository name",
+    ["backup.error.create_failed"] = "Failed to create backup: %{error}",
+    ["backup.error.restore_failed"] = "Failed to restore backup: %{error}",
+    ["backup.error.invalid_bundle"] = "Invalid bundle: %{error}",
+    ["backup.error.delete_failed"] = "Failed to delete backup: %{error}",
+    ["backup.error.patch_export_failed"] = "Failed to export patch: %{error}",
+    ["backup.error.patch_import_failed"] = "Failed to import patch: %{error}",
+    ["backup.error.mirror_setup_failed"] = "Failed to setup mirror: %{error}",
+    ["backup.error.mirror_config_failed"] = "Failed to configure mirror: %{error}",
+    ["backup.error.mirror_sync_failed"] = "Failed to sync mirror: %{error}",
+    
+    -- Backup info messages
+    ["backup.info.no_backups"] = "No backups available",
+    ["backup.info.select_backup"] = "Select a backup:",
+    ["backup.info.enter_branch"] = "Enter branch name:",
+    ["backup.info.enter_path"] = "Enter destination path:",
+    ["backup.info.enter_mirror"] = "Enter mirror URL:",
+    
     -- UI messages
     ["ui.no_items"] = "No items to select",
     ["ui.select_not_available"] = "Selection not available",
-    ["test.message_only_in_english"] = "Test Message"
+    ["test.message_only_in_english"] = "Test Message",
+    
+    -- Schedule messages
+    ["schedule.title"] = "Automatic Backup Configuration",
+    ["schedule.configure"] = "Configure Automatic Backups",
+    ["schedule.toggle"] = "Enable/Disable Automatic Backups",
+    ["schedule.on_branch_switch"] = "Backup on Branch Switch",
+    ["schedule.on_commit"] = "Backup after Commit",
+    ["schedule.on_push"] = "Backup after Push",
+    ["schedule.on_pull"] = "Backup after Pull",
+    ["schedule.daily"] = "Daily Backup",
+    ["schedule.weekly"] = "Weekly Backup",
+    ["schedule.configure_retention"] = "Configure Retention",
+    ["schedule.max_backups"] = "Maximum number of backups to keep:",
+    ["schedule.retain_days"] = "Number of days to retain backups:",
+    
+    -- Schedule success messages
+    ["schedule.enabled"] = "Automatic backups enabled",
+    ["schedule.disabled"] = "Automatic backups disabled",
+    ["schedule.config_updated"] = "Backup configuration updated",
+    
+    -- Schedule error messages
+    ["schedule.error.invalid_number"] = "Please enter a valid number",
+    ["schedule.error.too_small"] = "Value must be greater than 0",
+    
+    -- Mirror messages
+    ["mirror.title"] = "Mirror Management (Repository Replication)",
+    ["mirror.add"] = "Add Mirror - Create a synchronized copy of the repository",
+    ["mirror.list"] = "List Mirrors - View and manage your synchronized copies",
+    ["mirror.sync_all"] = "Sync All Mirrors - Update all copies",
+    ["mirror.configure"] = "Configure Mirrors - Synchronization settings",
+    ["mirror.enter_name"] = "Give your mirror a short, descriptive name (e.g., backup_github):",
+    ["mirror.enter_url"] = "Enter the remote repository URL (e.g., https://github.com/user/repo.git):",
+    ["mirror.no_mirrors"] = "No mirrors configured. Add one to secure your code!",
+    ["mirror.never_synced"] = "Never synced - Click 'Sync' to start",
+    ["mirror.select_mirror"] = "Select a mirror to manage:",
+    ["mirror.sync"] = "Sync - Update now",
+    ["mirror.enable"] = "Enable - Allow synchronization",
+    ["mirror.disable"] = "Disable - Pause synchronization",
+    ["mirror.remove"] = "Remove - Delete this mirror",
+    ["mirror.actions_for"] = "Available actions for mirror %s:",
+    ["mirror.confirm_remove"] = "Are you sure you want to remove mirror %s? This won't delete the remote repository.",
+    
+    -- Mirror configuration messages
+    ["mirror.config.title"] = "Mirror Synchronization Configuration",
+    ["mirror.config.auto_sync"] = "Automatic Synchronization - Keep copies up-to-date without intervention",
+    ["mirror.config.sync_interval"] = "Sync Interval - Frequency of automatic updates",
+    ["mirror.config.sync_on_push"] = "Sync on Push - Immediate update after each push",
+    ["mirror.config.enable_auto_sync"] = "Do you want to enable automatic synchronization? Recommended for safety.",
+    ["mirror.config.enable_sync_on_push"] = "Automatically sync after each push? Recommended for consistency.",
+    ["mirror.config.enter_interval"] = "Time between synchronizations (in seconds, e.g., 3600 for 1 hour):",
+    
+    -- Mirror help messages
+    ["mirror.help.what_is"] = "A mirror is a complete, synchronized copy of your Git repository. It can serve as a backup or replica.",
+    ["mirror.help.why_use"] = "Mirrors are useful for:\n- Backing up your code\n- Distributing code across multiple servers\n- Accelerating access in different regions",
+    ["mirror.help.how_to"] = "To get started:\n1. Add a mirror with its URL\n2. Enable automatic synchronization\n3. Regularly check mirror status",
+    ["mirror.help.auto_sync"] = "Automatic synchronization keeps your mirrors up-to-date without manual intervention.",
+    ["mirror.help.sync_interval"] = "Choose an interval that matches your commit frequency:\n- 1 hour: very active projects\n- 24 hours: less active projects",
+    
+    -- Mirror success messages
+    ["mirror.success.added"] = "Mirror %{name} added successfully",
+    ["mirror.success.removed"] = "Mirror %{name} removed successfully",
+    ["mirror.success.enabled"] = "Mirror %{name} enabled",
+    ["mirror.success.disabled"] = "Mirror %{name} disabled",
+    ["mirror.success.synced"] = "Mirror %{name} synced successfully",
+    
+    -- Mirror error messages
+    ["mirror.error.already_exists"] = "Mirror %{name} already exists",
+    ["mirror.error.invalid_url"] = "Invalid mirror URL",
+    ["mirror.error.add_failed"] = "Failed to add mirror: %{error}",
+    ["mirror.error.config_failed"] = "Failed to configure mirror",
+    ["mirror.error.not_found"] = "Mirror %{name} not found",
+    ["mirror.error.remove_failed"] = "Failed to remove mirror: %{error}",
+    ["mirror.error.disabled"] = "Mirror %{name} is disabled",
+    ["mirror.error.sync_failed"] = "Failed to sync %{name}: %{error}",
+    ["mirror.error.invalid_interval"] = "Invalid interval",
+    
+    -- Patch management
+    ["patch.menu.title"] = "Patch Management",
+    ["patch.menu.description"] = "Create, apply and manage Git patches",
+    
+    ["patch.create.title"] = "Create Patch",
+    ["patch.create.description"] = "Create a patch from selected commits",
+    ["patch.create.start_commit"] = "Start commit (empty for last commit)",
+    ["patch.create.end_commit"] = "End commit (empty for HEAD)",
+    ["patch.create.output_dir"] = "Output directory (empty for current directory)",
+    ["patch.create.success"] = "Patch(es) created successfully: %{files}",
+    ["patch.create.error"] = "Error creating patch: %{error}",
+    
+    ["patch.apply.title"] = "Apply Patch",
+    ["patch.apply.description"] = "Apply an existing patch to the repository",
+    ["patch.apply.select"] = "Select a patch to apply",
+    ["patch.apply.no_patches"] = "No patches found in directory",
+    ["patch.apply.check_failed"] = "Patch cannot be applied: %{error}",
+    ["patch.apply.success"] = "Patch applied successfully",
+    ["patch.apply.error"] = "Error applying patch: %{error}",
+    
+    ["patch.list.title"] = "List Patches",
+    ["patch.list.description"] = "View available patches",
+    ["patch.list.empty"] = "No patches found",
+    ["patch.show.error"] = "Error displaying patch: %{error}",
+    
+    -- Interactive History
+    ["history.menu.title"] = "Git History",
+    ["history.menu.description"] = "Browse and search Git history",
+    
+    ["history.browse.title"] = "Browse History",
+    ["history.browse.description"] = "View list of recent commits",
+    
+    ["history.search.title"] = "Search History",
+    ["history.search.description"] = "Search commits by content",
+    ["history.search.prompt"] = "Enter search term:",
+    ["history.search.empty"] = "Search term cannot be empty",
+    ["history.search.no_results"] = "No results found",
+    ["history.search.results"] = "Search Results",
+    
+    ["history.graph.title"] = "Branch Graph",
+    ["history.graph.description"] = "Visualize branch and commit graph",
+    
+    ["history.filter.title"] = "Filter History",
+    ["history.filter.description"] = "Filter commits by author, date, or file",
+    ["history.filter.by_author"] = "Filter by Author",
+    ["history.filter.by_date"] = "Filter by Date",
+    ["history.filter.by_file"] = "Filter by File",
+    ["history.filter.author_prompt"] = "Author name:",
+    ["history.filter.date_prompt"] = "Date (YYYY-MM-DD):",
+    ["history.filter.file_prompt"] = "File path:",
+    ["history.filter.no_results"] = "No commits found with these criteria",
+    ["history.filter.results"] = "Filtered Commits",
+    
+    ["history.details.commit"] = "Commit: %{hash}",
+    ["history.details.author"] = "Author: %{author} <%{email}>",
+    ["history.details.date"] = "Date: %{date}",
+    ["history.details.subject"] = "Subject: %{subject}",
+    ["history.details.files"] = "Modified Files:",
+    ["history.details.stats"] = "Statistics:",
+    
+    ["history.error.fetch"] = "Error fetching history",
+    ["history.error.details"] = "Error fetching commit details",
+    ["history.error.search"] = "Error during search",
+    ["history.error.graph"] = "Error generating graph",
+    
+    -- Issues Management
+    ["issues.menu.title"] = "Issues Management",
+    ["issues.menu.description"] = "Create and manage GitHub/GitLab issues",
+    
+    ["issues.create.title"] = "Create Issue",
+    ["issues.create.description"] = "Create a new issue",
+    ["issues.create.select_template"] = "Select Template",
+    ["issues.create.title_prompt"] = "Issue title:",
+    ["issues.create.title_empty"] = "Title cannot be empty",
+    ["issues.create.body_prompt"] = "Issue description:",
+    ["issues.create.labels_prompt"] = "Labels (comma-separated):",
+    ["issues.create.assignees_prompt"] = "Assignees (comma-separated):",
+    ["issues.create.success"] = "Issue #%{number} created successfully",
+    ["issues.create.error"] = "Error creating issue: %{error}",
+    
+    ["issues.list.title"] = "List Issues",
+    ["issues.list.description"] = "View all issues",
+    ["issues.list.empty"] = "No issues found",
+    ["issues.list.error"] = "Error fetching issues: %{error}",
+    
+    ["issues.search.title"] = "Search Issues",
+    ["issues.search.description"] = "Search issues by criteria",
+    ["issues.search.by_author"] = "Search by Author",
+    ["issues.search.by_label"] = "Search by Label",
+    ["issues.search.by_status"] = "Search by Status",
+    ["issues.search.author_prompt"] = "Author name:",
+    ["issues.search.label_prompt"] = "Label to search:",
+    ["issues.search.select_status"] = "Select Status",
+    ["issues.search.no_results"] = "No issues found",
+    ["issues.search.results"] = "Search Results",
+    
+    ["issues.link.title"] = "Link Commit to Issue",
+    ["issues.link.description"] = "Link a commit to an issue",
+    ["issues.link.commit_prompt"] = "Commit hash:",
+    ["issues.link.commit_empty"] = "Commit hash cannot be empty",
+    ["issues.link.issue_prompt"] = "Issue number:",
+    ["issues.link.issue_empty"] = "Issue number cannot be empty",
+    ["issues.link.success"] = "Successfully linked commit to issue",
+    ["issues.link.error"] = "Error linking commit: %{error}",
+    
+    ["issues.details.number"] = "Issue #%{number}",
+    ["issues.details.title"] = "Title: %{title}",
+    ["issues.details.status"] = "Status: %{status}",
+    ["issues.details.author"] = "Author: %{author}",
+    ["issues.details.labels"] = "Labels",
+    ["issues.details.assignees"] = "Assignees",
+    
+    ["issues.status.open"] = "Open",
+    ["issues.status.closed"] = "Closed",
+    
+    -- Conflict Management
+    ["conflict.menu.title"] = "Conflict Management",
+    ["conflict.menu.description"] = "Resolve merge conflicts",
+    
+    ["conflict.files.title"] = "Conflicting Files",
+    ["conflict.list.title"] = "Conflict List",
+    ["conflict.item"] = "Conflict #%{number} (lines %{start}-%{end_line})",
+    
+    ["conflict.section.ours"] = "Our Version (%{ref})",
+    ["conflict.section.theirs"] = "Their Version (%{ref})",
+    
+    ["conflict.resolve.title"] = "Resolve Conflict",
+    ["conflict.resolve.use_ours"] = "Use our version",
+    ["conflict.resolve.use_ours_desc"] = "Keep local changes",
+    ["conflict.resolve.use_theirs"] = "Use their version",
+    ["conflict.resolve.use_theirs_desc"] = "Accept incoming changes",
+    ["conflict.resolve.manual"] = "Manual resolution",
+    ["conflict.resolve.manual_desc"] = "Enter custom resolution",
+    ["conflict.resolve.manual_prompt"] = "Enter resolved content:",
+    ["conflict.resolve.manual_empty"] = "Content cannot be empty",
+    ["conflict.resolve.preview_diff"] = "View differences",
+    ["conflict.resolve.preview_diff_desc"] = "Compare versions side by side",
+    ["conflict.resolve.use_previous"] = "Use previous resolution",
+    ["conflict.resolve.use_previous_desc"] = "Apply same resolution as last time",
+    ["conflict.resolve.success"] = "Conflict resolved successfully",
+    ["conflict.resolve.error"] = "Error resolving conflict",
+    
+    ["conflict.diff.error"] = "Error comparing versions",
+    ["conflict.read.error"] = "Error reading file",
+    ["conflict.search.error"] = "Error searching for conflicts",
+    ["conflict.none_found"] = "No conflicts found",
 }
