@@ -27,11 +27,11 @@ local function show_patch_menu()
 end
 
 function M.create_patch_menu()
-    -- Demande le commit de début (optionnel)
+    -- Ask for the start commit (optional)
     ui.input(i18n.t("patch.create.start_commit"), function(start_commit)
-        -- Demande le commit de fin (optionnel)
+        -- Ask for the end commit (optional)
         ui.input(i18n.t("patch.create.end_commit"), function(end_commit)
-            -- Demande le répertoire de sortie (optionnel)
+            -- Ask for the output directory (optional)
             ui.input(i18n.t("patch.create.output_dir"), function(output_dir)
                 local success, result = patch.create_patch(
                     start_commit ~= "" and start_commit or nil,
@@ -50,27 +50,27 @@ function M.create_patch_menu()
 end
 
 function M.apply_patch_menu()
-    -- Liste les patches disponibles
+    -- List available patches
     local success, patches = patch.list_patches()
     if not success or #patches == 0 then
         ui.error(i18n.t("patch.apply.no_patches"))
         return
     end
     
-    -- Crée les éléments du menu pour chaque patch
+    -- Create menu items for each patch
     local menu_items = {}
     for _, patch_file in ipairs(patches) do
         table.insert(menu_items, {
             label = patch_file,
             action = function()
-                -- Vérifie d'abord si le patch peut être appliqué
+                -- Check if the patch can be applied first
                 local check_success, check_result = patch.check_patch(patch_file)
                 if not check_success then
                     ui.error(i18n.t("patch.apply.check_failed", {error = check_result}))
                     return
                 end
                 
-                -- Applique le patch
+                -- Apply the patch
                 local apply_success, apply_result = patch.apply_patch(patch_file)
                 if apply_success then
                     ui.info(i18n.t("patch.apply.success"))
@@ -91,13 +91,13 @@ function M.list_patches_menu()
         return
     end
     
-    -- Crée les éléments du menu pour chaque patch
+    -- Create menu items for each patch
     local menu_items = {}
     for _, patch_file in ipairs(patches) do
         table.insert(menu_items, {
             label = patch_file,
             action = function()
-                -- Affiche le contenu du patch
+                -- Show the patch content
                 local show_success, content = patch.show_patch(patch_file)
                 if show_success then
                     ui.info(content)
@@ -111,21 +111,17 @@ function M.list_patches_menu()
     ui.show_menu(i18n.t("patch.list.title"), menu_items)
 end
 
--- Configuration du module
-function M.setup()
-    -- Crée le répertoire de patches s'il n'existe pas
-    local patch_dir = require("gitpilot.config").get("patch.directory")
-    if patch_dir then
-        vim.fn.mkdir(patch_dir, "p")
-    end
+-- Configure the module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
     
-    -- Crée le répertoire de templates s'il n'existe pas
+    -- Create templates directory if it doesn't exist
     local template_dir = require("gitpilot.config").get("patch.template_directory")
     if template_dir then
         vim.fn.mkdir(template_dir, "p")
     end
     
-    -- Ajoute l'entrée de menu pour les patches
+    -- Add menu entry for patches
     ui.add_menu_item({
         label = i18n.t("patch.menu.title"),
         description = i18n.t("patch.menu.description"),

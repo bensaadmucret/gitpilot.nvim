@@ -5,7 +5,7 @@ local i18n = require('gitpilot.i18n')
 
 local M = {}
 
--- Niveaux de notification
+-- Notification levels
 M.levels = {
     ERROR = "error",
     WARNING = "warn",
@@ -13,7 +13,7 @@ M.levels = {
     DEBUG = "debug"
 }
 
--- Configuration locale
+-- Local configuration
 local config = {
     use_icons = true,
     icons = {
@@ -37,12 +37,15 @@ local config = {
     }
 }
 
--- Initialisation du module
+-- Menu items storage
+local menu_items = {}
+
+-- Module initialization
 function M.setup(opts)
     config = vim.tbl_deep_extend("force", config, opts or {})
 end
 
--- Fonction interne pour formater le message
+-- Internal function to format message
 local function format_message(msg, level)
     if not config.use_icons then
         return msg
@@ -64,7 +67,21 @@ local function format_message(msg, level)
     return icon .. msg
 end
 
--- Affiche un message avec notification
+-- Add a menu item
+function M.add_menu_item(item)
+    if not item or not item.label or not item.action then
+        error("Menu item must have a label and an action")
+        return
+    end
+    table.insert(menu_items, item)
+end
+
+-- Get all menu items
+function M.get_menu_items()
+    return menu_items
+end
+
+-- Display a message with notification
 function M.show_message(msg, level)
     if not msg then return false end
     
@@ -83,22 +100,22 @@ function M.show_message(msg, level)
     return false
 end
 
--- Affiche un message d'erreur
+-- Display an error message
 function M.show_error(msg)
     return M.show_message(msg, M.levels.ERROR)
 end
 
--- Affiche un message d'avertissement
+-- Display a warning message
 function M.show_warning(msg)
     return M.show_message(msg, M.levels.WARNING)
 end
 
--- Affiche un message de succès
+-- Display a success message
 function M.show_success(msg)
     return M.show_message(format_message(msg, "success"), M.levels.INFO)
 end
 
--- Sélection dans une liste d'éléments
+-- Selection from a list of items
 function M.select(items, opts, callback)
     if not items or #items == 0 then
         return nil
@@ -126,7 +143,7 @@ function M.select(items, opts, callback)
     end
 end
 
--- Demande de saisie utilisateur
+-- User input request
 function M.input(opts, callback)
     opts = vim.tbl_deep_extend("force", {
         prompt = i18n.t("ui.input_prompt"),
@@ -150,7 +167,7 @@ function M.input(opts, callback)
     end
 end
 
--- Affiche une fenêtre de confirmation
+-- Display a confirmation window
 function M.confirm(opts)
     opts = vim.tbl_deep_extend("force", {
         prompt = i18n.t("confirm.prompt"),
@@ -180,7 +197,7 @@ function M.confirm(opts)
     end)
 end
 
--- Affiche une fenêtre flottante
+-- Display a floating window
 function M.float_window(content, opts)
     opts = vim.tbl_deep_extend("force", {
         width = config.window.width,
@@ -194,15 +211,15 @@ function M.float_window(content, opts)
         return true
     end
     
-    -- Crée le buffer
+    -- Create the buffer
     local buf = vim.api.nvim_create_buf(false, true)
     if not buf then return false end
     
-    -- Configure le buffer
+    -- Configure the buffer
     vim.api.nvim_buf_set_option(buf, 'modifiable', false)
     vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
     
-    -- Calcule les dimensions
+    -- Calculate dimensions
     local win_width = vim.api.nvim_get_option("columns")
     local win_height = vim.api.nvim_get_option("lines")
     
@@ -212,7 +229,7 @@ function M.float_window(content, opts)
     local row = math.floor((win_height - height) / 2)
     local col = math.floor((win_width - width) / 2)
     
-    -- Configure la fenêtre
+    -- Configure the window
     local win_opts = {
         relative = 'editor',
         row = row,
@@ -225,11 +242,11 @@ function M.float_window(content, opts)
         footer = opts.footer
     }
     
-    -- Crée la fenêtre
+    -- Create the window
     local win = vim.api.nvim_open_win(buf, true, win_opts)
     if not win then return false end
     
-    -- Configure les mappings
+    -- Configure mappings
     vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':close<CR>', {
         noremap = true,
         silent = true
