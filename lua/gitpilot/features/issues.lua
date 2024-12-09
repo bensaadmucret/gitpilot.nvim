@@ -9,8 +9,28 @@ local default_config = {
     gitlab_token = nil,
     github_api_url = "https://api.github.com",
     gitlab_api_url = "https://gitlab.com/api/v4",
-    templates_dir = ".github/ISSUE_TEMPLATE"
+    templates_dir = vim.fn.stdpath('data') .. '/gitpilot/templates/issues',
+    cache_dir = vim.fn.stdpath('data') .. '/gitpilot/cache/issues',
+    cache_timeout = 300,  -- 5 minutes
+    max_issues = 100,
+    auto_refresh = true
 }
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    
+    -- Crée les répertoires nécessaires
+    vim.fn.mkdir(current_config.templates_dir, "p")
+    vim.fn.mkdir(current_config.cache_dir, "p")
+    
+    -- Charge les tokens depuis la configuration globale
+    current_config.github_token = config.get("github.token") or current_config.github_token
+    current_config.gitlab_token = config.get("gitlab.token") or current_config.gitlab_token
+end
 
 -- Détecte le type de dépôt (GitHub ou GitLab)
 local function detect_repo_type()
@@ -49,13 +69,13 @@ local github = {
         end
         
         local url = string.format("%s/repos/%s/%s/issues",
-            config.github_api_url or default_config.github_api_url,
+            current_config.github_api_url or default_config.github_api_url,
             owner, repo
         )
         
         local response = curl.post(url, {
             headers = {
-                Authorization = "token " .. (config.github_token or ""),
+                Authorization = "token " .. (current_config.github_token or ""),
                 Accept = "application/vnd.github.v3+json"
             },
             body = vim.fn.json_encode({
@@ -80,7 +100,7 @@ local github = {
         end
         
         local url = string.format("%s/repos/%s/%s/issues",
-            config.github_api_url or default_config.github_api_url,
+            current_config.github_api_url or default_config.github_api_url,
             owner, repo
         )
         
@@ -96,7 +116,7 @@ local github = {
         
         local response = curl.get(url, {
             headers = {
-                Authorization = "token " .. (config.github_token or ""),
+                Authorization = "token " .. (current_config.github_token or ""),
                 Accept = "application/vnd.github.v3+json"
             }
         })
@@ -115,13 +135,13 @@ local github = {
         end
         
         local url = string.format("%s/repos/%s/%s/issues/%s",
-            config.github_api_url or default_config.github_api_url,
+            current_config.github_api_url or default_config.github_api_url,
             owner, repo, issue_number
         )
         
         local response = curl.patch(url, {
             headers = {
-                Authorization = "token " .. (config.github_token or ""),
+                Authorization = "token " .. (current_config.github_token or ""),
                 Accept = "application/vnd.github.v3+json"
             },
             body = vim.fn.json_encode(updates)
@@ -135,7 +155,7 @@ local github = {
     end,
     
     get_templates = function()
-        local templates_dir = default_config.templates_dir
+        local templates_dir = current_config.templates_dir
         local templates = {}
         
         if vim.fn.isdirectory(templates_dir) == 1 then
@@ -160,19 +180,19 @@ local gitlab = {
         end
         
         local project_id = vim.fn.system(string.format("curl --silent '%s/projects/%s%%2F%s' --header 'PRIVATE-TOKEN: %s' | jq .id",
-            config.gitlab_api_url or default_config.gitlab_api_url,
+            current_config.gitlab_api_url or default_config.gitlab_api_url,
             owner, repo,
-            config.gitlab_token or ""
+            current_config.gitlab_token or ""
         ))
         
         local url = string.format("%s/projects/%s/issues",
-            config.gitlab_api_url or default_config.gitlab_api_url,
+            current_config.gitlab_api_url or default_config.gitlab_api_url,
             project_id
         )
         
         local response = curl.post(url, {
             headers = {
-                ["PRIVATE-TOKEN"] = config.gitlab_token or ""
+                ["PRIVATE-TOKEN"] = current_config.gitlab_token or ""
             },
             body = vim.fn.json_encode({
                 title = title,
@@ -196,13 +216,13 @@ local gitlab = {
         end
         
         local project_id = vim.fn.system(string.format("curl --silent '%s/projects/%s%%2F%s' --header 'PRIVATE-TOKEN: %s' | jq .id",
-            config.gitlab_api_url or default_config.gitlab_api_url,
+            current_config.gitlab_api_url or default_config.gitlab_api_url,
             owner, repo,
-            config.gitlab_token or ""
+            current_config.gitlab_token or ""
         ))
         
         local url = string.format("%s/projects/%s/issues",
-            config.gitlab_api_url or default_config.gitlab_api_url,
+            current_config.gitlab_api_url or default_config.gitlab_api_url,
             project_id
         )
         
@@ -218,7 +238,7 @@ local gitlab = {
         
         local response = curl.get(url, {
             headers = {
-                ["PRIVATE-TOKEN"] = config.gitlab_token or ""
+                ["PRIVATE-TOKEN"] = current_config.gitlab_token or ""
             }
         })
         
@@ -236,19 +256,19 @@ local gitlab = {
         end
         
         local project_id = vim.fn.system(string.format("curl --silent '%s/projects/%s%%2F%s' --header 'PRIVATE-TOKEN: %s' | jq .id",
-            config.gitlab_api_url or default_config.gitlab_api_url,
+            current_config.gitlab_api_url or default_config.gitlab_api_url,
             owner, repo,
-            config.gitlab_token or ""
+            current_config.gitlab_token or ""
         ))
         
         local url = string.format("%s/projects/%s/issues/%s",
-            config.gitlab_api_url or default_config.gitlab_api_url,
+            current_config.gitlab_api_url or default_config.gitlab_api_url,
             project_id, issue_iid
         )
         
         local response = curl.put(url, {
             headers = {
-                ["PRIVATE-TOKEN"] = config.gitlab_token or ""
+                ["PRIVATE-TOKEN"] = current_config.gitlab_token or ""
             },
             body = vim.fn.json_encode(updates)
         })
@@ -261,7 +281,7 @@ local gitlab = {
     end,
     
     get_templates = function()
-        local templates_dir = ".gitlab/issue_templates"
+        local templates_dir = current_config.templates_dir
         local templates = {}
         
         if vim.fn.isdirectory(templates_dir) == 1 then

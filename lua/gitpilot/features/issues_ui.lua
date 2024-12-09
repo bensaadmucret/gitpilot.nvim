@@ -2,6 +2,52 @@ local M = {}
 local issues = require("gitpilot.features.issues")
 local ui = require("gitpilot.ui")
 local i18n = require("gitpilot.i18n")
+local config = require("gitpilot.config")
+
+-- Configuration par défaut
+local default_config = {
+    window = {
+        width = 0.8,
+        height = 0.8,
+        border = "rounded"
+    },
+    list = {
+        max_items = 50,
+        show_labels = true,
+        show_status = true,
+        show_assignees = true
+    },
+    details = {
+        show_comments = true,
+        show_timeline = true
+    }
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    
+    -- Configure le module issues
+    issues.setup({
+        github_token = config.get("github.token"),
+        gitlab_token = config.get("gitlab.token"),
+        templates_dir = config.get("issues.templates_dir"),
+        cache_dir = config.get("issues.cache_dir"),
+        cache_timeout = config.get("issues.cache_timeout"),
+        max_issues = config.get("issues.max_items"),
+        auto_refresh = config.get("issues.auto_refresh")
+    })
+    
+    -- Ajoute l'entrée de menu pour les issues
+    ui.add_menu_item({
+        label = i18n.t("issues.menu.title"),
+        description = i18n.t("issues.menu.description"),
+        action = M.show_issues_menu
+    })
+end
 
 local function format_issue(issue)
     local status = issue.state or issue.status
@@ -247,14 +293,6 @@ function M.link_commit_to_issue()
             end
         end)
     end)
-end
-
-function M.setup()
-    ui.add_menu_item({
-        label = i18n.t("issues.menu.title"),
-        description = i18n.t("issues.menu.description"),
-        action = M.show_issues_menu
-    })
 end
 
 return M
