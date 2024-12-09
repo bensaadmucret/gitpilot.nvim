@@ -4,37 +4,87 @@ local M = {}
 local utils = require('gitpilot.utils')
 local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
+local config = require('gitpilot.config')
 
 -- Configuration par défaut
-local config = {
+local default_config = {
     mirrors = {},
     auto_sync = false,
     sync_interval = 3600, -- 1 heure par défaut
     sync_on_push = true,
-    config_file = vim.fn.stdpath('data') .. '/gitpilot/mirrors.json'
+    config_file = vim.fn.stdpath('data') .. '/gitpilot/mirrors.json',
+    log_file = vim.fn.stdpath('data') .. '/gitpilot/mirrors.log',
+    max_retries = 3,
+    retry_delay = 5, -- 5 secondes
+    timeout = 300 -- 5 minutes
 }
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    
+    -- Crée le répertoire de configuration s'il n'existe pas
+    local config_dir = vim.fn.fnamemodify(current_config.config_file, ":h")
+    vim.fn.mkdir(config_dir, "p")
+    
+    -- Charge la configuration existante
+    load_config()
+    
+    -- Configure les hooks Git si nécessaire
+    if current_config.sync_on_push then
+        setup_git_hooks()
+    end
+end
 
 -- Charge la configuration des mirrors
 local function load_config()
-    if utils.is_file(config.config_file) then
-        local content = utils.read_file(config.config_file)
+    if utils.is_file(current_config.config_file) then
+        local content = utils.read_file(current_config.config_file)
         if content then
             local ok, data = pcall(vim.json.decode, content)
             if ok and data then
-                config = vim.tbl_deep_extend("force", config, data)
+                current_config.mirrors = data.mirrors or {}
+                current_config.auto_sync = data.auto_sync or default_config.auto_sync
+                current_config.sync_interval = data.sync_interval or default_config.sync_interval
+                current_config.sync_on_push = data.sync_on_push or default_config.sync_on_push
             end
         end
     end
 end
 
--- Sauvegarde la configuration des mirrors
+-- Sauvegarde la configuration
 local function save_config()
-    local dir = vim.fn.fnamemodify(config.config_file, ':h')
-    if not utils.is_directory(dir) then
-        vim.fn.mkdir(dir, 'p')
+    local data = {
+        mirrors = current_config.mirrors,
+        auto_sync = current_config.auto_sync,
+        sync_interval = current_config.sync_interval,
+        sync_on_push = current_config.sync_on_push
+    }
+    
+    local ok, json = pcall(vim.json.encode, data)
+    if not ok then
+        ui.error(i18n.t('mirror.error.save_config'))
+        return false
     end
-    local content = vim.json.encode(config)
-    utils.write_file(config.config_file, content)
+    
+    local fd = vim.loop.fs_open(current_config.config_file, "w", 438)
+    if not fd then
+        ui.error(i18n.t('mirror.error.save_config'))
+        return false
+    end
+    
+    local ok = vim.loop.fs_write(fd, json)
+    vim.loop.fs_close(fd)
+    
+    if not ok then
+        ui.error(i18n.t('mirror.error.save_config'))
+        return false
+    end
+    
+    return true
 end
 
 -- Vérifie si un dépôt est un mirror valide
@@ -54,7 +104,7 @@ function M.add_mirror(name, url)
     end
 
     -- Vérifie si le mirror existe déjà
-    if config.mirrors[name] then
+    if current_config.mirrors[name] then
         ui.show_error(i18n.t('mirror.error.already_exists', {name = name}))
         return false
     end
@@ -86,7 +136,7 @@ function M.add_mirror(name, url)
     ]], name, name, name, name))
 
     if success then
-        config.mirrors[name] = {
+        current_config.mirrors[name] = {
             url = url,
             last_sync = nil,
             enabled = true
@@ -104,7 +154,7 @@ end
 
 -- Supprime un mirror
 function M.remove_mirror(name)
-    if not config.mirrors[name] then
+    if not current_config.mirrors[name] then
         ui.show_error(i18n.t('mirror.error.not_found', {name = name}))
         return false
     end
@@ -115,7 +165,7 @@ function M.remove_mirror(name)
     ))
 
     if success then
-        config.mirrors[name] = nil
+        current_config.mirrors[name] = nil
         save_config()
         ui.show_info(i18n.t('mirror.success.removed', {name = name}))
         return true
@@ -127,15 +177,15 @@ end
 
 -- Active/désactive un mirror
 function M.toggle_mirror(name)
-    if not config.mirrors[name] then
+    if not current_config.mirrors[name] then
         ui.show_error(i18n.t('mirror.error.not_found', {name = name}))
         return false
     end
 
-    config.mirrors[name].enabled = not config.mirrors[name].enabled
+    current_config.mirrors[name].enabled = not current_config.mirrors[name].enabled
     save_config()
     
-    if config.mirrors[name].enabled then
+    if current_config.mirrors[name].enabled then
         ui.show_info(i18n.t('mirror.success.enabled', {name = name}))
     else
         ui.show_info(i18n.t('mirror.success.disabled', {name = name}))
@@ -145,12 +195,12 @@ end
 
 -- Synchronise un mirror spécifique
 function M.sync_mirror(name)
-    if not config.mirrors[name] then
+    if not current_config.mirrors[name] then
         ui.show_error(i18n.t('mirror.error.not_found', {name = name}))
         return false
     end
 
-    if not config.mirrors[name].enabled then
+    if not current_config.mirrors[name].enabled then
         ui.show_error(i18n.t('mirror.error.disabled', {name = name}))
         return false
     end
@@ -161,7 +211,7 @@ function M.sync_mirror(name)
     ))
 
     if success then
-        config.mirrors[name].last_sync = os.time()
+        current_config.mirrors[name].last_sync = os.time()
         save_config()
         ui.show_info(i18n.t('mirror.success.synced', {name = name}))
         return true
@@ -174,7 +224,7 @@ end
 -- Synchronise tous les mirrors actifs
 function M.sync_all_mirrors()
     local success = true
-    for name, mirror in pairs(config.mirrors) do
+    for name, mirror in pairs(current_config.mirrors) do
         if mirror.enabled then
             success = M.sync_mirror(name) and success
         end
@@ -184,23 +234,23 @@ end
 
 -- Configure la synchronisation automatique
 function M.configure_auto_sync(enabled, interval)
-    config.auto_sync = enabled
+    current_config.auto_sync = enabled
     if interval then
-        config.sync_interval = interval
+        current_config.sync_interval = interval
     end
     save_config()
 end
 
 -- Configure la synchronisation sur push
 function M.configure_sync_on_push(enabled)
-    config.sync_on_push = enabled
+    current_config.sync_on_push = enabled
     save_config()
 end
 
 -- Retourne la liste des mirrors
 function M.list_mirrors()
     local mirrors = {}
-    for name, mirror in pairs(config.mirrors) do
+    for name, mirror in pairs(current_config.mirrors) do
         table.insert(mirrors, {
             name = name,
             url = mirror.url,
@@ -212,28 +262,15 @@ function M.list_mirrors()
 end
 
 -- Initialise le module
-function M.setup()
-    load_config()
-
-    -- Configure le timer pour la synchronisation automatique
-    if config.auto_sync then
-        local timer = vim.loop.new_timer()
-        timer:start(0, config.sync_interval * 1000, vim.schedule_wrap(function()
+function M.setup_git_hooks()
+    local group = vim.api.nvim_create_augroup('GitPilotMirror', { clear = true })
+    vim.api.nvim_create_autocmd('User', {
+        pattern = 'GitPilotPostPush',
+        group = group,
+        callback = function()
             M.sync_all_mirrors()
-        end))
-    end
-
-    -- Configure l'autocmd pour la synchronisation sur push
-    if config.sync_on_push then
-        local group = vim.api.nvim_create_augroup('GitPilotMirror', { clear = true })
-        vim.api.nvim_create_autocmd('User', {
-            pattern = 'GitPilotPostPush',
-            group = group,
-            callback = function()
-                M.sync_all_mirrors()
-            end,
-        })
-    end
+        end,
+    })
 end
 
 return M

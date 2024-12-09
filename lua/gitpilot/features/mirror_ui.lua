@@ -4,6 +4,51 @@ local M = {}
 local mirror = require('gitpilot.features.mirror')
 local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
+local config = require('gitpilot.config')
+
+-- Configuration par défaut
+local default_config = {
+    window = {
+        width = 0.8,
+        height = 0.6,
+        border = "rounded"
+    },
+    list = {
+        show_status = true,
+        show_last_sync = true,
+        show_auto_sync = true
+    },
+    confirm_actions = true,
+    help = {
+        show_intro = true,
+        show_tips = true
+    }
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    
+    -- Configure le module mirror
+    mirror.setup({
+        auto_sync = config.get("mirror.auto_sync"),
+        sync_interval = config.get("mirror.sync_interval"),
+        sync_on_push = config.get("mirror.sync_on_push"),
+        max_retries = config.get("mirror.max_retries"),
+        retry_delay = config.get("mirror.retry_delay"),
+        timeout = config.get("mirror.timeout")
+    })
+    
+    -- Ajoute l'entrée de menu pour les mirrors
+    ui.add_menu_item({
+        label = i18n.t("mirror.menu.title"),
+        description = i18n.t("mirror.menu.description"),
+        action = M.show_mirror_menu
+    })
+end
 
 -- Affiche le menu principal des mirrors
 function M.show_mirror_menu()
