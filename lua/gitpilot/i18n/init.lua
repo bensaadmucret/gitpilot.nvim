@@ -38,19 +38,27 @@ end
 
 -- Détecte la langue système
 function M.get_system_lang()
-    local success, locale_output = utils.execute_command('locale', {cache = true})
-    if not success then
-        return DEFAULT_LANG
+    -- Sur macOS, on utilise la commande defaults pour obtenir la langue système
+    local success, output = utils.execute_command("defaults read -g AppleLocale")
+    if success and output then
+        -- Le format est généralement fr_FR, en_US, etc.
+        local lang_code = output:match("^([^_]+)")
+        if lang_code and available_langs[lang_code] then
+            return lang_code
+        end
     end
 
-    local lang = locale_output:match("LANG=([^%.]+)")
-    if not lang then
-        return DEFAULT_LANG
+    -- Essayons avec la variable d'environnement LANG
+    local env_lang = os.getenv("LANG")
+    if env_lang then
+        local lang_code = env_lang:match("^([^_%.]+)")
+        if lang_code and available_langs[lang_code] then
+            return lang_code
+        end
     end
 
-    -- Convertit le format locale (ex: "fr_FR") en code de langue (ex: "fr")
-    local lang_code = lang:match("^([^_]+)")
-    return lang_code and available_langs[lang_code] and lang_code or DEFAULT_LANG
+    -- Si rien ne fonctionne, on retourne la langue par défaut
+    return DEFAULT_LANG
 end
 
 -- Définit la langue
