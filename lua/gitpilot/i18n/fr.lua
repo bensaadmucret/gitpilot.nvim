@@ -41,6 +41,9 @@ return {
     ["success.remote_added"] = "Dépôt distant ajouté avec succès",
     ["success.remote_removed"] = "Dépôt distant supprimé avec succès",
 
+    -- Messages d'erreur spécifiques aux branches
+    ["branch.error.delete_current"] = "Impossible de supprimer la branche actuelle. Veuillez d'abord basculer sur une autre branche.",
+
     -- Interface utilisateur
     ["ui.loading"] = "Chargement...",
     ["ui.press_enter"] = "Appuyez sur Entrée pour continuer",

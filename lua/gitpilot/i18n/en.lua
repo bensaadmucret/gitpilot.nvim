@@ -13,6 +13,9 @@ return {
     -- Information messages
     ["info.branch_created"] = "Branch '%{name}' has been created",
     
+    -- Branch specific error messages
+    ["branch.error.delete_current"] = "Cannot delete the current branch. Please switch to another branch first.",
+    
     -- Main menu
     ["menu.main_title"] = " GitPilot - Main Menu",
     ["menu.main"] = "Main Menu",
