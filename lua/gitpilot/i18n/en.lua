@@ -13,6 +13,7 @@ return {
     -- Information messages
     ["info.branch_created"] = "Branch '%{name}' has been created",
     ["info.current_branch"] = "Current branch: %{name}",
+    ["info.branch_switched"] = "Switched to branch '%{name}'",
     
     -- Branch specific error messages
     ["branch.error.delete_current"] = "Cannot delete the current branch. Please switch to another branch first.",

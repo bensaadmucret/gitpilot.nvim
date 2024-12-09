@@ -24,6 +24,7 @@ return {
     -- Messages d'information
     ["info.branch_created"] = "La branche '%{name}' a été créée",
     ["info.current_branch"] = "Branche courante : %{name}",
+    ["info.branch_switched"] = "Basculé sur la branche '%{name}'",
 
     -- Messages de succès
     ["success.branch_created"] = "Branche créée avec succès",
