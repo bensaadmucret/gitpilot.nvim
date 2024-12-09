@@ -111,8 +111,20 @@ function M.list_patches_menu()
     ui.show_menu(i18n.t("patch.list.title"), menu_items)
 end
 
--- Initialise le module
+-- Configuration du module
 function M.setup()
+    -- Crée le répertoire de patches s'il n'existe pas
+    local patch_dir = require("gitpilot.config").get("patch.directory")
+    if patch_dir then
+        vim.fn.mkdir(patch_dir, "p")
+    end
+    
+    -- Crée le répertoire de templates s'il n'existe pas
+    local template_dir = require("gitpilot.config").get("patch.template_directory")
+    if template_dir then
+        vim.fn.mkdir(template_dir, "p")
+    end
+    
     -- Ajoute l'entrée de menu pour les patches
     ui.add_menu_item({
         label = i18n.t("patch.menu.title"),
