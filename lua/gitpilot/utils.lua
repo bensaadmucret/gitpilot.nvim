@@ -187,6 +187,28 @@ function M.branch_exists(branch, path)
     return success
 end
 
+-- Vérifie si un fichier existe
+function M.is_file(path)
+    local stat = vim.loop.fs_stat(path)
+    return stat and stat.type == "file" or false
+end
+
+-- Lit le contenu d'un fichier
+function M.read_file(path)
+    local fd = vim.loop.fs_open(path, "r", 438)
+    if not fd then return nil end
+    
+    local stat = vim.loop.fs_fstat(fd)
+    if not stat then
+        vim.loop.fs_close(fd)
+        return nil
+    end
+    
+    local data = vim.loop.fs_read(fd, stat.size, 0)
+    vim.loop.fs_close(fd)
+    return data
+end
+
 -- Initialisation du module
 function M.setup(opts)
     config = vim.tbl_deep_extend("force", config, opts or {})
