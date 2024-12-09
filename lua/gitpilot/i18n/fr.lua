@@ -23,6 +23,7 @@ return {
 
     -- Messages d'information
     ["info.branch_created"] = "La branche '%{name}' a été créée",
+    ["info.current_branch"] = "Branche courante : %{name}",
 
     -- Messages de succès
     ["success.branch_created"] = "Branche créée avec succès",
@@ -56,7 +57,7 @@ return {
     ["branch.delete.confirm"] = "Supprimer la branche '%s' ? Cette action ne peut pas être annulée !",
     ["branch.delete.success"] = "Branche '%s' supprimée avec succès",
     ["branch.delete.error"] = "Erreur lors de la suppression de la branche : %s",
-    ["branch.delete.current"] = "Impossible de supprimer la branche actuelle",
+    ["branch.delete.current"] = "Impossible de supprimer la branche courante",
     ["branch.switch.title"] = "Changer de branche",
     ["branch.switch.prompt"] = "Sélectionnez la branche :",
     ["branch.switch.success"] = "Basculé sur la branche '%s'",

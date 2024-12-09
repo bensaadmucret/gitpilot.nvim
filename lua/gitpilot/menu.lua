@@ -3,6 +3,7 @@
 local M = {}
 local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
+local utils = require('gitpilot.utils')
 
 -- Configuration locale
 local config = {
@@ -19,6 +20,15 @@ local state = {
     history = {},
     context = {}
 }
+
+-- Récupère la branche courante
+local function get_current_branch()
+    local success, output = utils.execute_command("git branch --show-current")
+    if success and output then
+        return output:gsub("^%s*(.-)%s*$", "%1")  -- Supprime les espaces en début et fin
+    end
+    return nil
+end
 
 -- Définition des menus
 local menus = {
@@ -164,8 +174,15 @@ function M.show_menu(menu_id, context)
         table.insert(items, format_menu_item(item))
     end
 
+    -- Ajoute la branche courante au titre si on est dans un dépôt git
+    local title = i18n.t(menu.title)
+    local current_branch = get_current_branch()
+    if current_branch then
+        title = title .. " (" .. current_branch .. ")"
+    end
+
     ui.select(items, {
-        prompt = i18n.t(menu.title),
+        prompt = title,
         format_item = function(item)
             return item
         end
