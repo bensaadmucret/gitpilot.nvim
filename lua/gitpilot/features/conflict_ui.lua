@@ -2,6 +2,42 @@ local M = {}
 local conflict = require("gitpilot.features.conflict")
 local ui = require("gitpilot.ui")
 local i18n = require("gitpilot.i18n")
+local config = require("gitpilot.config")
+
+-- Configuration par défaut
+local default_config = {
+    window = {
+        width = 0.8,
+        height = 0.8,
+        border = "rounded"
+    },
+    highlight = {
+        ours = "DiffAdd",
+        theirs = "DiffDelete",
+        marker = "DiffChange"
+    }
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    
+    -- Configure le module de conflit
+    conflict.setup({
+        resolution_dir = config.get("conflict.resolution_dir"),
+        max_saved_resolutions = config.get("conflict.max_saved_resolutions") or 10
+    })
+    
+    -- Ajoute l'entrée de menu pour la gestion des conflits
+    ui.add_menu_item({
+        label = i18n.t("conflict.menu.title"),
+        description = i18n.t("conflict.menu.description"),
+        action = M.show_conflicts_menu
+    })
+end
 
 -- Formate l'affichage d'un conflit
 local function format_conflict_display(file_content, current_conflict)
@@ -169,14 +205,6 @@ function M.show_conflicts_menu()
     end
     
     ui.show_menu(i18n.t("conflict.files.title"), menu_items)
-end
-
-function M.setup()
-    ui.add_menu_item({
-        label = i18n.t("conflict.menu.title"),
-        description = i18n.t("conflict.menu.description"),
-        action = M.show_conflicts_menu
-    })
 end
 
 return M

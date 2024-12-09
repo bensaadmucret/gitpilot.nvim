@@ -1,5 +1,22 @@
 local M = {}
 local utils = require("gitpilot.utils")
+local config = require("gitpilot.config")
+
+-- Configuration par défaut
+local default_config = {
+    resolution_dir = vim.fn.stdpath('data') .. '/gitpilot/conflict_resolutions',
+    max_saved_resolutions = 10
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    -- Crée le répertoire de résolutions s'il n'existe pas
+    vim.fn.mkdir(current_config.resolution_dir, "p")
+end
 
 -- Trouve les fichiers en conflit
 function M.find_conflicts()
@@ -18,9 +35,24 @@ end
 
 -- Obtient le contenu d'un fichier en conflit avec les marqueurs
 function M.get_conflict_content(file)
-    local cmd = "cat " .. utils.shell_escape(file)
-    local success, content = utils.execute_command(cmd)
-    if not success then
+    local fd = vim.loop.fs_open(file, "r", 438)
+    if not fd then return nil end
+    
+    local stat = vim.loop.fs_fstat(fd)
+    if not stat then
+        vim.loop.fs_close(fd)
+        return nil
+    end
+    
+    local content = vim.loop.fs_read(fd, stat.size, 0)
+    vim.loop.fs_close(fd)
+    return content
+end
+
+-- Obtient le contenu d'un fichier en conflit avec les marqueurs
+function M.get_conflict_content_with_markers(file)
+    local content = M.get_conflict_content(file)
+    if not content then
         return false, nil
     end
     
@@ -63,7 +95,7 @@ end
 
 -- Résout un conflit spécifique dans un fichier
 function M.resolve_conflict(file, resolution, conflict_index)
-    local success, data = M.get_conflict_content(file)
+    local success, data = M.get_conflict_content_with_markers(file)
     if not success then
         return false, "Impossible de lire le fichier"
     end
@@ -127,12 +159,8 @@ end
 
 -- Sauvegarde une résolution pour une utilisation future
 function M.save_resolution(file, conflict_hash, resolution)
-    local resolutions_dir = ".git/conflict_resolutions"
-    local cmd = "mkdir -p " .. resolutions_dir
-    utils.execute_command(cmd)
-    
     local resolution_file = string.format("%s/%s_%s.resolution",
-        resolutions_dir,
+        current_config.resolution_dir,
         file:gsub("/", "_"),
         conflict_hash
     )
@@ -149,7 +177,8 @@ end
 
 -- Récupère une résolution précédente
 function M.get_saved_resolution(file, conflict_hash)
-    local resolution_file = string.format(".git/conflict_resolutions/%s_%s.resolution",
+    local resolution_file = string.format("%s/%s_%s.resolution",
+        current_config.resolution_dir,
         file:gsub("/", "_"),
         conflict_hash
     )
@@ -173,7 +202,7 @@ end
 
 -- Obtient une prévisualisation de la résolution
 function M.preview_resolution(file, resolution, conflict_index)
-    local success, data = M.get_conflict_content(file)
+    local success, data = M.get_conflict_content_with_markers(file)
     if not success then
         return false, nil
     end

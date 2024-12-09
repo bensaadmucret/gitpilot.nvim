@@ -2,6 +2,23 @@ local M = {}
 local utils = require("gitpilot.utils")
 local config = require("gitpilot.config")
 
+-- Configuration par défaut
+local default_config = {
+    max_commits = 1000,
+    cache_timeout = 300,  -- 5 minutes
+    date_format = "%Y-%m-%d %H:%M:%S",
+    show_signature = true,
+    show_stats = true
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+end
+
 -- Récupère l'historique des commits avec formatage personnalisé
 -- @param options: table avec les options de filtrage
 --   - author: filtrer par auteur

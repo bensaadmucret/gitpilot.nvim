@@ -5,6 +5,42 @@ local backup = require('gitpilot.features.backup')
 local ui = require('gitpilot.ui')
 local utils = require('gitpilot.utils')
 local i18n = require('gitpilot.i18n')
+local config = require('gitpilot.config')
+
+-- Configuration par défaut
+local default_config = {
+    window = {
+        width = 0.8,
+        height = 0.6,
+        border = "rounded"
+    },
+    confirm_actions = true
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    
+    -- Configure le module de backup
+    backup.setup({
+        backup_dir = config.get("backup.directory"),
+        auto_backup = config.get("backup.auto_backup"),
+        backup_on_switch = config.get("backup.backup_on_switch"),
+        max_backups = config.get("backup.max_backups"),
+        include_stashes = config.get("backup.include_stashes"),
+        backup_format = config.get("backup.format")
+    })
+    
+    -- Ajoute l'entrée de menu pour les backups
+    ui.add_menu_item({
+        label = i18n.t("backup.menu.title"),
+        description = i18n.t("backup.menu.description"),
+        action = M.show_backup_menu
+    })
+end
 
 -- Menu principal de gestion des backups
 function M.show_backup_menu()
