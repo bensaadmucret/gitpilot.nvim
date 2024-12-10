@@ -2,6 +2,51 @@ local M = {}
 local history = require("gitpilot.features.history")
 local ui = require("gitpilot.ui")
 local i18n = require("gitpilot.i18n")
+local config = require("gitpilot.config")
+
+-- Configuration par défaut
+local default_config = {
+    window = {
+        width = 0.8,
+        height = 0.8,
+        border = "rounded"
+    },
+    list = {
+        max_items = 100,
+        show_date = true,
+        show_author = true,
+        show_message = true,
+        show_hash = true
+    },
+    details = {
+        show_diff = true,
+        show_stats = true,
+        max_diff_lines = 500
+    }
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    
+    -- Configure le module history
+    history.setup({
+        max_items = config.get("history.max_items"),
+        show_diff = config.get("history.show_diff"),
+        show_stats = config.get("history.show_stats"),
+        max_diff_lines = config.get("history.max_diff_lines")
+    })
+    
+    -- Ajoute l'entrée de menu pour l'historique
+    ui.add_menu_item({
+        label = i18n.t("history.menu.title"),
+        description = i18n.t("history.menu.description"),
+        action = M.show_history_menu
+    })
+end
 
 local function format_commit_line(commit)
     return string.format("%s | %s | %s | %s",
@@ -210,14 +255,6 @@ function M.show_filtered_commits(commits)
     end
     
     ui.show_menu(i18n.t("history.filter.results"), menu_items)
-end
-
-function M.setup()
-    ui.add_menu_item({
-        label = i18n.t("history.menu.title"),
-        description = i18n.t("history.menu.description"),
-        action = M.show_history_menu
-    })
 end
 
 return M

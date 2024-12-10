@@ -2,19 +2,37 @@ local M = {}
 local utils = require('gitpilot.utils')
 local ui = require('gitpilot.ui')
 
--- Types de commit selon Conventional Commits
-local COMMIT_TYPES = {
-    feat = "Nouvelles fonctionnalités",
-    fix = "Corrections de bugs",
-    docs = "Documentation",
-    style = "Changements de style (formatage, espaces, etc.)",
-    refactor = "Refactoring du code",
-    perf = "Améliorations des performances",
-    test = "Ajout ou modification de tests",
-    build = "Changements affectant le système de build",
-    ci = "Changements de configuration CI",
-    chore = "Autres changements"
+-- Configuration par défaut
+local default_config = {
+    types = {
+        feat = "Nouvelles fonctionnalités",
+        fix = "Corrections de bugs",
+        docs = "Documentation",
+        style = "Changements de style (formatage, espaces, etc.)",
+        refactor = "Refactoring du code",
+        perf = "Améliorations des performances",
+        test = "Ajout ou modification de tests",
+        build = "Changements affectant le système de build",
+        ci = "Changements de configuration CI",
+        chore = "Autres changements"
+    },
+    max_subject_length = 72,
+    max_body_length = 100,
+    enforce_conventions = true,
+    auto_scope = true
 }
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
+
+-- Configure le module
+function M.setup(opts)
+    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    COMMIT_TYPES = current_config.types
+end
+
+-- Types de commit selon Conventional Commits
+local COMMIT_TYPES = current_config.types
 
 -- Patterns pour détecter le type de changement
 local FILE_PATTERNS = {
