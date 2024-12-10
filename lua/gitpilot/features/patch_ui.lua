@@ -3,9 +3,32 @@ local patch = require("gitpilot.features.patch")
 local ui = require("gitpilot.ui")
 local i18n = require("gitpilot.i18n")
 local utils = require("gitpilot.utils")
+local config = require("gitpilot.config")
+
+-- Configuration par défaut
+local default_config = {
+    window = {
+        width = 0.8,
+        height = 0.6,
+        border = "rounded"
+    },
+    templates = {
+        directory = vim.fn.stdpath('data') .. '/gitpilot/templates/patches',
+        show_preview = true
+    },
+    list = {
+        show_date = true,
+        show_author = true,
+        show_description = true
+    },
+    confirm_actions = true
+}
+
+-- Configuration actuelle
+local current_config = vim.deepcopy(default_config)
 
 -- Initialize default configuration
-local current_config = {}
+-- local current_config = {}
 
 local function show_patch_menu()
     local menu_items = {
@@ -114,17 +137,18 @@ function M.list_patches_menu()
     ui.show_menu(i18n.t("patch.list.title"), menu_items)
 end
 
--- Configure the module
+-- Configure le module
 function M.setup(opts)
     current_config = vim.tbl_deep_extend("force", current_config, opts or {})
     
-    -- Create templates directory if it doesn't exist
-    local template_dir = require("gitpilot.config").get("patch.template_directory")
-    if template_dir then
-        vim.fn.mkdir(template_dir, "p")
-    end
+    -- Configure le module patch
+    patch.setup({
+        template_directory = config.get("patch.template_directory"),
+        auto_preview = config.get("patch.auto_preview"),
+        max_preview_lines = config.get("patch.max_preview_lines")
+    })
     
-    -- Add menu entry for patches
+    -- Ajoute l'entrée de menu pour les patches
     ui.add_menu_item({
         label = i18n.t("patch.menu.title"),
         description = i18n.t("patch.menu.description"),
