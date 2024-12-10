@@ -23,7 +23,7 @@ end
 -- @param options: table avec les options de filtrage
 --   - author: filtrer par auteur
 --   - since: date de début
---   - until: date de fin
+--   - until_date: date de fin
 --   - path: filtrer par fichier/dossier
 --   - branch: filtrer par branche
 --   - limit: nombre maximum de commits à retourner
@@ -37,8 +37,8 @@ function M.get_commits(options)
     if options.since then
         cmd = cmd .. " --since=" .. utils.shell_escape(options.since)
     end
-    if options.until then
-        cmd = cmd .. " --until=" .. utils.shell_escape(options.until)
+    if options.until_date then
+        cmd = cmd .. " --until=" .. utils.shell_escape(options.until_date)
     end
     if options.path then
         cmd = cmd .. " -- " .. utils.shell_escape(options.path)
