@@ -4,6 +4,9 @@ local ui = require("gitpilot.ui")
 local i18n = require("gitpilot.i18n")
 local utils = require("gitpilot.utils")
 
+-- Initialize default configuration
+local current_config = {}
+
 local function show_patch_menu()
     local menu_items = {
         {
