@@ -255,6 +255,25 @@ return {
     ["search.branches.results"] = "Branches trouvées",
     ["search.branches.switched"] = "Basculé sur la branche",
 
+    -- Opérations de recherche
+    ["search.title"] = " Recherche",
+    ["search.menu.title"] = "Opérations de recherche",
+    ["search.menu.description"] = "Rechercher dans le dépôt",
+    ["search.commits"] = "Rechercher dans les commits",
+    ["search.commits.title"] = "Recherche dans les Commits",
+    ["search.commits.description"] = "Rechercher des commits spécifiques",
+    ["search.commits.query"] = "Entrez votre recherche :",
+    ["search.commits.no_results"] = "Aucun commit ne correspond à votre recherche",
+    ["search.commits.results"] = "%{count} commits trouvés :",
+    ["search.files"] = "Rechercher dans les fichiers",
+    ["search.files.title"] = "Recherche dans les Fichiers",
+    ["search.files.description"] = "Rechercher du contenu dans les fichiers",
+    ["search.files.query"] = "Entrez le motif de recherche :",
+    ["search.files.no_results"] = "Aucun fichier ne correspond à votre recherche",
+    ["search.files.results"] = "%{count} fichiers trouvés :",
+    ["search.error.invalid_query"] = "Requête de recherche invalide",
+    ["search.error.search_failed"] = "La recherche a échoué : %{error}",
+
     -- Message de test
     ["test.message_only_in_english"] = "Message de test",
 
