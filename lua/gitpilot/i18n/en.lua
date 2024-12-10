@@ -150,44 +150,38 @@ return {
     ["stash.delete.success"] = "Stash deleted successfully",
     ["stash.delete.error"] = "Error deleting stash: %s",
     
-    -- Search
+    -- Search operations
     ["search.title"] = " Search",
     ["search.menu.title"] = "Search Operations",
     ["search.menu.description"] = "Search in repository",
+    ["search.prompt"] = "Enter your search:",
+    ["search.no_results"] = "No results found",
+    
+    -- Commit search
     ["search.commits"] = "Search commits",
     ["search.commits.title"] = "Search in Commits",
     ["search.commits.description"] = "Search for specific commits",
+    ["search.commits.prompt"] = "Enter search term:",
     ["search.commits.query"] = "Enter search query:",
-    ["search.commits.no_results"] = "No commits found matching your query",
+    ["search.commits.empty"] = "Search term cannot be empty",
+    ["search.commits.none"] = "No commits found",
+    ["search.commits.no_results"] = "No results found for this search",
     ["search.commits.results"] = "Found %{count} commits:",
+    ["search.commits.details"] = "Details",
+    ["search.commits.details_title"] = "Commit Details %s",
+    ["search.commits.details_error"] = "Error retrieving commit details",
+    
+    -- File search
     ["search.files"] = "Search files",
     ["search.files.title"] = "Search in Files",
     ["search.files.description"] = "Search for content in files",
     ["search.files.query"] = "Enter search pattern:",
     ["search.files.no_results"] = "No files found matching your query",
     ["search.files.results"] = "Found %{count} files:",
+    
+    -- Search errors
     ["search.error.invalid_query"] = "Invalid search query",
     ["search.error.search_failed"] = "Search failed: %{error}",
-    ["search.prompt"] = "Enter your search:",
-    ["search.no_results"] = "No results found",
-    ["search.commits_title"] = "Search in commits",
-    ["search.commits.prompt"] = "Enter search term:",
-    ["search.commits.empty"] = "Search term cannot be empty",
-    ["search.commits.none"] = "No commits found",
-    ["search.commits.no_results"] = "No results found for this search",
-    ["search.commits.details_error"] = "Error retrieving commit details",
-    ["search.commits.details_title"] = "Commit Details %s",
-    ["search.commits.details"] = "Details",
-    ["search.files.prompt"] = "Enter search pattern:",
-    ["search.files.none"] = "No files found",
-    ["search.files.results"] = "Search Results",
-    ["search.author.prompt"] = "Enter author name:",
-    ["search.author.none"] = "No commits found for this author",
-    ["search.author.results"] = "Commits by %s",
-    ["search.branches.prompt"] = "Enter search pattern:",
-    ["search.branches.none"] = "No branches found",
-    ["search.branches.results"] = "Found Branches",
-    ["search.branches.switched"] = "Switched to branch",
     
     -- Version messages
     ["version.restore"] = "Restore Version",
