@@ -6,8 +6,8 @@ vim.g.loaded_gitpilot = true
 
 -- Create user commands
 vim.api.nvim_create_user_command('GitPilot', function()
-  local branch = require('gitpilot.features.branch')
-  branch.show()
+  local gitpilot = require('gitpilot')
+  gitpilot.show_menu()
 end, {})
 
 -- Create autocommands

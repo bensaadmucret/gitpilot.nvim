@@ -97,13 +97,16 @@ end
 
 -- Affiche le menu principal
 function M.show_menu()
+    local ui = require('gitpilot.ui')
+    local i18n = require('gitpilot.i18n')
+    
+    -- Vérifie que le plugin est initialisé
     if not state.initialized then
-        local ui = require('gitpilot.ui')
-        ui.show_error("GitPilot not initialized. Please call setup() first.")
-        return
+        M.setup()
     end
     
-    require('gitpilot.menu').show_menu()
+    -- Affiche le menu principal
+    ui.show_menu(i18n.t("main.menu.title"), {})
 end
 
 -- Réinitialise l'état
