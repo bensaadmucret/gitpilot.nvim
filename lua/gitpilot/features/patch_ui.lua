@@ -27,9 +27,6 @@ local default_config = {
 -- Configuration actuelle
 local current_config = vim.deepcopy(default_config)
 
--- Initialize default configuration
--- local current_config = {}
-
 local function show_patch_menu()
     local menu_items = {
         {
@@ -152,7 +149,7 @@ function M.setup(opts)
     ui.add_menu_item({
         label = i18n.t("patch.menu.title"),
         description = i18n.t("patch.menu.description"),
-        action = show_patch_menu
+        action = function() show_patch_menu(M) end
     })
 end
 
