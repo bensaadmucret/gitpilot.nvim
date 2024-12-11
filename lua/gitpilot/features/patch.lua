@@ -30,29 +30,33 @@ function M.setup(opts)
     -- Crée le répertoire des templates s'il n'existe pas
     local template_dir = opts and opts.template_directory or current_config.template_directory
     if template_dir and template_dir ~= "" then
-        local mkdir_cmd = string.format("mkdir -p %s", template_dir)
-        utils.run_command(mkdir_cmd)
+        local success, _ = utils.git_sync({"!mkdir", "-p", template_dir})
+        if not success then
+            vim.notify(i18n.t("patch.error.create_directory"), vim.log.levels.ERROR)
+        end
     end
 end
 
 -- Crée un patch à partir des commits spécifiés
 function M.create_patch(start_commit, end_commit, output_dir)
-    local cmd = "git format-patch"
+    local args = {"format-patch"}
     
     if start_commit and end_commit then
-        cmd = cmd .. " " .. start_commit .. ".." .. end_commit
+        table.insert(args, start_commit .. ".." .. end_commit)
     elseif start_commit then
-        cmd = cmd .. " -1 " .. start_commit
+        table.insert(args, "-1")
+        table.insert(args, start_commit)
     else
-        cmd = cmd .. " -1 HEAD"
+        table.insert(args, "-1")
+        table.insert(args, "HEAD")
     end
     
     if output_dir then
-        cmd = cmd .. " -o " .. output_dir
+        table.insert(args, "-o")
+        table.insert(args, output_dir)
     end
     
-    local success, result = utils.run_command(cmd)
-    return success, result
+    return utils.git_sync(args)
 end
 
 -- Applique un patch
@@ -61,18 +65,12 @@ function M.apply_patch(patch_file)
         return false, i18n.t("patch.error.no_patch_file")
     end
     
-    local cmd = "git apply"
-    
-    cmd = cmd .. " " .. patch_file
-    
-    local success, result = utils.run_command(cmd)
-    return success, result
+    return utils.git_sync({"apply", patch_file})
 end
 
 -- Liste les patches disponibles
 function M.list_patches(directory)
-    local cmd = "ls -1 " .. (directory or ".") .. "/*.patch"
-    local success, result = utils.run_command(cmd)
+    local success, result = utils.git_sync({"!ls", "-1", (directory or ".") .. "/*.patch"})
     
     if not success then
         return false, {}
@@ -88,9 +86,7 @@ end
 
 -- Affiche le contenu d'un patch
 function M.show_patch(patch_file)
-    local cmd = "cat " .. patch_file
-    local success, result = utils.run_command(cmd)
-    return success, result
+    return utils.git_sync({"!cat", patch_file})
 end
 
 return M
