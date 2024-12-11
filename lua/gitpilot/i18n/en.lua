@@ -17,25 +17,62 @@ return {
     ["info.branch_switched"] = "Switched to branch '%{name}'",
     
     -- Branch specific error messages
-    ["branch.error.delete_current"] = "Cannot delete the current branch. Please switch to another branch first.",
+    ["branch.error.not_git_repo"] = "Not a Git repository",
+    ["branch.error.invalid_name"] = "Invalid branch name",
+    ["branch.error.already_exists"] = "Branch '%{name}' already exists",
+    ["branch.error.not_found"] = "Branch '%{name}' does not exist",
+    ["branch.error.create_failed"] = "Failed to create branch '%{name}'",
+    ["branch.error.checkout_failed"] = "Failed to checkout branch '%{name}'",
+    ["branch.error.merge_failed"] = "Failed to merge branch '%{name}'",
+    ["branch.error.delete_failed"] = "Failed to delete branch '%{name}'",
+    ["branch.error.delete_current"] = "Cannot delete the current branch",
+    ["branch.error.invalid_start_point"] = "Start point '%{name}' does not exist",
+    ["branch.error.no_branches"] = "No branches found",
+    ["branch.error.list_failed"] = "Failed to retrieve branch list",
+    ["branch.error.unmerged"] = "Branch '%{name}' is not fully merged",
+    ["branch.error.uncommitted"] = "You have uncommitted changes",
+    ["branch.error.no_upstream"] = "Branch '%{name}' has no upstream branch",
     
-    -- Main menu
-    ["menu.main_title"] = " GitPilot - Main Menu",
+    -- Branch warning messages
+    ["branch.warning.uncommitted_changes"] = "You have uncommitted changes",
+    ["branch.warning.merge_conflicts"] = "Conflicts occurred while merging '%{name}'",
+    ["branch.warning.not_fully_merged"] = "Branch '%{name}' is not fully merged",
+    ["branch.warning.no_tracking"] = "Branch is not tracking any remote",
+    
+    -- Branch success messages
+    ["branch.success.created"] = "Branch '%{name}' created successfully",
+    ["branch.success.checked_out"] = "Switched to branch '%{name}'",
+    ["branch.success.merged"] = "Branch '%{name}' merged successfully",
+    ["branch.success.deleted"] = "Branch '%{name}' deleted successfully",
+    
+    -- Branch interaction messages
+    ["branch.select_branch"] = "Select a branch:",
+    ["branch.prompt.name"] = "Branch name:",
+    ["branch.prompt.start_point"] = "Start point (optional):",
+    ["branch.prompt.delete"] = "Are you sure you want to delete branch '%{name}'?",
+    ["branch.prompt.force_delete"] = "Branch is not fully merged. Force delete?",
+    ["branch.prompt.merge"] = "Do you want to merge branch '%{name}'?",
+    
+    -- Main menus
+    ["menu.main_title"] = "GitPilot - Main Menu",
     ["menu.main"] = "Main Menu",
     ["menu.commits"] = "Commit Operations",
-    ["menu.commits_title"] = " Commit Management",
     ["menu.branches"] = "Branch Operations",
-    ["menu.branches_title"] = " Branch Management",
     ["menu.remotes"] = "Remote Operations",
-    ["menu.remotes_title"] = " Remote Management",
     ["menu.tags"] = "Tag Operations",
-    ["menu.tags_title"] = " Tag Management",
     ["menu.stash"] = "Stash Operations",
-    ["menu.stash_title"] = " Stash Management",
-    ["menu.search"] = "Search Operations",
-    ["menu.search_title"] = " Search",
-    ["menu.rebase"] = "Rebase Operations",
-    ["menu.rebase_title"] = " Rebase",
+    ["menu.search"] = "Search",
+    ["menu.rebase"] = "Rebase",
+    ["menu.backup"] = "Backup",
+    ["menu.back"] = "Back",
+    ["menu.commits_title"] = "GitPilot - Commits",
+    ["menu.branches_title"] = "GitPilot - Branches",
+    ["menu.remotes_title"] = "GitPilot - Remotes",
+    ["menu.tags_title"] = "GitPilot - Tags",
+    ["menu.stash_title"] = "GitPilot - Stash",
+    ["menu.search_title"] = "GitPilot - Search",
+    ["menu.rebase_title"] = "GitPilot - Rebase",
+    ["menu.backup_title"] = "GitPilot - Backup",
     
     -- Commit management
     ["commit.title"] = " Commit Management",
@@ -57,6 +94,33 @@ return {
     ["commit.action.error"] = "Error creating commit: %s",
     ["commit.action.amend_success"] = "Commit amended successfully",
     ["commit.action.amend_error"] = "Error amending commit: %s",
+    
+    -- Commit error messages
+    ["commit.error.not_git_repo"] = "Not a Git repository",
+    ["commit.error.no_changes"] = "No changes to commit",
+    ["commit.error.create_failed"] = "Failed to create commit",
+    ["commit.error.no_commits"] = "No commits in history",
+    ["commit.error.amend_failed"] = "Failed to amend last commit",
+    ["commit.error.revert_failed"] = "Failed to revert commit",
+    ["commit.error.cherry_pick_failed"] = "Failed to cherry-pick commit",
+    ["commit.error.invalid_hash"] = "Invalid commit hash",
+    ["commit.error.not_found"] = "Commit not found",
+
+    -- Commit success messages
+    ["commit.success.created"] = "Commit created successfully",
+    ["commit.success.amended"] = "Commit amended successfully",
+    ["commit.success.reverted"] = "Commit reverted successfully",
+    ["commit.success.cherry_picked"] = "Commit cherry-picked successfully",
+
+    -- Commit interaction messages
+    ["commit.enter_message"] = "Commit message:",
+    ["commit.enter_amend_message"] = "New commit message (empty to keep current):",
+    ["commit.prompt.select"] = "Select a commit:",
+    ["commit.prompt.revert"] = "Select a commit to revert:",
+    ["commit.prompt.cherry_pick"] = "Select a commit to cherry-pick:",
+    ["commit.confirm.amend"] = "Do you want to amend the last commit?",
+    ["commit.confirm.revert"] = "Do you want to revert this commit?",
+    ["commit.confirm.cherry_pick"] = "Do you want to cherry-pick this commit?",
     
     -- Branch management
     ["branch.title"] = " Branch Management",
@@ -110,6 +174,44 @@ return {
     ["remote.action.success"] = "Remote operation completed successfully",
     ["remote.action.error"] = "Error performing remote operation: %s",
     
+    -- Remote error messages
+    ["remote.error.not_git_repo"] = "Not a Git repository",
+    ["remote.error.list_failed"] = "Failed to retrieve remote list",
+    ["remote.error.no_remotes"] = "No remotes found",
+    ["remote.error.invalid_name"] = "Invalid remote name",
+    ["remote.error.invalid_url"] = "Invalid remote URL",
+    ["remote.error.already_exists"] = "Remote '%{name}' already exists",
+    ["remote.error.not_found"] = "Remote '%{name}' does not exist",
+    ["remote.error.add_failed"] = "Failed to add remote",
+    ["remote.error.remove_failed"] = "Failed to remove remote",
+    ["remote.error.fetch_failed"] = "Failed to fetch from remote",
+    ["remote.error.pull_failed"] = "Failed to pull from remote",
+    ["remote.error.push_failed"] = "Failed to push to remote",
+    ["remote.error.prune_failed"] = "Failed to prune remote",
+
+    -- Remote warning messages
+    ["remote.warning.uncommitted_changes"] = "You have uncommitted changes",
+    ["remote.warning.no_tracking"] = "Current branch is not tracking any remote",
+    ["remote.warning.diverged"] = "Local branch has diverged from remote",
+
+    -- Remote success messages
+    ["remote.success.added"] = "Remote '%{name}' added successfully",
+    ["remote.success.removed"] = "Remote '%{name}' removed successfully",
+    ["remote.success.fetched"] = "Successfully fetched from '%{name}'",
+    ["remote.success.pulled"] = "Successfully pulled from '%{name}'",
+    ["remote.success.pushed"] = "Successfully pushed to '%{name}'",
+    ["remote.success.pruned"] = "Successfully pruned '%{name}'",
+
+    -- Remote interaction messages
+    ["remote.select_remote"] = "Select a remote:",
+    ["remote.prompt.name"] = "Remote name:",
+    ["remote.prompt.url"] = "Remote URL:",
+    ["remote.prompt.delete"] = "Are you sure you want to delete remote '%{name}'?",
+    ["remote.prompt.fetch"] = "Do you want to fetch from '%{name}'?",
+    ["remote.prompt.pull"] = "Do you want to pull from '%{name}'?",
+    ["remote.prompt.push"] = "Do you want to push to '%{name}'?",
+    ["remote.prompt.prune"] = "Do you want to prune deleted branches from '%{name}'?",
+    
     -- Tag management
     ["tag.title"] = " Tag Management",
     ["tag.none"] = "No tags found",
@@ -133,6 +235,38 @@ return {
     ["tag.push.success"] = "Tags pushed successfully",
     ["tag.push.error"] = "Error pushing tags: %s",
     
+    -- Tag error messages
+    ["tag.error.not_git_repo"] = "Not a Git repository",
+    ["tag.error.list_failed"] = "Failed to retrieve tag list",
+    ["tag.error.no_tags"] = "No tags found",
+    ["tag.error.invalid_name"] = "Invalid tag name",
+    ["tag.error.already_exists"] = "Tag '%{name}' already exists",
+    ["tag.error.create_failed"] = "Failed to create tag",
+    ["tag.error.not_found"] = "Tag '%{name}' does not exist",
+    ["tag.error.delete_failed"] = "Failed to delete tag",
+    ["tag.error.push_failed"] = "Failed to push tag",
+    ["tag.error.show_failed"] = "Failed to show tag details",
+
+    -- Tag success messages
+    ["tag.success.created"] = "Tag '%{name}' created successfully",
+    ["tag.success.deleted"] = "Tag '%{name}' deleted successfully",
+    ["tag.success.pushed"] = "Tag '%{name}' pushed successfully",
+
+    -- Tag interaction messages
+    ["tag.select_tag"] = "Select a tag:",
+    ["tag.prompt.name"] = "Tag name:",
+    ["tag.prompt.message"] = "Tag message (optional):",
+    ["tag.prompt.delete"] = "Are you sure you want to delete tag '%{name}'?",
+    ["tag.prompt.push"] = "Do you want to push tag '%{name}' to remote?",
+
+    -- Tag preview messages
+    ["tag.preview.title"] = "Tag: %{name}",
+    ["tag.preview.details"] = "Tag details",
+    ["tag.preview.commit"] = "Associated commit",
+    ["tag.preview.author"] = "Author",
+    ["tag.preview.date"] = "Date",
+    ["tag.preview.message"] = "Message",
+
     -- Stash management
     ["stash.title"] = " Stash Management",
     ["stash.none"] = "No stashes found",
@@ -150,6 +284,36 @@ return {
     ["stash.delete.confirm"] = "Delete selected stash? This action cannot be undone!",
     ["stash.delete.success"] = "Stash deleted successfully",
     ["stash.delete.error"] = "Error deleting stash: %s",
+    
+    -- Stash error messages
+    ["stash.error.not_git_repo"] = "Not a Git repository",
+    ["stash.error.no_changes"] = "No changes to stash",
+    ["stash.error.save_failed"] = "Failed to save stash",
+    ["stash.error.pop_failed"] = "Failed to pop stash",
+    ["stash.error.apply_failed"] = "Failed to apply stash",
+    ["stash.error.drop_failed"] = "Failed to drop stash",
+    ["stash.error.list_failed"] = "Failed to list stashes",
+    ["stash.error.no_stashes"] = "No stashes found",
+    ["stash.error.not_found"] = "Stash not found",
+    ["stash.error.show_failed"] = "Failed to show stash",
+
+    -- Stash success messages
+    ["stash.success.saved"] = "Changes stashed successfully",
+    ["stash.success.popped"] = "Stash popped successfully",
+    ["stash.success.applied"] = "Stash applied successfully",
+    ["stash.success.dropped"] = "Stash dropped successfully",
+    ["stash.success.cleared"] = "All stashes cleared successfully",
+
+    -- Stash interaction messages
+    ["stash.prompt.message"] = "Stash message (optional):",
+    ["stash.prompt.select"] = "Select a stash:",
+    ["stash.prompt.pop"] = "Select a stash to pop:",
+    ["stash.prompt.apply"] = "Select a stash to apply:",
+    ["stash.prompt.drop"] = "Select a stash to drop:",
+    ["stash.confirm.pop"] = "Do you want to pop this stash?",
+    ["stash.confirm.apply"] = "Do you want to apply this stash?",
+    ["stash.confirm.drop"] = "Do you want to drop this stash?",
+    ["stash.confirm.clear"] = "Do you want to clear all stashes?",
     
     -- Search operations
     ["search.title"] = " Search",
@@ -181,8 +345,40 @@ return {
     ["search.files.results"] = "Found %{count} files:",
     
     -- Search errors
+    ["search.error.not_git_repo"] = "Not a Git repository",
+    ["search.error.empty_query"] = "Search query cannot be empty",
+    ["search.error.commits_failed"] = "Failed to search commits",
+    ["search.error.files_failed"] = "Failed to search files",
+    ["search.error.branches_failed"] = "Failed to search branches",
+    ["search.error.tags_failed"] = "Failed to search tags",
     ["search.error.invalid_query"] = "Invalid search query",
     ["search.error.search_failed"] = "Search failed: %{error}",
+    
+    -- Search info messages
+    ["search.info.no_commits_found"] = "No commits found",
+    ["search.info.no_files_found"] = "No files found",
+    ["search.info.no_branches_found"] = "No branches found",
+    ["search.info.no_tags_found"] = "No tags found",
+    ["search.info.searching"] = "Searching...",
+
+    -- Search success messages
+    ["search.success.commits_found"] = "%{count} commits found",
+    ["search.success.files_found"] = "%{count} files found",
+    ["search.success.branches_found"] = "%{count} branches found",
+    ["search.success.tags_found"] = "%{count} tags found",
+
+    -- Search interaction messages
+    ["search.prompt.query"] = "Enter your search query:",
+    ["search.prompt.select_commit"] = "Select a commit:",
+    ["search.prompt.select_file"] = "Select a file:",
+    ["search.prompt.select_branch"] = "Select a branch:",
+    ["search.prompt.select_tag"] = "Select a tag:",
+
+    -- Preview messages
+    ["search.preview.commit_title"] = "Commit %{hash}",
+    ["search.preview.file_title"] = "File: %{path}",
+    ["search.preview.branch_title"] = "Branch: %{name}",
+    ["search.preview.tag_title"] = "Tag: %{name}",
     
     -- Version messages
     ["version.restore"] = "Restore Version",
@@ -240,6 +436,8 @@ return {
     -- UI messages
     ["ui.no_items"] = "No items to select",
     ["ui.select_not_available"] = "Selection not available",
+    ["ui.select_prompt"] = "Select an option:",
+    ["ui.input_prompt"] = "Enter a value:",
     ["test.message_only_in_english"] = "Test Message",
     
     -- Schedule messages
@@ -435,32 +633,64 @@ return {
     -- Conflict Management
     ["conflict.menu.title"] = "Conflict Management",
     ["conflict.menu.description"] = "Resolve merge conflicts",
+    ["conflict.section.ours"] = "Our version (%{ref})",
+    ["conflict.section.theirs"] = "Their version (%{ref})",
+    ["conflict.resolve.use_ours"] = "Use our version",
+    ["conflict.resolve.use_ours_desc"] = "Keep changes from our branch",
+    ["conflict.resolve.use_theirs"] = "Use their version",
+    ["conflict.resolve.use_theirs_desc"] = "Keep changes from their branch",
+    ["conflict.resolve.manual"] = "Manual resolution",
+    ["conflict.resolve.manual_desc"] = "Open editor for manual resolution",
+    ["conflict.resolve.success"] = "Conflict resolved successfully",
+    ["conflict.resolve.error"] = "Error resolving conflict",
+    ["conflict.search.error"] = "Error searching for conflicts",
+    ["conflict.no_conflicts"] = "No conflicts found",
+    ["conflict.select_file"] = "Select a file with conflicts:",
+    ["conflict.select_conflict"] = "Select a conflict to resolve:",
     
+    -- Conflict management
     ["conflict.files.title"] = "Conflicting Files",
     ["conflict.list.title"] = "Conflict List",
     ["conflict.item"] = "Conflict #%{number} (lines %{start}-%{end_line})",
-    
-    ["conflict.section.ours"] = "Our Version (%{ref})",
-    ["conflict.section.theirs"] = "Their Version (%{ref})",
-    
-    ["conflict.resolve.title"] = "Resolve Conflict",
-    ["conflict.resolve.use_ours"] = "Use our version",
-    ["conflict.resolve.use_ours_desc"] = "Keep local changes",
-    ["conflict.resolve.use_theirs"] = "Use their version",
-    ["conflict.resolve.use_theirs_desc"] = "Accept incoming changes",
-    ["conflict.resolve.manual"] = "Manual resolution",
-    ["conflict.resolve.manual_desc"] = "Enter custom resolution",
-    ["conflict.resolve.manual_prompt"] = "Enter resolved content:",
-    ["conflict.resolve.manual_empty"] = "Content cannot be empty",
     ["conflict.resolve.preview_diff"] = "View differences",
     ["conflict.resolve.preview_diff_desc"] = "Compare versions side by side",
     ["conflict.resolve.use_previous"] = "Use previous resolution",
     ["conflict.resolve.use_previous_desc"] = "Apply same resolution as last time",
-    ["conflict.resolve.success"] = "Conflict resolved successfully",
-    ["conflict.resolve.error"] = "Error resolving conflict",
-    
+    ["conflict.resolve.manual_prompt"] = "Enter resolved content:",
+    ["conflict.resolve.manual_empty"] = "Content cannot be empty",
     ["conflict.diff.error"] = "Error comparing versions",
     ["conflict.read.error"] = "Error reading file",
-    ["conflict.search.error"] = "Error searching for conflicts",
-    ["conflict.none_found"] = "No conflicts found",
+    
+    -- Rebase error messages
+    ["rebase.error.not_git_repo"] = "Not a Git repository",
+    ["rebase.error.already_rebasing"] = "A rebase is already in progress",
+    ["rebase.error.log_failed"] = "Failed to retrieve commit history",
+    ["rebase.error.no_commits"] = "No commits found for rebase",
+    ["rebase.error.start_failed"] = "Failed to start rebase",
+    ["rebase.error.continue_failed"] = "Failed to continue rebase",
+    ["rebase.error.abort_failed"] = "Failed to abort rebase",
+    ["rebase.error.skip_failed"] = "Failed to skip current commit",
+    ["rebase.error.not_rebasing"] = "No rebase in progress",
+    ["rebase.error.conflicts"] = "Conflicts must be resolved before continuing",
+
+    -- Rebase warning messages
+    ["rebase.warning.uncommitted_changes"] = "You have uncommitted changes",
+    ["rebase.warning.no_changes"] = "No changes to apply",
+    ["rebase.warning.conflicts_pending"] = "Conflicts are pending resolution",
+
+    -- Rebase success messages
+    ["rebase.success.started"] = "Rebase started successfully",
+    ["rebase.success.continued"] = "Rebase continued successfully",
+    ["rebase.success.aborted"] = "Rebase aborted successfully",
+    ["rebase.success.skipped"] = "Commit skipped successfully",
+    ["rebase.success.completed"] = "Rebase completed successfully",
+
+    -- Rebase interaction messages
+    ["rebase.prompt.select_commit"] = "Select a commit for rebase:",
+    ["rebase.prompt.continue"] = "Continue rebase?",
+    ["rebase.prompt.abort"] = "Abort rebase?",
+    ["rebase.prompt.skip"] = "Skip current commit?",
+    ["rebase.confirm.abort"] = "Are you sure you want to abort the rebase?",
+    ["rebase.confirm.skip"] = "Are you sure you want to skip this commit?",
+    
 }

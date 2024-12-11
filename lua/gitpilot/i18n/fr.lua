@@ -45,40 +45,38 @@ return {
     ["success.remote_removed"] = "Dépôt distant supprimé avec succès",
 
     -- Messages d'erreur spécifiques aux branches
-    ["branch.error.delete_current"] = "Impossible de supprimer la branche actuelle. Veuillez d'abord basculer sur une autre branche.",
-    ["branch.title"] = "Gestion des branches",
-    ["branch.current"] = "Branche actuelle : %s",
-    ["branch.none"] = "Aucune branche trouvée",
-    ["branch.create.title"] = "Créer une branche",
-    ["branch.create.prompt"] = "Nom de la nouvelle branche :",
-    ["branch.create.success"] = "Branche '%s' créée avec succès",
-    ["branch.create.error"] = "Erreur lors de la création de la branche : %s",
-    ["branch.create.exists"] = "La branche '%s' existe déjà",
-    ["branch.delete.title"] = "Supprimer une branche",
-    ["branch.delete.prompt"] = "Sélectionnez la branche à supprimer :",
-    ["branch.delete.confirm"] = "Supprimer la branche '%s' ? Cette action ne peut pas être annulée !",
-    ["branch.delete.success"] = "Branche '%s' supprimée avec succès",
-    ["branch.delete.error"] = "Erreur lors de la suppression de la branche : %s",
-    ["branch.delete.current"] = "Impossible de supprimer la branche courante",
-    ["branch.switch.title"] = "Changer de branche",
-    ["branch.switch.prompt"] = "Sélectionnez la branche :",
-    ["branch.switch.success"] = "Basculé sur la branche '%s'",
-    ["branch.switch.error"] = "Erreur lors du changement de branche : %s",
-    ["branch.merge.title"] = "Fusionner une branche",
-    ["branch.merge.prompt"] = "Sélectionnez la branche à fusionner :",
-    ["branch.merge.success"] = "Branche '%s' fusionnée avec succès",
-    ["branch.merge.error"] = "Erreur lors de la fusion de la branche : %s",
+    ["branch.error.not_git_repo"] = "Ce n'est pas un dépôt Git",
+    ["branch.error.invalid_name"] = "Nom de branche invalide",
+    ["branch.error.already_exists"] = "La branche '%{name}' existe déjà",
+    ["branch.error.not_found"] = "La branche '%{name}' n'existe pas",
+    ["branch.error.create_failed"] = "Échec de la création de la branche '%{name}'",
+    ["branch.error.checkout_failed"] = "Échec du basculement vers la branche '%{name}'",
+    ["branch.error.merge_failed"] = "Échec de la fusion avec la branche '%{name}'",
+    ["branch.error.delete_failed"] = "Échec de la suppression de la branche '%{name}'",
+    ["branch.error.delete_current"] = "Impossible de supprimer la branche courante",
+    ["branch.error.invalid_start_point"] = "Le point de départ '%{name}' n'existe pas",
+    ["branch.error.no_branches"] = "Aucune branche trouvée",
+    ["branch.error.list_failed"] = "Échec de la récupération de la liste des branches",
+
+    -- Messages d'avertissement pour les branches
+    ["branch.warning.uncommitted_changes"] = "Il y a des changements non commités",
+    ["branch.warning.merge_conflicts"] = "Des conflits sont survenus lors de la fusion avec '%{name}'",
+    ["branch.warning.not_fully_merged"] = "La branche '%{name}' n'est pas entièrement fusionnée",
+    ["branch.warning.no_tracking"] = "La branche ne suit aucun remote",
+
+    -- Messages de succès pour les branches
+    ["branch.success.created"] = "Branche '%{name}' créée avec succès",
+    ["branch.success.checked_out"] = "Basculé vers la branche '%{name}'",
+    ["branch.success.merged"] = "Branche '%{name}' fusionnée avec succès",
+    ["branch.success.deleted"] = "Branche '%{name}' supprimée avec succès",
+
+    -- Messages d'interaction pour les branches
     ["branch.select_branch"] = "Sélectionnez une branche :",
-    ["branch.select_action"] = "Sélectionnez une action :",
-    ["branch.select_checkout"] = "Sélectionnez une branche à extraire :",
-    ["branch.select_merge"] = "Sélectionnez une branche à fusionner :",
-    ["branch.select_delete"] = "Sélectionnez une branche à supprimer :",
-    ["branch.select_rebase"] = "Sélectionnez une branche pour le rebase :",
-    ["branch.confirm_delete"] = "Voulez-vous supprimer la branche '%{name}' ?",
-    ["branch.confirm_force_delete"] = "La branche '%{name}' n'est pas entièrement fusionnée. Forcer la suppression ?",
-    ["branch.confirm_merge"] = "Voulez-vous fusionner la branche '%{name}' ?",
-    ["branch.confirm_rebase"] = "Voulez-vous faire un rebase sur la branche '%{name}' ?",
-    ["branch.confirm_push"] = "Voulez-vous pousser la branche '%{name}' ?",
+    ["branch.prompt.name"] = "Nom de la branche :",
+    ["branch.prompt.start_point"] = "Point de départ (optionnel) :",
+    ["branch.prompt.delete"] = "Êtes-vous sûr de vouloir supprimer la branche '%{name}' ?",
+    ["branch.prompt.force_delete"] = "La branche n'est pas entièrement fusionnée. Forcer la suppression ?",
+    ["branch.prompt.merge"] = "Voulez-vous fusionner la branche '%{name}' ?",
 
     -- Interface utilisateur
     ["ui.loading"] = "Chargement...",
@@ -89,25 +87,28 @@ return {
     ["ui.no_items"] = "Aucun élément trouvé",
     ["ui.select_not_available"] = "Sélection non disponible",
 
-    -- Menu principal
+    -- Menus principaux
     ["menu.main_title"] = "GitPilot - Menu Principal",
-    ["menu.branches_title"] = "GitPilot - Gestion des Branches",
-    ["menu.commits_title"] = "GitPilot - Gestion des Commits",
-    ["menu.remotes_title"] = "GitPilot - Gestion des Dépôts Distants",
-    ["menu.tags_title"] = "GitPilot - Gestion des Tags",
-    ["menu.stash_title"] = "GitPilot - Gestion du Cache",
-    ["menu.rebase_title"] = "GitPilot - Rebase",
-    ["menu.search_title"] = "GitPilot - Recherche",
-    ["menu.back"] = "Retour",
-    ["menu.quit"] = "Quitter",
     ["menu.main"] = "Menu Principal",
-    ["menu.branches"] = "Gestion des branches",
-    ["menu.commits"] = "Gestion des commits",
-    ["menu.remotes"] = "Gestion des dépôts distants",
-    ["menu.tags"] = "Gestion des tags",
-    ["menu.stash"] = "Gestion du cache",
-    ["menu.search"] = "Rechercher",
+    ["menu.commits"] = "Opérations de Commit",
+    ["menu.branches"] = "Opérations de Branche",
+    ["menu.remotes"] = "Opérations Distantes",
+    ["menu.tags"] = "Opérations de Tag",
+    ["menu.stash"] = "Opérations de Cache",
+    ["menu.search"] = "Recherche",
     ["menu.rebase"] = "Rebase",
+    ["menu.backup"] = "Sauvegarde",
+    ["menu.back"] = "Retour",
+
+    -- Titres des menus
+    ["menu.commits_title"] = "GitPilot - Commits",
+    ["menu.branches_title"] = "GitPilot - Branches",
+    ["menu.remotes_title"] = "GitPilot - Dépôts Distants",
+    ["menu.tags_title"] = "GitPilot - Tags",
+    ["menu.stash_title"] = "GitPilot - Cache",
+    ["menu.search_title"] = "GitPilot - Recherche",
+    ["menu.rebase_title"] = "GitPilot - Rebase",
+    ["menu.backup_title"] = "GitPilot - Sauvegarde",
 
     -- Confirmations
     ["confirm.prompt"] = "Êtes-vous sûr ?",
@@ -174,6 +175,33 @@ return {
     ["commit.action.amend_success"] = "Commit modifié avec succès",
     ["commit.action.amend_error"] = "Erreur lors de la modification du commit",
 
+    -- Messages d'erreur pour les commits
+    ["commit.error.not_git_repo"] = "Ce n'est pas un dépôt Git",
+    ["commit.error.no_changes"] = "Aucune modification à commiter",
+    ["commit.error.create_failed"] = "Échec de la création du commit",
+    ["commit.error.no_commits"] = "Aucun commit dans l'historique",
+    ["commit.error.amend_failed"] = "Échec de la modification du dernier commit",
+    ["commit.error.revert_failed"] = "Échec de l'annulation du commit",
+    ["commit.error.cherry_pick_failed"] = "Échec du cherry-pick du commit",
+    ["commit.error.invalid_hash"] = "Hash de commit invalide",
+    ["commit.error.not_found"] = "Commit non trouvé",
+
+    -- Messages de succès pour les commits
+    ["commit.success.created"] = "Commit créé avec succès",
+    ["commit.success.amended"] = "Commit modifié avec succès",
+    ["commit.success.reverted"] = "Commit annulé avec succès",
+    ["commit.success.cherry_picked"] = "Commit appliqué avec succès",
+
+    -- Messages d'interaction pour les commits
+    ["commit.enter_message"] = "Message du commit :",
+    ["commit.enter_amend_message"] = "Nouveau message du commit (vide pour garder l'ancien) :",
+    ["commit.prompt.select"] = "Sélectionnez un commit :",
+    ["commit.prompt.revert"] = "Sélectionnez un commit à annuler :",
+    ["commit.prompt.cherry_pick"] = "Sélectionnez un commit à appliquer :",
+    ["commit.confirm.amend"] = "Voulez-vous modifier le dernier commit ?",
+    ["commit.confirm.revert"] = "Voulez-vous annuler ce commit ?",
+    ["commit.confirm.cherry_pick"] = "Voulez-vous appliquer ce commit ?",
+
     -- Actions de tag
     ["tag.create"] = "Créer un tag",
     ["tag.delete"] = "Supprimer un tag",
@@ -183,8 +211,8 @@ return {
     ["tag.enter_message"] = "Message du tag :",
     ["tag.select_show"] = "Sélectionnez un tag à afficher :",
     ["tag.select_delete"] = "Sélectionnez un tag à supprimer :",
-    ["tag.confirm_delete"] = "Voulez-vous supprimer le tag '%{name}' ?",
-    ["tag.confirm_push"] = "Voulez-vous pousser le tag '%{name}' ?",
+    ["tag.confirm_delete"] = "Voulez-vous supprimer ce tag ?",
+    ["tag.confirm_push"] = "Voulez-vous pousser ce tag ?",
 
     -- Actions de cache (stash)
     ["stash.save"] = "Sauvegarder les modifications",
@@ -213,6 +241,38 @@ return {
     ["rebase.confirm_skip"] = "Voulez-vous ignorer ce commit ?",
     ["rebase.confirm_abort"] = "Voulez-vous annuler le rebase ?",
 
+    -- Messages d'erreur pour le rebase
+    ["rebase.error.not_git_repo"] = "Ce n'est pas un dépôt Git",
+    ["rebase.error.already_rebasing"] = "Un rebase est déjà en cours",
+    ["rebase.error.log_failed"] = "Échec de la récupération de l'historique des commits",
+    ["rebase.error.no_commits"] = "Aucun commit trouvé pour le rebase",
+    ["rebase.error.start_failed"] = "Échec du démarrage du rebase",
+    ["rebase.error.continue_failed"] = "Échec de la reprise du rebase",
+    ["rebase.error.abort_failed"] = "Échec de l'annulation du rebase",
+    ["rebase.error.skip_failed"] = "Échec du saut du commit en cours",
+    ["rebase.error.not_rebasing"] = "Aucun rebase en cours",
+    ["rebase.error.conflicts"] = "Des conflits doivent être résolus avant de continuer",
+
+    -- Messages d'avertissement pour le rebase
+    ["rebase.warning.uncommitted_changes"] = "Il y a des modifications non commitées",
+    ["rebase.warning.no_changes"] = "Aucune modification à appliquer",
+    ["rebase.warning.conflicts_pending"] = "Des conflits sont en attente de résolution",
+
+    -- Messages de succès pour le rebase
+    ["rebase.success.started"] = "Rebase démarré avec succès",
+    ["rebase.success.continued"] = "Rebase repris avec succès",
+    ["rebase.success.aborted"] = "Rebase annulé avec succès",
+    ["rebase.success.skipped"] = "Commit sauté avec succès",
+    ["rebase.success.completed"] = "Rebase terminé avec succès",
+
+    -- Messages d'interaction pour le rebase
+    ["rebase.prompt.select_commit"] = "Sélectionnez un commit pour le rebase :",
+    ["rebase.prompt.continue"] = "Continuer le rebase ?",
+    ["rebase.prompt.abort"] = "Annuler le rebase ?",
+    ["rebase.prompt.skip"] = "Sauter le commit en cours ?",
+    ["rebase.confirm.abort"] = "Êtes-vous sûr de vouloir annuler le rebase ?",
+    ["rebase.confirm.skip"] = "Êtes-vous sûr de vouloir sauter ce commit ?",
+
     -- Actions de dépôt distant
     ["remote.fetch"] = "Récupérer les modifications",
     ["remote.prune"] = "Nettoyer les références",
@@ -224,6 +284,41 @@ return {
     ["remote.select_remove"] = "Sélectionnez un dépôt distant à supprimer :",
     ["remote.confirm_remove"] = "Voulez-vous supprimer ce dépôt distant ?",
     ["remote.confirm_prune"] = "Voulez-vous nettoyer les références ?",
+
+    -- Messages d'erreur pour les remotes
+    ["remote.error.not_git_repo"] = "Ce n'est pas un dépôt Git",
+    ["remote.error.invalid_name"] = "Nom de dépôt distant invalide",
+    ["remote.error.invalid_url"] = "URL de dépôt distant invalide",
+    ["remote.error.already_exists"] = "Le dépôt distant '%{name}' existe déjà",
+    ["remote.error.add_failed"] = "Échec de l'ajout du dépôt distant",
+    ["remote.error.remove_failed"] = "Échec de la suppression du dépôt distant",
+    ["remote.error.list_failed"] = "Échec de la récupération des dépôts distants",
+    ["remote.error.no_remotes"] = "Aucun dépôt distant trouvé",
+    ["remote.error.not_found"] = "Dépôt distant non trouvé",
+    ["remote.error.push_failed"] = "Échec de l'envoi des modifications",
+    ["remote.error.pull_failed"] = "Échec de la récupération des modifications",
+    ["remote.error.fetch_failed"] = "Échec de la récupération des références distantes",
+    ["remote.error.prune_failed"] = "Échec du nettoyage des références obsolètes",
+
+    -- Messages de succès pour les remotes
+    ["remote.success.added"] = "Dépôt distant '%{name}' ajouté avec succès",
+    ["remote.success.removed"] = "Dépôt distant '%{name}' supprimé avec succès",
+    ["remote.success.pushed"] = "Modifications envoyées avec succès",
+    ["remote.success.pulled"] = "Modifications récupérées avec succès",
+    ["remote.success.fetched"] = "Références distantes récupérées avec succès",
+    ["remote.success.pruned"] = "Références obsolètes nettoyées avec succès",
+
+    -- Messages d'interaction pour les remotes
+    ["remote.prompt.name"] = "Nom du dépôt distant :",
+    ["remote.prompt.url"] = "URL du dépôt distant :",
+    ["remote.prompt.select"] = "Sélectionnez un dépôt distant :",
+    ["remote.prompt.remove"] = "Sélectionnez un dépôt distant à supprimer :",
+    ["remote.prompt.push"] = "Sélectionnez un dépôt distant pour l'envoi :",
+    ["remote.prompt.pull"] = "Sélectionnez un dépôt distant pour la récupération :",
+    ["remote.confirm.remove"] = "Êtes-vous sûr de vouloir supprimer le dépôt distant '%{name}' ?",
+    ["remote.confirm.push"] = "Voulez-vous envoyer les modifications vers '%{name}' ?",
+    ["remote.confirm.pull"] = "Voulez-vous récupérer les modifications depuis '%{name}' ?",
+    ["remote.confirm.prune"] = "Voulez-vous nettoyer les références obsolètes de '%{name}' ?",
 
     -- Search operations
     ["search.title"] = " Recherche",
@@ -258,6 +353,41 @@ return {
     ["search.error.invalid_query"] = "Requête de recherche invalide",
     ["search.error.search_failed"] = "Échec de la recherche : %{error}",
     
+    -- Messages d'erreur pour la recherche
+    ["search.error.not_git_repo"] = "Ce n'est pas un dépôt Git",
+    ["search.error.empty_query"] = "La recherche ne peut pas être vide",
+    ["search.error.commits_failed"] = "Échec de la recherche dans les commits",
+    ["search.error.files_failed"] = "Échec de la recherche dans les fichiers",
+    ["search.error.branches_failed"] = "Échec de la recherche dans les branches",
+    ["search.error.tags_failed"] = "Échec de la recherche dans les tags",
+    ["search.error.invalid_query"] = "Requête de recherche invalide",
+
+    -- Messages d'information pour la recherche
+    ["search.info.no_commits_found"] = "Aucun commit trouvé",
+    ["search.info.no_files_found"] = "Aucun fichier trouvé",
+    ["search.info.no_branches_found"] = "Aucune branche trouvée",
+    ["search.info.no_tags_found"] = "Aucun tag trouvé",
+    ["search.info.searching"] = "Recherche en cours...",
+
+    -- Messages de succès pour la recherche
+    ["search.success.commits_found"] = "%{count} commits trouvés",
+    ["search.success.files_found"] = "%{count} fichiers trouvés",
+    ["search.success.branches_found"] = "%{count} branches trouvées",
+    ["search.success.tags_found"] = "%{count} tags trouvés",
+
+    -- Messages d'interaction pour la recherche
+    ["search.prompt.query"] = "Entrez votre recherche :",
+    ["search.prompt.select_commit"] = "Sélectionnez un commit :",
+    ["search.prompt.select_file"] = "Sélectionnez un fichier :",
+    ["search.prompt.select_branch"] = "Sélectionnez une branche :",
+    ["search.prompt.select_tag"] = "Sélectionnez un tag :",
+
+    -- Messages pour l'aperçu
+    ["search.preview.commit_title"] = "Commit %{hash}",
+    ["search.preview.file_title"] = "Fichier : %{path}",
+    ["search.preview.branch_title"] = "Branche : %{name}",
+    ["search.preview.tag_title"] = "Tag : %{name}",
+
     -- Message de test
     ["test.message_only_in_english"] = "Message de test",
 
@@ -620,32 +750,88 @@ return {
     -- Gestion des conflits
     ["conflict.menu.title"] = "Gestion des Conflits",
     ["conflict.menu.description"] = "Résoudre les conflits de fusion",
-    
-    ["conflict.files.title"] = "Fichiers en Conflit",
-    ["conflict.list.title"] = "Liste des Conflits",
-    ["conflict.item"] = "Conflit #%{number} (lignes %{start}-%{end_line})",
-    
-    ["conflict.section.ours"] = "Notre Version (%{ref})",
-    ["conflict.section.theirs"] = "Leur Version (%{ref})",
-    
-    ["conflict.resolve.title"] = "Résoudre le Conflit",
+    ["conflict.section.ours"] = "Notre version (%{ref})",
+    ["conflict.section.theirs"] = "Leur version (%{ref})",
     ["conflict.resolve.use_ours"] = "Utiliser notre version",
-    ["conflict.resolve.use_ours_desc"] = "Garder les changements locaux",
+    ["conflict.resolve.use_ours_desc"] = "Garder les changements de notre branche",
     ["conflict.resolve.use_theirs"] = "Utiliser leur version",
-    ["conflict.resolve.use_theirs_desc"] = "Accepter les changements distants",
+    ["conflict.resolve.use_theirs_desc"] = "Garder les changements de leur branche",
     ["conflict.resolve.manual"] = "Résolution manuelle",
-    ["conflict.resolve.manual_desc"] = "Entrer une résolution personnalisée",
-    ["conflict.resolve.manual_prompt"] = "Entrez le contenu résolu :",
-    ["conflict.resolve.manual_empty"] = "Le contenu ne peut pas être vide",
-    ["conflict.resolve.preview_diff"] = "Voir les différences",
-    ["conflict.resolve.preview_diff_desc"] = "Comparer les versions côte à côte",
-    ["conflict.resolve.use_previous"] = "Utiliser la résolution précédente",
-    ["conflict.resolve.use_previous_desc"] = "Appliquer la même résolution que la dernière fois",
+    ["conflict.resolve.manual_desc"] = "Ouvrir l'éditeur pour résoudre manuellement",
     ["conflict.resolve.success"] = "Conflit résolu avec succès",
     ["conflict.resolve.error"] = "Erreur lors de la résolution du conflit",
-    
-    ["conflict.diff.error"] = "Erreur lors de la comparaison des versions",
-    ["conflict.read.error"] = "Erreur lors de la lecture du fichier",
     ["conflict.search.error"] = "Erreur lors de la recherche des conflits",
-    ["conflict.none_found"] = "Aucun conflit trouvé",
+    ["conflict.no_conflicts"] = "Aucun conflit trouvé",
+    ["conflict.select_file"] = "Sélectionnez un fichier avec des conflits :",
+    ["conflict.select_conflict"] = "Sélectionnez un conflit à résoudre :",
+    
+    -- Messages d'erreur pour les tags
+    ["tag.error.not_git_repo"] = "Ce n'est pas un dépôt Git",
+    ["tag.error.list_failed"] = "Échec de la récupération de la liste des tags",
+    ["tag.error.no_tags"] = "Aucun tag trouvé",
+    ["tag.error.invalid_name"] = "Nom de tag invalide",
+    ["tag.error.already_exists"] = "Le tag '%{name}' existe déjà",
+    ["tag.error.create_failed"] = "Échec de la création du tag",
+    ["tag.error.not_found"] = "Le tag '%{name}' n'existe pas",
+    ["tag.error.delete_failed"] = "Échec de la suppression du tag",
+    ["tag.error.push_failed"] = "Échec du push du tag",
+    ["tag.error.show_failed"] = "Échec de l'affichage des détails du tag",
+
+    -- Messages de succès pour les tags
+    ["tag.success.created"] = "Tag '%{name}' créé avec succès",
+    ["tag.success.deleted"] = "Tag '%{name}' supprimé avec succès",
+    ["tag.success.pushed"] = "Tag '%{name}' poussé avec succès",
+
+    -- Messages d'interaction pour les tags
+    ["tag.select_tag"] = "Sélectionnez un tag :",
+    ["tag.prompt.name"] = "Nom du tag :",
+    ["tag.prompt.message"] = "Message du tag (optionnel) :",
+    ["tag.prompt.delete"] = "Êtes-vous sûr de vouloir supprimer le tag '%{name}' ?",
+    ["tag.prompt.push"] = "Voulez-vous pousser le tag '%{name}' vers le remote ?",
+
+    -- Messages pour l'aperçu des tags
+    ["tag.preview.title"] = "Tag : %{name}",
+    ["tag.preview.details"] = "Détails du tag",
+    ["tag.preview.commit"] = "Commit associé",
+    ["tag.preview.author"] = "Auteur",
+    ["tag.preview.date"] = "Date",
+    ["tag.preview.message"] = "Message",
+    
+    -- Messages d'erreur pour les remotes
+    ["remote.error.not_git_repo"] = "Ce n'est pas un dépôt Git",
+    ["remote.error.list_failed"] = "Échec de la récupération de la liste des remotes",
+    ["remote.error.no_remotes"] = "Aucun remote trouvé",
+    ["remote.error.invalid_name"] = "Nom de remote invalide",
+    ["remote.error.invalid_url"] = "URL de remote invalide",
+    ["remote.error.already_exists"] = "Le remote '%{name}' existe déjà",
+    ["remote.error.not_found"] = "Le remote '%{name}' n'existe pas",
+    ["remote.error.add_failed"] = "Échec de l'ajout du remote",
+    ["remote.error.remove_failed"] = "Échec de la suppression du remote",
+    ["remote.error.fetch_failed"] = "Échec du fetch depuis le remote",
+    ["remote.error.pull_failed"] = "Échec du pull depuis le remote",
+    ["remote.error.push_failed"] = "Échec du push vers le remote",
+    ["remote.error.prune_failed"] = "Échec du nettoyage du remote",
+
+    -- Messages d'avertissement pour les remotes
+    ["remote.warning.uncommitted_changes"] = "Il y a des changements non commités",
+    ["remote.warning.no_tracking"] = "La branche actuelle ne suit aucun remote",
+    ["remote.warning.diverged"] = "La branche locale a divergé du remote",
+
+    -- Messages de succès pour les remotes
+    ["remote.success.added"] = "Remote '%{name}' ajouté avec succès",
+    ["remote.success.removed"] = "Remote '%{name}' supprimé avec succès",
+    ["remote.success.fetched"] = "Fetch depuis '%{name}' réussi",
+    ["remote.success.pulled"] = "Pull depuis '%{name}' réussi",
+    ["remote.success.pushed"] = "Push vers '%{name}' réussi",
+    ["remote.success.pruned"] = "Nettoyage de '%{name}' réussi",
+
+    -- Messages d'interaction pour les remotes
+    ["remote.select_remote"] = "Sélectionnez un remote :",
+    ["remote.prompt.name"] = "Nom du remote :",
+    ["remote.prompt.url"] = "URL du remote :",
+    ["remote.prompt.delete"] = "Êtes-vous sûr de vouloir supprimer le remote '%{name}' ?",
+    ["remote.prompt.fetch"] = "Voulez-vous faire un fetch depuis '%{name}' ?",
+    ["remote.prompt.pull"] = "Voulez-vous faire un pull depuis '%{name}' ?",
+    ["remote.prompt.push"] = "Voulez-vous faire un push vers '%{name}' ?",
+    ["remote.prompt.prune"] = "Voulez-vous nettoyer les branches supprimées de '%{name}' ?",
 }
