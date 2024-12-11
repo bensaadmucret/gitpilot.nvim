@@ -32,7 +32,7 @@ end
 
 -- Récupère la liste des branches
 local function get_branches()
-    local success, output = utils.execute_command("git branch --all")
+    local success, output = utils.execute_command("git branch --no-color")
     if not success then
         return {}, nil
     end
@@ -41,12 +41,13 @@ local function get_branches()
     local current_branch = nil
 
     for line in output:gmatch("[^\r\n]+") do
+        local is_current = line:match("^%s*%*")
         local branch = line:match("^%s*%*?%s*(.+)$")
         if branch then
             -- Supprime les espaces en début et fin
             branch = branch:gsub("^%s*(.-)%s*$", "%1")
             -- Détecte la branche courante
-            if line:match("^%s*%*") then
+            if is_current then
                 current_branch = branch
             end
             table.insert(branches, branch)

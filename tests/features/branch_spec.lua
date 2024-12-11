@@ -111,7 +111,7 @@ describe("branch", function()
             mock_utils.execute_command = function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git show%-ref") then
+                elseif cmd:match("^git rev%-parse %-%-verify") then
                     return true
                 end
             end
@@ -133,8 +133,10 @@ describe("branch", function()
             mock_utils.execute_command = function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git show%-ref") then
+                elseif cmd:match("^git rev%-parse %-%-verify") then
                     return true
+                elseif cmd == "git branch --no-color" then
+                    return true, "  main\n* develop\n  feature/old"
                 elseif cmd:match("^git branch %-d") then
                     return true
                 end
@@ -150,8 +152,10 @@ describe("branch", function()
             mock_utils.execute_command = function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git show%-ref") then
+                elseif cmd:match("^git rev%-parse %-%-verify") then
                     return true
+                elseif cmd == "git branch --no-color" then
+                    return true, "  main\n* develop\n  feature/old"
                 elseif cmd:match("^git branch %-D") then
                     return true
                 end

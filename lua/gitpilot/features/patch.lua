@@ -5,7 +5,7 @@ local i18n = require("gitpilot.i18n")
 
 -- Configuration par défaut
 local default_config = {
-    template_directory = vim.fn.stdpath('data') .. '/gitpilot/templates/patches',
+    template_directory = "",  -- Sera initialisé dans setup
     auto_preview = true,
     max_preview_lines = 100,
     patch_format = "unified",
@@ -13,15 +13,25 @@ local default_config = {
 }
 
 -- Configuration actuelle
-local current_config = vim.deepcopy(default_config)
+local current_config = default_config
 
 -- Configure le module
 function M.setup(opts)
-    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
-    
+    -- Dans un environnement de test, utilise un répertoire temporaire
+    if not vim then
+        default_config.template_directory = "/tmp/gitpilot/templates/patches"
+    else
+        default_config.template_directory = vim.fn.stdpath('data') .. '/gitpilot/templates/patches'
+    end
+
+    -- Fusionne les options avec la configuration par défaut
+    current_config = vim and vim.tbl_deep_extend("force", vim.deepcopy(default_config), opts or {}) or default_config
+
     -- Crée le répertoire des templates s'il n'existe pas
-    if current_config.template_directory then
-        vim.fn.mkdir(current_config.template_directory, "p")
+    local template_dir = opts and opts.template_directory or current_config.template_directory
+    if template_dir and template_dir ~= "" then
+        local mkdir_cmd = string.format("mkdir -p %s", template_dir)
+        utils.execute_command(mkdir_cmd)
     end
 end
 

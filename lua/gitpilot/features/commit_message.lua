@@ -22,17 +22,17 @@ local default_config = {
     auto_scope = true
 }
 
--- Configuration actuelle
-local current_config = vim.deepcopy(default_config)
+-- Configuration actuelle et types de commit
+local current_config = default_config
+local COMMIT_TYPES = default_config.types
 
 -- Configure le module
 function M.setup(opts)
-    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
-    COMMIT_TYPES = current_config.types
+    if opts then
+        current_config = vim.tbl_deep_extend("force", vim.deepcopy(default_config), opts)
+        COMMIT_TYPES = current_config.types
+    end
 end
-
--- Types de commit selon Conventional Commits
-local COMMIT_TYPES = current_config.types
 
 -- Patterns pour détecter le type de changement
 local FILE_PATTERNS = {

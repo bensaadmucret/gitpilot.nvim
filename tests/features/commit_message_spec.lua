@@ -12,6 +12,7 @@ local mock_ui = {
 -- Mock des dépendances
 package.loaded['gitpilot.utils'] = mock_utils
 package.loaded['gitpilot.ui'] = mock_ui
+package.loaded['vim'] = require('tests.mocks.vim')  
 
 -- Import du module à tester
 local commit_message = require('gitpilot.features.commit_message')
