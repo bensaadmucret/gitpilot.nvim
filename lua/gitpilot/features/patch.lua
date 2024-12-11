@@ -2,7 +2,6 @@ local M = {}
 local utils = require("gitpilot.utils")
 local config = require("gitpilot.config")
 local i18n = require("gitpilot.i18n")
-local git = require("gitpilot.git")
 
 -- Configuration par défaut
 local default_config = {
@@ -32,55 +31,48 @@ function M.setup(opts)
     local template_dir = opts and opts.template_directory or current_config.template_directory
     if template_dir and template_dir ~= "" then
         local mkdir_cmd = string.format("mkdir -p %s", template_dir)
-        git.execute_command(mkdir_cmd)
+        utils.run_command(mkdir_cmd)
     end
 end
 
 -- Crée un patch à partir des commits spécifiés
--- @param start_commit: le commit de début (optionnel)
--- @param end_commit: le commit de fin (optionnel)
--- @param output_dir: le répertoire de sortie pour les patches
 function M.create_patch(start_commit, end_commit, output_dir)
     local cmd = "git format-patch"
     
     if start_commit and end_commit then
         cmd = cmd .. " " .. start_commit .. ".." .. end_commit
     elseif start_commit then
-        cmd = cmd .. " " .. start_commit
+        cmd = cmd .. " -1 " .. start_commit
     else
-        -- Par défaut, crée un patch pour le dernier commit
-        cmd = cmd .. " -1"
+        cmd = cmd .. " -1 HEAD"
     end
     
     if output_dir then
         cmd = cmd .. " -o " .. output_dir
     end
     
-    local success, result = git.execute_command(cmd)
+    local success, result = utils.run_command(cmd)
     return success, result
 end
 
 -- Applique un patch
--- @param patch_file: le chemin vers le fichier patch
--- @param check_only: vérifie seulement si le patch peut être appliqué sans l'appliquer
-function M.apply_patch(patch_file, check_only)
-    local cmd = "git am"
-    
-    if check_only then
-        cmd = cmd .. " --check"
+function M.apply_patch(patch_file)
+    if not patch_file then
+        return false, i18n.t("patch.error.no_patch_file")
     end
+    
+    local cmd = "git apply"
     
     cmd = cmd .. " " .. patch_file
     
-    local success, result = git.execute_command(cmd)
+    local success, result = utils.run_command(cmd)
     return success, result
 end
 
--- Liste les patches dans un répertoire
--- @param directory: le répertoire contenant les patches
+-- Liste les patches disponibles
 function M.list_patches(directory)
     local cmd = "ls -1 " .. (directory or ".") .. "/*.patch"
-    local success, result = git.execute_command(cmd)
+    local success, result = utils.run_command(cmd)
     
     if not success then
         return false, {}
@@ -95,17 +87,10 @@ function M.list_patches(directory)
 end
 
 -- Affiche le contenu d'un patch
--- @param patch_file: le chemin vers le fichier patch
 function M.show_patch(patch_file)
     local cmd = "cat " .. patch_file
-    local success, result = git.execute_command(cmd)
+    local success, result = utils.run_command(cmd)
     return success, result
-end
-
--- Vérifie si un patch peut être appliqué
--- @param patch_file: le chemin vers le fichier patch
-function M.check_patch(patch_file)
-    return M.apply_patch(patch_file, true)
 end
 
 return M
