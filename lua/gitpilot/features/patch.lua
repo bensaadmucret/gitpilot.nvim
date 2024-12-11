@@ -30,8 +30,9 @@ function M.setup(opts)
     -- Crée le répertoire des templates s'il n'existe pas
     local template_dir = opts and opts.template_directory or current_config.template_directory
     if template_dir and template_dir ~= "" then
-        local success, _ = utils.git_sync({"!mkdir", "-p", template_dir})
-        if not success then
+        -- Crée le répertoire avec tous les parents nécessaires (mode "p")
+        local success = vim.fn.mkdir(template_dir, "p")
+        if success == 0 then
             vim.notify(i18n.t("patch.error.create_directory"), vim.log.levels.ERROR)
         end
     end
