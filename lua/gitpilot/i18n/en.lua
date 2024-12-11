@@ -9,6 +9,7 @@ return {
     ["success"] = "Success!",
     ["error"] = "Error",
     ["warning"] = "Warning",
+    ["patch.error.create_directory"] = "Error creating template directory",
     
     -- Information messages
     ["info.branch_created"] = "Branch '%{name}' has been created",

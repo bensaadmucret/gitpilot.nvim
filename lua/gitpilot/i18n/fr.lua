@@ -14,6 +14,7 @@ return {
     ["error.no_stash"] = "Aucune modification en cache",
     ["error.tag_exists"] = "Le tag '%{name}' existe déjà",
     ["error.remote_exists"] = "Le dépôt distant '%{name}' existe déjà",
+    ["patch.error.create_directory"] = "Erreur lors de la création du répertoire des templates",
     ["welcome"] = "Bienvenue dans GitPilot !",
     ["select_action"] = "Sélectionnez une action :",
     ["error"] = "Erreur",
