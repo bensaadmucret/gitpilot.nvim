@@ -2,6 +2,7 @@ local M = {}
 local utils = require("gitpilot.utils")
 local config = require("gitpilot.config")
 local i18n = require("gitpilot.i18n")
+local git = require("gitpilot.git")
 
 -- Configuration par défaut
 local default_config = {
@@ -31,7 +32,7 @@ function M.setup(opts)
     local template_dir = opts and opts.template_directory or current_config.template_directory
     if template_dir and template_dir ~= "" then
         local mkdir_cmd = string.format("mkdir -p %s", template_dir)
-        utils.execute_command(mkdir_cmd)
+        git.execute_command(mkdir_cmd)
     end
 end
 
@@ -55,7 +56,7 @@ function M.create_patch(start_commit, end_commit, output_dir)
         cmd = cmd .. " -o " .. output_dir
     end
     
-    local success, result = utils.execute_command(cmd)
+    local success, result = git.execute_command(cmd)
     return success, result
 end
 
@@ -71,7 +72,7 @@ function M.apply_patch(patch_file, check_only)
     
     cmd = cmd .. " " .. patch_file
     
-    local success, result = utils.execute_command(cmd)
+    local success, result = git.execute_command(cmd)
     return success, result
 end
 
@@ -79,7 +80,7 @@ end
 -- @param directory: le répertoire contenant les patches
 function M.list_patches(directory)
     local cmd = "ls -1 " .. (directory or ".") .. "/*.patch"
-    local success, result = utils.execute_command(cmd)
+    local success, result = git.execute_command(cmd)
     
     if not success then
         return false, {}
@@ -97,7 +98,7 @@ end
 -- @param patch_file: le chemin vers le fichier patch
 function M.show_patch(patch_file)
     local cmd = "cat " .. patch_file
-    local success, result = utils.execute_command(cmd)
+    local success, result = git.execute_command(cmd)
     return success, result
 end
 
