@@ -11,7 +11,8 @@ local config = {
     height = 20,
     border = "rounded",
     title = true,
-    footer = true
+    footer = true,
+    use_icons = true
 }
 
 -- État des menus
@@ -223,6 +224,24 @@ function M.show_menu(menu_id, context)
             end)
         end
     end)
+end
+
+-- Affiche le menu principal
+function M.show_main_menu()
+    local items = {}
+    for _, item in ipairs(menus.main.items) do
+        table.insert(items, format_menu_item(item))
+    end
+    
+    ui.float_window(items, {
+        title = i18n.t(menus.main.title),
+        on_select = function(index)
+            local selected = menus.main.items[index]
+            if selected then
+                M.show_menu(selected.id)
+            end
+        end
+    })
 end
 
 -- Initialisation du module
