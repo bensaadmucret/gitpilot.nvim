@@ -34,6 +34,16 @@ local function clean_cache()
     end
 end
 
+-- Exécute une commande shell et retourne le résultat
+function M.execute_command(cmd)
+    local output = vim.fn.system(cmd)
+    local success = vim.v.shell_error == 0
+    if success then
+        output = output:gsub("^%s*(.-)%s*$", "%1")
+    end
+    return success, output
+end
+
 -- Exécute une commande git de manière asynchrone
 function M.git_async(args, callback, opts)
     opts = vim.tbl_deep_extend("force", {
