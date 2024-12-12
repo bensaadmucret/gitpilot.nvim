@@ -16,6 +16,13 @@ local cache = {
     timeout = {}
 }
 
+-- Configure le module
+function M.setup(opts)
+    if opts and opts.git then
+        config.git = vim.tbl_deep_extend("force", config.git, opts.git)
+    end
+end
+
 -- Nettoie le cache expiré
 local function clean_cache()
     local now = vim and vim.loop.now() or os.time() * 1000
@@ -199,7 +206,9 @@ end
 -- Lit le contenu d'un fichier
 function M.read_file(path)
     local fd = vim.loop.fs_open(path, "r", 438)
-    if not fd then return nil end
+    if not fd then
+        return nil
+    end
     
     local stat = vim.loop.fs_fstat(fd)
     if not stat then
