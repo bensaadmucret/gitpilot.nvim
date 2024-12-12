@@ -693,4 +693,64 @@ return {
     ["rebase.confirm.abort"] = "Are you sure you want to abort the rebase?",
     ["rebase.confirm.skip"] = "Are you sure you want to skip this commit?",
     
+    -- Branch menu items
+    ["branch.create_new"] = "Create New Branch",
+    ["branch.checkout"] = "Checkout Branch",
+    ["branch.merge"] = "Merge Branch",
+    ["branch.delete"] = "Delete Branch",
+    ["branch.push"] = "Push Branch",
+    ["branch.pull"] = "Pull Branch",
+    ["branch.rebase"] = "Rebase Branch",
+    ["branch.refresh"] = "Refresh Branches",
+
+    -- Commit menu items
+    ["commit.create"] = "Create Commit",
+    ["commit.amend"] = "Amend Last Commit",
+    ["commit.fixup"] = "Fixup Commit",
+    ["commit.revert"] = "Revert Commit",
+    ["commit.cherry_pick"] = "Cherry Pick Commit",
+    ["commit.show"] = "Show Commit",
+
+    -- Stash menu items
+    ["stash.save"] = "Save Stash",
+    ["stash.pop"] = "Pop Stash",
+    ["stash.apply"] = "Apply Stash",
+    ["stash.drop"] = "Drop Stash",
+    ["stash.show"] = "Show Stash",
+    ["stash.clear"] = "Clear All Stashes",
+
+    -- Tag menu items
+    ["tag.create"] = "Create Tag",
+    ["tag.delete"] = "Delete Tag",
+    ["tag.push"] = "Push Tag",
+    ["tag.show"] = "Show Tag",
+
+    -- Remote menu items
+    ["remote.add"] = "Add Remote",
+    ["remote.remove"] = "Remove Remote",
+    ["remote.fetch"] = "Fetch Remote",
+    ["remote.pull"] = "Pull Remote",
+    ["remote.push"] = "Push Remote",
+    ["remote.prune"] = "Prune Remote",
+
+    -- Rebase menu items
+    ["rebase.start"] = "Start Rebase",
+    ["rebase.continue"] = "Continue Rebase",
+    ["rebase.skip"] = "Skip Rebase",
+    ["rebase.abort"] = "Abort Rebase",
+    ["rebase.interactive"] = "Interactive Rebase",
+
+    -- Search menu items
+    ["search.commits"] = "Search Commits",
+    ["search.files"] = "Search Files",
+    ["search.branches"] = "Search Branches",
+    ["search.tags"] = "Search Tags",
+
+    -- Backup menu items
+    ["backup.create"] = "Create Backup",
+    ["backup.restore"] = "Restore Backup",
+    ["backup.delete"] = "Delete Backup",
+
+    -- Error messages
+    ["error.invalid_menu"] = "Invalid menu selected",
 }

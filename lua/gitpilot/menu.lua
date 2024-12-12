@@ -4,256 +4,177 @@ local M = {}
 local ui = require('gitpilot.ui')
 local i18n = require('gitpilot.i18n')
 local utils = require('gitpilot.utils')
+local actions = require('gitpilot.actions')
 
--- Configuration locale
+-- Configuration
 local config = {
-    width = 60,
-    height = 20,
-    border = "rounded",
-    title = true,
-    footer = true,
-    use_icons = true
+    use_icons = true,
+    confirm_actions = true,
+    auto_refresh = true
 }
 
--- État des menus
-local state = {
-    current_menu = nil,
-    history = {},
-    context = {}
+-- Menu state
+local current_menu = 'main'
+
+-- Icons
+local icons = {
+    branch = '🌿',
+    commit = '📝',
+    remote = '🔄',
+    tag = '🏷️',
+    stash = '📦',
+    search = '🔍',
+    rebase = '♻️',
+    backup = '💾',
+    back = '⬅️'
 }
 
--- Récupère la branche courante
-local function get_current_branch()
-    local success, output = utils.execute_command("git branch --show-current")
-    if success and output then
-        return output:gsub("^%s*(.-)%s*$", "%1")  -- Supprime les espaces en début et fin
-    end
-    return nil
+function M.setup(opts)
+    config = vim.tbl_extend('force', config, opts or {})
 end
 
--- Définition des menus
-local menus = {
-    main = {
-        title = "menu.main_title",
-        items = {
-            { id = "branch", text = "menu.branches", icon = "🌿" },
-            { id = "commit", text = "menu.commits", icon = "📝" },
-            { id = "remote", text = "menu.remotes", icon = "🔄" },
-            { id = "tag", text = "menu.tags", icon = "🏷️" },
-            { id = "stash", text = "menu.stash", icon = "📦" },
-            { id = "search", text = "menu.search", icon = "🔍" },
-            { id = "rebase", text = "menu.rebase", icon = "♻️" },
-            { id = "backup", text = "menu.backup", icon = "💾" }
-        }
-    },
-    branch = {
-        title = "menu.branches_title",
-        items = {
-            { id = "create", text = "branch.create_new", icon = "➕" },
-            { id = "checkout", text = "branch.checkout", icon = "✨" },
-            { id = "merge", text = "branch.merge", icon = "🔗" },
-            { id = "delete", text = "branch.delete", icon = "🗑️" },
-            { id = "push", text = "branch.push", icon = "⬆️" },
-            { id = "pull", text = "branch.pull", icon = "⬇️" },
-            { id = "rebase", text = "branch.rebase", icon = "♻️" },
-            { id = "refresh", text = "branch.refresh", icon = "🔄" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    },
-    commit = {
-        title = "menu.commits_title",
-        items = {
-            { id = "create", text = "commit.create", icon = "➕" },
-            { id = "amend", text = "commit.amend", icon = "✏️" },
-            { id = "fixup", text = "commit.fixup", icon = "🔧" },
-            { id = "revert", text = "commit.revert", icon = "↩️" },
-            { id = "cherry_pick", text = "commit.cherry_pick", icon = "🍒" },
-            { id = "show", text = "commit.show", icon = "👁️" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    },
-    stash = {
-        title = "menu.stash_title",
-        items = {
-            { id = "save", text = "stash.save", icon = "💾" },
-            { id = "pop", text = "stash.pop", icon = "📤" },
-            { id = "apply", text = "stash.apply", icon = "📥" },
-            { id = "drop", text = "stash.drop", icon = "🗑️" },
-            { id = "show", text = "stash.show", icon = "👁️" },
-            { id = "clear", text = "stash.clear", icon = "🧹" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    },
-    tag = {
-        title = "menu.tags_title",
-        items = {
-            { id = "create", text = "tag.create", icon = "➕" },
-            { id = "delete", text = "tag.delete", icon = "🗑️" },
-            { id = "push", text = "tag.push", icon = "⬆️" },
-            { id = "show", text = "tag.show", icon = "👁️" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    },
-    remote = {
-        title = "menu.remotes_title",
-        items = {
-            { id = "add", text = "remote.add", icon = "➕" },
-            { id = "remove", text = "remote.remove", icon = "🗑️" },
-            { id = "fetch", text = "remote.fetch", icon = "🔄" },
-            { id = "pull", text = "remote.pull", icon = "⬇️" },
-            { id = "push", text = "remote.push", icon = "⬆️" },
-            { id = "prune", text = "remote.prune", icon = "🧹" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    },
-    rebase = {
-        title = "menu.rebase_title",
-        items = {
-            { id = "start", text = "rebase.start", icon = "▶️" },
-            { id = "continue", text = "rebase.continue", icon = "⏩" },
-            { id = "skip", text = "rebase.skip", icon = "⏭️" },
-            { id = "abort", text = "rebase.abort", icon = "⏹️" },
-            { id = "interactive", text = "rebase.interactive", icon = "🔧" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    },
-    search = {
-        title = "menu.search_title",
-        items = {
-            { id = "commits", text = "search.commits", icon = "📝" },
-            { id = "files", text = "search.files", icon = "📄" },
-            { id = "branches", text = "search.branches", icon = "🌿" },
-            { id = "tags", text = "search.tags", icon = "🏷️" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    },
-    backup = {
-        title = "menu.backup_title",
-        items = {
-            { id = "create", text = "backup.create", icon = "➕" },
-            { id = "restore", text = "backup.restore", icon = "🔄" },
-            { id = "delete", text = "backup.delete", icon = "🗑️" },
-            { id = "back", text = "menu.back", icon = "⬅️" }
-        }
-    }
-}
+function M.get_current_menu()
+    return current_menu
+end
 
--- Formate un élément de menu
-local function format_menu_item(item)
-    local text = i18n.t(item.text)
-    if config.use_icons and item.icon then
-        text = item.icon .. " " .. text
+local function get_menu_title(menu_type)
+    local title = i18n.t('menu.' .. menu_type .. '_title')
+    if menu_type == 'main' then
+        local success, branch = utils.execute_command('git branch --show-current')
+        if success and branch then
+            title = title .. ' (' .. branch .. ')'
+        end
+    end
+    return title
+end
+
+local function add_icon(text, icon)
+    if config.use_icons and icon then
+        return icon .. ' ' .. text
     end
     return text
 end
 
--- Gère la navigation entre les menus
-local function handle_menu_navigation(menu_id, item_id)
-    if item_id == "back" then
-        if #state.history > 0 then
-            state.current_menu = table.remove(state.history)
-            return true
-        end
-        return false
+local function get_menu_items(menu_type)
+    local items = {}
+    
+    if menu_type == 'main' then
+        table.insert(items, add_icon(i18n.t('menu.branches'), icons.branch))
+        table.insert(items, add_icon(i18n.t('menu.commits'), icons.commit))
+        table.insert(items, add_icon(i18n.t('menu.remotes'), icons.remote))
+        table.insert(items, add_icon(i18n.t('menu.tags'), icons.tag))
+        table.insert(items, add_icon(i18n.t('menu.stash'), icons.stash))
+        table.insert(items, add_icon(i18n.t('menu.search'), icons.search))
+        table.insert(items, add_icon(i18n.t('menu.rebase'), icons.rebase))
+        table.insert(items, add_icon(i18n.t('menu.backup'), icons.backup))
+    elseif menu_type == 'branch' then
+        table.insert(items, add_icon(i18n.t('branch.create_new'), icons.branch))
+        table.insert(items, add_icon(i18n.t('branch.checkout'), icons.branch))
+        table.insert(items, add_icon(i18n.t('branch.merge'), icons.branch))
+        table.insert(items, add_icon(i18n.t('branch.delete'), icons.branch))
+        table.insert(items, add_icon(i18n.t('branch.push'), icons.branch))
+        table.insert(items, add_icon(i18n.t('branch.pull'), icons.branch))
+        table.insert(items, add_icon(i18n.t('branch.rebase'), icons.branch))
+        table.insert(items, add_icon(i18n.t('branch.refresh'), icons.branch))
+        table.insert(items, add_icon(i18n.t('menu.back'), icons.back))
+    elseif menu_type == 'commit' then
+        table.insert(items, add_icon(i18n.t('commit.create'), icons.commit))
+        table.insert(items, add_icon(i18n.t('menu.back'), icons.back))
     end
     
-    if item_id == "quit" then
-        return false
-    end
-
-    local next_menu = menus[item_id]
-    if next_menu then
-        table.insert(state.history, menu_id)
-        state.current_menu = item_id
-        return true
-    end
-    return false
+    return items
 end
 
--- Affiche un menu
-function M.show_menu(menu_id, context)
-    menu_id = menu_id or state.current_menu or "main"
-    local menu = menus[menu_id]
-    if not menu then
-        ui.show_error(i18n.t("error.invalid_menu"))
+local function handle_menu_selection(menu_type, selected, context)
+    if not selected then
         return
     end
-
-    state.context = context or {}
-    local items = {}
-    for _, item in ipairs(menu.items) do
-        table.insert(items, format_menu_item(item))
-    end
-
-    -- Ajoute la branche courante au titre si on est dans un dépôt git
-    local title = i18n.t(menu.title)
-    local current_branch = get_current_branch()
-    if current_branch then
-        title = title .. " (" .. current_branch .. ")"
-    end
-
-    ui.select(items, {
-        prompt = title,
-        format_item = function(item)
-            return item
-        end
-    }, function(choice)
-        if not choice then return end
-        
-        -- Trouve l'item sélectionné
-        local selected_item
-        for i, item in ipairs(menu.items) do
-            if format_menu_item(item) == choice then
-                selected_item = item
-                break
-            end
-        end
-        
-        if not selected_item then return end
-
-        -- Gère la navigation
-        if not handle_menu_navigation(menu_id, selected_item.id) then
-            -- Émet un événement pour le gestionnaire d'actions
-            vim.schedule(function()
-                require('gitpilot.actions').handle_action(menu_id, selected_item.id, state.context)
-            end)
-        else
-            -- Affiche le nouveau menu
-            vim.schedule(function()
-                M.show_menu(state.current_menu, state.context)
-            end)
-        end
-    end)
-end
-
--- Affiche le menu principal
-function M.show_main_menu()
-    local items = {}
-    for _, item in ipairs(menus.main.items) do
-        table.insert(items, format_menu_item(item))
+    
+    -- Remove icon if present
+    local text = selected:gsub('^[^ ]* ', '')
+    
+    -- Handle back navigation
+    if text == i18n.t('menu.back') then
+        current_menu = 'main'
+        vim.schedule(function()
+            M.show_main_menu()
+        end)
+        return
     end
     
-    ui.float_window(items, {
-        title = i18n.t(menus.main.title),
-        on_select = function(index)
-            local selected = menus.main.items[index]
-            if selected then
-                M.show_menu(selected.id)
-            end
+    -- Handle menu item selection
+    local action = nil
+    
+    if menu_type == 'main' then
+        if text == i18n.t('menu.branches') then
+            current_menu = 'branch'
+            vim.schedule(function()
+                M.show_menu('branch', context)
+            end)
+            return
+        elseif text == i18n.t('menu.commits') then
+            current_menu = 'commit'
+            vim.schedule(function()
+                M.show_menu('commit', context)
+            end)
+            return
         end
-    })
+    elseif menu_type == 'branch' then
+        if text == i18n.t('branch.create_new') then
+            action = 'create'
+        elseif text == i18n.t('branch.checkout') then
+            action = 'checkout'
+        elseif text == i18n.t('branch.merge') then
+            action = 'merge'
+        elseif text == i18n.t('branch.delete') then
+            action = 'delete'
+        elseif text == i18n.t('branch.push') then
+            action = 'push'
+        elseif text == i18n.t('branch.pull') then
+            action = 'pull'
+        elseif text == i18n.t('branch.rebase') then
+            action = 'rebase'
+        elseif text == i18n.t('branch.refresh') then
+            action = 'refresh'
+        end
+    elseif menu_type == 'commit' then
+        if text == i18n.t('commit.create') then
+            action = 'create'
+        end
+    end
+    
+    if action then
+        actions.handle_action(menu_type, action, context)
+    end
 end
 
--- Initialisation du module
-function M.setup(opts)
-    config = vim.tbl_deep_extend("force", config, opts or {})
+function M.show_main_menu()
+    current_menu = 'main'
+    local items = get_menu_items('main')
+    local opts = {
+        title = get_menu_title('main')
+    }
+    ui.float_window(items, opts)
 end
 
--- Réinitialise l'état
-function M.reset()
-    state.current_menu = nil
-    state.history = {}
-    state.context = {}
+function M.show_menu(menu_type, context)
+    if not menu_type then
+        return
+    end
+    
+    local items = get_menu_items(menu_type)
+    if not items or #items == 0 then
+        ui.show_error(i18n.t('error.invalid_menu'))
+        return
+    end
+    
+    local opts = {
+        title = get_menu_title(menu_type)
+    }
+    
+    ui.select(items, opts, function(selected)
+        handle_menu_selection(menu_type, selected, context)
+    end)
 end
 
 return M

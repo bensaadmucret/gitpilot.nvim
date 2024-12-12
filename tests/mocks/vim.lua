@@ -41,4 +41,72 @@ function M.tbl_deep_extend(behavior, ...)
     return result
 end
 
+-- Mock de la fonction vim.schedule
+M.schedule = function(fn)
+    fn()
+end
+
+-- Mock de la fonction vim.fn
+M.fn = {
+    getcwd = function()
+        return '/path/to/cwd'
+    end,
+    expand = function(path)
+        return path:gsub('%$HOME', '/home/user')
+    end,
+    tempname = function()
+        return '/tmp/gitpilot_temp'
+    end,
+    delete = function(path)
+        -- Mock delete file
+    end,
+    writefile = function(lines, path)
+        -- Mock write file
+    end,
+    readfile = function(path)
+        return {'line1', 'line2'}
+    end,
+    mkdir = function(path, mode)
+        -- Mock mkdir
+        return 1 -- Success
+    end,
+    stdpath = function(what)
+        if what == 'data' then
+            return '/tmp'
+        end
+        return '/tmp'
+    end
+}
+
+-- Mock de vim.tbl_extend
+M.tbl_extend = function(behavior, ...)
+    local result = {}
+    for i = 1, select('#', ...) do
+        local t = select(i, ...)
+        if t then
+            for k, v in pairs(t) do
+                if behavior == 'force' or result[k] == nil then
+                    result[k] = v
+                end
+            end
+        end
+    end
+    return result
+end
+
+-- Mock de vim.notify
+M.notify = function(msg, level)
+    -- Mock notification
+end
+
+-- Mock de vim.log.levels
+M.log = {
+    levels = {
+        ERROR = 1,
+        WARN = 2,
+        INFO = 3,
+        DEBUG = 4
+    }
+}
+
 return M

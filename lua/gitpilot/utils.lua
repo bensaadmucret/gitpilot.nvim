@@ -18,7 +18,7 @@ local cache = {
 
 -- Nettoie le cache expiré
 local function clean_cache()
-    local now = vim.loop.now()
+    local now = vim and vim.loop.now() or os.time() * 1000
     for key, timeout in pairs(cache.timeout) do
         if now > timeout then
             cache.data[key] = nil
@@ -112,23 +112,26 @@ function M.git_sync(args, opts)
     
     -- Vérifie le cache
     if opts.cache_key and cache.data[opts.cache_key] then
-        local now = vim.loop.now()
+        local now = vim and vim.loop.now() or os.time() * 1000
         if now < cache.timeout[opts.cache_key] then
             return true, cache.data[opts.cache_key]
         end
     end
     
     -- Prépare la commande
-    local cmd = string.format("%s %s", config.git.command, table.concat(args, " "))
-    
-    -- Lance la commande
-    local output = vim.fn.system(cmd)
-    local success = vim.v.shell_error == 0
+    local success, output
+    if M.system then
+        success, output = M.system(config.git.command, args)
+    else
+        local cmd = string.format("%s %s", config.git.command, table.concat(args, " "))
+        output = vim.fn.system(cmd)
+        success = vim.v.shell_error == 0
+    end
     
     -- Met en cache si nécessaire
     if opts.cache_key and success then
         cache.data[opts.cache_key] = output
-        cache.timeout[opts.cache_key] = vim.loop.now() + opts.cache_timeout
+        cache.timeout[opts.cache_key] = (vim and vim.loop.now() or os.time() * 1000) + opts.cache_timeout
         clean_cache()
     end
     
@@ -206,23 +209,8 @@ function M.read_file(path)
     
     local data = vim.loop.fs_read(fd, stat.size, 0)
     vim.loop.fs_close(fd)
+    
     return data
-end
-
--- Initialisation du module
-function M.setup(opts)
-    config = vim.tbl_deep_extend("force", config, opts or {})
-end
-
--- Réinitialise le cache
-function M.reset_cache()
-    cache.data = {}
-    cache.timeout = {}
-end
-
--- Vérifie si nous sommes dans un environnement de test
-function M.is_test_env()
-    return vim.env.GITPILOT_TEST == "1"
 end
 
 return M

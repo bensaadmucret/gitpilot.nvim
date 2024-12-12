@@ -18,17 +18,21 @@ local current_config = default_config
 -- Configure le module
 function M.setup(opts)
     -- Dans un environnement de test, utilise un répertoire temporaire
-    if not vim then
+    if not vim or not vim.fn then
         default_config.template_directory = "/tmp/gitpilot/templates/patches"
+        current_config.template_directory = default_config.template_directory
     else
         default_config.template_directory = vim.fn.stdpath('data') .. '/gitpilot/templates/patches'
+        current_config.template_directory = default_config.template_directory
     end
 
     -- Fusionne les options avec la configuration par défaut
-    current_config = vim and vim.tbl_deep_extend("force", vim.deepcopy(default_config), opts or {}) or default_config
+    if opts and opts.template_directory then
+        current_config.template_directory = opts.template_directory
+    end
 
     -- Crée le répertoire des templates s'il n'existe pas
-    local template_dir = opts and opts.template_directory or current_config.template_directory
+    local template_dir = current_config.template_directory
     if template_dir and template_dir ~= "" then
         -- Crée le répertoire avec tous les parents nécessaires (mode "p")
         local success = vim.fn.mkdir(template_dir, "p")
@@ -36,6 +40,11 @@ function M.setup(opts)
             vim.notify(i18n.t("patch.error.create_directory"), vim.log.levels.ERROR)
         end
     end
+end
+
+-- Retourne le répertoire des templates
+function M.get_template_directory()
+    return current_config.template_directory
 end
 
 -- Crée un patch à partir des commits spécifiés
@@ -71,7 +80,7 @@ end
 
 -- Liste les patches disponibles
 function M.list_patches(directory)
-    local success, result = utils.git_sync({"!ls", "-1", (directory or ".") .. "/*.patch"})
+    local success, result = utils.git_sync({"ls-files", "-o", "--exclude-standard", (directory or ".") .. "/*.patch"})
     
     if not success then
         return false, {}
@@ -87,7 +96,7 @@ end
 
 -- Affiche le contenu d'un patch
 function M.show_patch(patch_file)
-    return utils.git_sync({"!cat", patch_file})
+    return utils.git_sync({"show", patch_file})
 end
 
 return M

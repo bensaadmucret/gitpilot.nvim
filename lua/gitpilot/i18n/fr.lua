@@ -834,4 +834,62 @@ return {
     ["remote.prompt.pull"] = "Voulez-vous faire un pull depuis '%{name}' ?",
     ["remote.prompt.push"] = "Voulez-vous faire un push vers '%{name}' ?",
     ["remote.prompt.prune"] = "Voulez-vous nettoyer les branches supprimées de '%{name}' ?",
+    
+    -- Branch menu items
+    ["branch.create_new"] = "Créer une nouvelle branche",
+    ["branch.checkout"] = "Basculer sur une branche",
+    ["branch.merge"] = "Fusionner une branche",
+    ["branch.delete"] = "Supprimer une branche",
+    ["branch.push"] = "Pousser une branche",
+    ["branch.pull"] = "Tirer une branche",
+    ["branch.rebase"] = "Rebaser une branche",
+    ["branch.refresh"] = "Rafraîchir les branches",
+
+    -- Commit menu items
+    ["commit.create"] = "Créer un commit",
+    ["commit.amend"] = "Modifier le dernier commit",
+    ["commit.fixup"] = "Corriger un commit",
+    ["commit.revert"] = "Annuler un commit",
+    ["commit.cherry_pick"] = "Cherry-picker un commit",
+    ["commit.show"] = "Afficher un commit",
+
+    -- Stash menu items
+    ["stash.save"] = "Sauvegarder les modifications",
+    ["stash.pop"] = "Appliquer et supprimer une sauvegarde",
+    ["stash.apply"] = "Appliquer une sauvegarde",
+    ["stash.drop"] = "Supprimer une sauvegarde",
+    ["stash.show"] = "Afficher une sauvegarde",
+    ["stash.clear"] = "Supprimer toutes les sauvegardes",
+
+    -- Tag menu items
+    ["tag.create"] = "Créer un tag",
+    ["tag.delete"] = "Supprimer un tag",
+    ["tag.push"] = "Pousser un tag",
+    ["tag.show"] = "Afficher un tag",
+
+    -- Remote menu items
+    ["remote.add"] = "Ajouter un dépôt distant",
+    ["remote.remove"] = "Supprimer un dépôt distant",
+    ["remote.fetch"] = "Récupérer depuis un dépôt distant",
+    ["remote.pull"] = "Tirer depuis un dépôt distant",
+    ["remote.push"] = "Pousser vers un dépôt distant",
+    ["remote.prune"] = "Nettoyer les références distantes",
+
+    -- Rebase menu items
+    ["rebase.start"] = "Démarrer un rebasage",
+    ["rebase.continue"] = "Continuer le rebasage",
+    ["rebase.skip"] = "Ignorer le commit",
+    ["rebase.abort"] = "Abandonner le rebasage",
+    ["rebase.interactive"] = "Rebasage interactif",
+
+    -- Search menu items
+    ["search.commits"] = "Rechercher dans les commits",
+    ["search.files"] = "Rechercher dans les fichiers",
+    ["search.branches"] = "Rechercher dans les branches",
+    ["search.tags"] = "Rechercher dans les tags",
+
+    -- Backup menu items
+    ["backup.create"] = "Créer une sauvegarde",
+    ["backup.restore"] = "Restaurer une sauvegarde",
+    ["backup.delete"] = "Supprimer une sauvegarde",
 }
