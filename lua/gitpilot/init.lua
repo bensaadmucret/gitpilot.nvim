@@ -67,6 +67,7 @@ local function init_modules(config)
     require('gitpilot.features.mirror').setup()
     
     -- Initialise le module de patch
+    require("gitpilot.features.patch").setup()
     require("gitpilot.features.patch_ui").setup()
     
     -- Initialise l'historique interactif
