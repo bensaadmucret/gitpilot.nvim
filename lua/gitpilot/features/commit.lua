@@ -43,7 +43,6 @@ end
 local function get_staged_files()
     local success, status = utils.execute_command("git status -s")
     if not success then
-        ui.show_error(i18n.t('commit.error.status_failed'))
         return false, {}
     end
 
@@ -65,18 +64,21 @@ local function get_staged_files()
         local status_code = line:sub(1, 2)
         local file_path = line:sub(4)
         
-        if status_code:match("^M") or status_code:match("^.M") then
-            table.insert(files.modified, file_path)
-        elseif status_code:match("^A") then
-            table.insert(files.added, file_path)
-        elseif status_code:match("^D") or status_code:match("^.D") then
-            table.insert(files.deleted, file_path)
-        elseif status_code:match("^R") then
-            local old_new = file_path:match("(.*) %-> (.*)")
-            if old_new then
-                table.insert(files.renamed, old_new)
-            else
-                table.insert(files.renamed, file_path)
+        -- Vérifier si le fichier est stagé
+        if status_code:match("^[MADRCT]") then
+            if status_code:match("^M") then
+                table.insert(files.modified, file_path)
+            elseif status_code:match("^A") then
+                table.insert(files.added, file_path)
+            elseif status_code:match("^D") then
+                table.insert(files.deleted, file_path)
+            elseif status_code:match("^R") then
+                local old_new = file_path:match("(.*) %-> (.*)")
+                if old_new then
+                    table.insert(files.renamed, old_new)
+                else
+                    table.insert(files.renamed, file_path)
+                end
             end
         elseif status_code:match("^%?%?") then
             table.insert(files.untracked, file_path)
@@ -90,45 +92,50 @@ end
 local function format_status_for_tests(files)
     local content = {
         i18n.t('commit.status.title'),
-        "",
-        "Modified:",
-        "",
-        "Added:",
-        "",
-        "Deleted:",
-        "",
-        "Renamed:",
-        "",
-        "Untracked:",
         ""
     }
 
-    -- Ajouter les fichiers dans l'ordre attendu
+    -- Ajouter les sections seulement si elles contiennent des fichiers
     if #files.modified > 0 then
+        table.insert(content, "Modified:")
         for _, file in ipairs(files.modified) do
-            table.insert(content, 3, " - " .. file)
+            table.insert(content, " - " .. file)
         end
+        table.insert(content, "")
     end
+
     if #files.added > 0 then
+        table.insert(content, "Added:")
         for _, file in ipairs(files.added) do
-            table.insert(content, 6, " - " .. file)
+            table.insert(content, " - " .. file)
         end
+        table.insert(content, "")
     end
+
     if #files.deleted > 0 then
+        table.insert(content, "Deleted:")
         for _, file in ipairs(files.deleted) do
-            table.insert(content, 9, " - " .. file)
+            table.insert(content, " - " .. file)
         end
+        table.insert(content, "")
     end
+
     if #files.renamed > 0 then
+        table.insert(content, "Renamed:")
         for _, file in ipairs(files.renamed) do
-            table.insert(content, 12, " - " .. file)
+            table.insert(content, " - " .. file)
         end
+        table.insert(content, "")
     end
+
     if #files.untracked > 0 then
+        table.insert(content, "Untracked:")
         for _, file in ipairs(files.untracked) do
-            table.insert(content, 15, " - " .. file)
+            table.insert(content, " - " .. file)
         end
+        table.insert(content, "")
     end
+
     return content
 end
 
@@ -137,11 +144,17 @@ local function show_git_status(callback)
     local success, files = get_staged_files()
     if not success then
         ui.show_error(i18n.t('commit.error.status_failed'))
+        if callback then callback(false) end
         return false
     end
 
-    if #files == 0 then
+    -- Vérifier s'il y a des fichiers stagés
+    local has_staged = #files.modified > 0 or #files.added > 0 or 
+                      #files.deleted > 0 or #files.renamed > 0
+
+    if not has_staged then
         ui.show_error(i18n.t('commit.error.no_changes'))
+        if callback then callback(false) end
         return false
     end
 
@@ -149,35 +162,46 @@ local function show_git_status(callback)
     local content = format_status_for_tests(files)
 
     -- Appeler float_window et retourner true
-    return ui.float_window({
+    ui.float_window({
         title = i18n.t('commit.status.window_title'),
         content = content,
-        callback = callback
+        callback = function(result)
+            if callback then callback(result) end
+        end
     })
+    return true
 end
 
 -- Wrapper pour gérer les messages d'erreur de manière cohérente
-local function handle_empty_message_error()
+local function handle_empty_message_error(callback)
     ui.show_error(i18n.t('commit.error.empty_message'))
+    if callback then callback(false) end
     return false
 end
 
 -- Wrapper pour gérer les erreurs de commit
-local function handle_commit_error(output)
+local function handle_commit_error(output, callback)
     ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
+    if callback then callback(false) end
     return false
 end
 
 -- Wrapper pour gérer les erreurs d'amend
-local function handle_amend_error(output)
+local function handle_amend_error(output, callback)
     ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
+    if callback then callback(false) end
     return false
 end
 
 -- Échappe les caractères spéciaux dans le message de commit
 local function escape_commit_message(message, quote_type)
     if not message then return "" end
-    local escaped = message:gsub('"', '\\"'):gsub('`', '\\`'):gsub('$', '\\$')
+    local escaped = message:gsub([[\]], [[\\]]) -- Échapper les backslashes d'abord
+                         :gsub('"', '\\"')
+                         :gsub('`', '\\`')
+                         :gsub('$', '\\$')
+                         :gsub("'", "\\'")
+                         :gsub("\n", "\\n")
     if quote_type == "single" then
         escaped = "'" .. escaped .. "'"
     else
@@ -187,28 +211,56 @@ local function escape_commit_message(message, quote_type)
 end
 
 -- Crée un nouveau commit avec l'éditeur intégré
-local function create_commit_builtin()
+local function create_commit_builtin(callback)
     local commit_success = false
-    ui.input({
-        prompt = i18n.t("commit.enter_message"),
-        multiline = true
-    }, function(message)
-        if not message or message == "" then
-            return handle_empty_message_error()
+    
+    -- Vérifier d'abord s'il y a des changements
+    local success, files = get_staged_files()
+    if not success then
+        ui.show_error(i18n.t('commit.error.status_failed'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Vérifier s'il y a des fichiers stagés
+    local has_staged = #files.modified > 0 or #files.added > 0 or 
+                      #files.deleted > 0 or #files.renamed > 0
+
+    if not has_staged then
+        ui.show_error(i18n.t('commit.error.no_changes'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Afficher le statut git avant de demander le message
+    show_git_status(function(status_result)
+        if not status_result then
+            if callback then callback(false) end
+            return
         end
+
+        ui.input({
+            prompt = i18n.t("commit.enter_message"),
+            multiline = true
+        }, function(message)
+            if not message or message == "" then
+                return handle_empty_message_error(callback)
+            end
+                
+            -- Échapper les caractères spéciaux pour git commit
+            local escaped_message = escape_commit_message(message, "single")
+            local success, output = utils.execute_command("git commit -m " .. escaped_message)
             
-        -- Échapper les caractères spéciaux pour git commit
-        local escaped_message = escape_commit_message(message, "single")
-        local success, output = utils.execute_command("git commit -m " .. escaped_message)
-        if success then
+            if not success then
+                return handle_commit_error(output, callback)
+            end
+            
             ui.show_success(i18n.t('commit.success.created'))
-            commit_success = true
+            if callback then callback(true) end
             return true
-        else
-            return handle_commit_error(output)
-        end
+        end)
     end)
-    return commit_success
+    return true
 end
 
 function M.create_commit()
