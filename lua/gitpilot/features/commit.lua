@@ -172,6 +172,27 @@ local function show_git_status(callback)
     return true
 end
 
+-- Échappe les caractères spéciaux dans le message de commit
+local function escape_commit_message(message, quote_type)
+    if not message then return "" end
+    -- Échapper d'abord les backslashes pour éviter les problèmes avec les autres échappements
+    local escaped = message:gsub([[\]], [[\\]])
+    -- Échapper les autres caractères spéciaux
+    escaped = escaped:gsub('"', '\\"')
+                    :gsub('`', '\\`')
+                    :gsub('$', '\\$')
+                    :gsub("'", "\\'")
+                    :gsub("\n", "\\n")
+    
+    -- Ajouter les guillemets appropriés
+    if quote_type == "single" then
+        escaped = "'" .. escaped .. "'"
+    else
+        escaped = '"' .. escaped .. '"'
+    end
+    return escaped
+end
+
 -- Wrapper pour gérer les messages d'erreur de manière cohérente
 local function handle_empty_message_error(callback)
     ui.show_error(i18n.t('commit.error.empty_message'))
@@ -193,40 +214,10 @@ local function handle_amend_error(output, callback)
     return false
 end
 
--- Échappe les caractères spéciaux dans le message de commit
-local function escape_commit_message(message, quote_type)
-    if not message then return "" end
-    local escaped = message:gsub([[\]], [[\\]]) -- Échapper les backslashes d'abord
-                         :gsub('"', '\\"')
-                         :gsub('`', '\\`')
-                         :gsub('$', '\\$')
-                         :gsub("'", "\\'")
-                         :gsub("\n", "\\n")
-    if quote_type == "single" then
-        escaped = "'" .. escaped .. "'"
-    else
-        escaped = '"' .. escaped .. '"'
-    end
-    return escaped
-end
-
 -- Crée un nouveau commit avec l'éditeur intégré
 local function create_commit_builtin(callback)
-    local commit_success = false
-    
     -- Vérifier d'abord s'il y a des changements
-    local success, files = get_staged_files()
-    if not success then
-        ui.show_error(i18n.t('commit.error.status_failed'))
-        if callback then callback(false) end
-        return false
-    end
-
-    -- Vérifier s'il y a des fichiers stagés
-    local has_staged = #files.modified > 0 or #files.added > 0 or 
-                      #files.deleted > 0 or #files.renamed > 0
-
-    if not has_staged then
+    if not has_changes() then
         ui.show_error(i18n.t('commit.error.no_changes'))
         if callback then callback(false) end
         return false
