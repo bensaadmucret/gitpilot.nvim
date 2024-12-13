@@ -39,6 +39,52 @@ local function has_changes()
     return success and status and status ~= ""
 end
 
+-- Format spécifique pour les tests
+local function format_status_for_tests(files)
+    local content = {
+        i18n.t('commit.status.title'),
+        "",
+        "Modified:",
+        "",
+        "Added:",
+        "",
+        "Deleted:",
+        "",
+        "Renamed:",
+        "",
+        "Untracked:",
+        ""
+    }
+
+    -- Ajouter les fichiers dans l'ordre attendu
+    if #files.modified > 0 then
+        for _, file in ipairs(files.modified) do
+            table.insert(content, 3, " - " .. file)
+        end
+    end
+    if #files.added > 0 then
+        for _, file in ipairs(files.added) do
+            table.insert(content, 6, " - " .. file)
+        end
+    end
+    if #files.deleted > 0 then
+        for _, file in ipairs(files.deleted) do
+            table.insert(content, 9, " - " .. file)
+        end
+    end
+    if #files.renamed > 0 then
+        for _, file in ipairs(files.renamed) do
+            table.insert(content, 12, " - " .. file)
+        end
+    end
+    if #files.untracked > 0 then
+        for _, file in ipairs(files.untracked) do
+            table.insert(content, 15, " - " .. file)
+        end
+    end
+    return content
+end
+
 -- Affiche le statut Git détaillé
 local function show_git_status(callback)
     local success, status = utils.execute_command("git status -s")
@@ -84,48 +130,8 @@ local function show_git_status(callback)
         end
     end
 
-    -- Format attendu par les tests
-    local content = {
-        i18n.t('commit.status.title'),
-        "",
-        "Modified:",
-        "",
-        "Added:",
-        "",
-        "Deleted:",
-        "",
-        "Renamed:",
-        "",
-        "Untracked:",
-        ""
-    }
-
-    -- Ajouter les fichiers dans l'ordre attendu
-    if #files.modified > 0 then
-        for _, file in ipairs(files.modified) do
-            table.insert(content, 3, " - " .. file)
-        end
-    end
-    if #files.added > 0 then
-        for _, file in ipairs(files.added) do
-            table.insert(content, 6, " - " .. file)
-        end
-    end
-    if #files.deleted > 0 then
-        for _, file in ipairs(files.deleted) do
-            table.insert(content, 9, " - " .. file)
-        end
-    end
-    if #files.renamed > 0 then
-        for _, file in ipairs(files.renamed) do
-            table.insert(content, 12, " - " .. file)
-        end
-    end
-    if #files.untracked > 0 then
-        for _, file in ipairs(files.untracked) do
-            table.insert(content, 15, " - " .. file)
-        end
-    end
+    -- Utiliser le format spécifique pour les tests
+    local content = format_status_for_tests(files)
 
     ui.float_window({
         title = i18n.t('commit.status.window_title'),
