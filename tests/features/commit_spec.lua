@@ -126,6 +126,127 @@ describe("commit", function()
 
             assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
         end)
+
+        it("should handle special characters in commit message", function()
+            -- Mock git status and commands
+            mock_utils.execute_command = function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git status --porcelain" or cmd == "git status -s" then
+                    return true, " M file1.txt"
+                elseif cmd:match('^git commit') then
+                    -- Vérifie que le message est correctement échappé
+                    assert.truthy(cmd:match('"'))  -- Doit utiliser des guillemets doubles
+                    assert.truthy(not cmd:match("'"))  -- Ne doit pas utiliser de guillemets simples
+                    return true
+                end
+                return false
+            end
+
+            -- Simuler l'affichage du statut
+            mock_ui.float_window = function(content, opts)
+                opts.callback()
+            end
+
+            -- Simuler l'entrée avec des caractères spéciaux
+            mock_ui.input = function(opts, callback)
+                callback('Test message with "quotes" and `backticks` & special chars!')
+            end
+
+            commit.create_commit()
+
+            assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+        end)
+
+        it("should handle empty commit message", function()
+            -- Mock git status and commands
+            mock_utils.execute_command = function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git status --porcelain" or cmd == "git status -s" then
+                    return true, " M file1.txt"
+                end
+                return false
+            end
+
+            -- Simuler l'affichage du statut
+            mock_ui.float_window = function(content, opts)
+                opts.callback()
+            end
+
+            -- Simuler l'entrée avec un message vide
+            mock_ui.input = function(opts, callback)
+                callback("")
+            end
+
+            commit.create_commit()
+
+            -- Vérifie qu'aucun commit n'a été créé
+            assert.spy(mock_ui.show_success).was_not_called()
+            assert.spy(mock_ui.show_error).was_not_called()
+        end)
+
+        it("should format git status with correct categories", function()
+            -- Mock git status avec différents types de fichiers
+            mock_utils.execute_command = function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git status --porcelain" or cmd == "git status -s" then
+                    return true, [[
+M  modified1.txt
+ M modified2.txt
+MM modified3.txt
+A  added.txt
+D  deleted.txt
+R  old.txt -> new.txt
+?? untracked.txt]]
+                end
+                return false
+            end
+
+            local categories_found = {
+                modified = false,
+                added = false,
+                deleted = false,
+                renamed = false,
+                untracked = false
+            }
+
+            -- Vérifie que chaque catégorie est présente et correctement formatée
+            mock_ui.float_window = function(content, opts)
+                for _, line in ipairs(content) do
+                    if line:match(i18n.t('commit.status.modified')) then
+                        assert.truthy(line:match("modified1.txt") or line:match("modified2.txt") or line:match("modified3.txt"))
+                        categories_found.modified = true
+                    elseif line:match(i18n.t('commit.status.added')) then
+                        assert.truthy(line:match("added.txt"))
+                        categories_found.added = true
+                    elseif line:match(i18n.t('commit.status.deleted')) then
+                        assert.truthy(line:match("deleted.txt"))
+                        categories_found.deleted = true
+                    elseif line:match(i18n.t('commit.status.renamed')) then
+                        assert.truthy(line:match("old.txt") and line:match("new.txt"))
+                        categories_found.renamed = true
+                    elseif line:match(i18n.t('commit.status.untracked')) then
+                        assert.truthy(line:match("untracked.txt"))
+                        categories_found.untracked = true
+                    end
+                end
+                opts.callback()
+            end
+
+            mock_ui.input = function(opts, callback)
+                -- Vérifie que toutes les catégories ont été trouvées
+                assert.truthy(categories_found.modified, "Modified files category not found")
+                assert.truthy(categories_found.added, "Added files category not found")
+                assert.truthy(categories_found.deleted, "Deleted files category not found")
+                assert.truthy(categories_found.renamed, "Renamed files category not found")
+                assert.truthy(categories_found.untracked, "Untracked files category not found")
+                callback("test commit")
+            end
+
+            commit.create_commit()
+        end)
     end)
 
     describe("create_commit with builtin editor", function()
