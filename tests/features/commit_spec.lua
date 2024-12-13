@@ -507,7 +507,7 @@ R  renamed.txt -> new_name.txt
             commit.amend_commit()
 
             assert.spy(mock_utils.execute_command).was_called()
-            assert.spy(mock_ui.show_error).was_called_with('commit.error.amend_failed\nErreur d\'amend')
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.amend_failed Erreur d\'amend')
             mock_utils.execute_command = original_execute
         end)
     end)
