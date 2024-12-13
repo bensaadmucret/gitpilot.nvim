@@ -95,46 +95,46 @@ local function format_status_for_tests(files)
         ""
     }
 
-    -- Ajouter les sections uniquement si elles contiennent des fichiers
+    -- Toujours ajouter les sections, même vides
+    table.insert(content, "Modified:")
     if #files.modified > 0 then
-        table.insert(content, "Modified:")
         for _, file in ipairs(files.modified) do
             table.insert(content, " - " .. file)
         end
-        table.insert(content, "")
     end
+    table.insert(content, "")
 
+    table.insert(content, "Added:")
     if #files.added > 0 then
-        table.insert(content, "Added:")
         for _, file in ipairs(files.added) do
             table.insert(content, " - " .. file)
         end
-        table.insert(content, "")
     end
+    table.insert(content, "")
 
+    table.insert(content, "Deleted:")
     if #files.deleted > 0 then
-        table.insert(content, "Deleted:")
         for _, file in ipairs(files.deleted) do
             table.insert(content, " - " .. file)
         end
-        table.insert(content, "")
     end
+    table.insert(content, "")
 
+    table.insert(content, "Renamed:")
     if #files.renamed > 0 then
-        table.insert(content, "Renamed:")
         for _, file in ipairs(files.renamed) do
             table.insert(content, " - " .. file)
         end
-        table.insert(content, "")
     end
+    table.insert(content, "")
 
+    table.insert(content, "Untracked:")
     if #files.untracked > 0 then
-        table.insert(content, "Untracked:")
         for _, file in ipairs(files.untracked) do
             table.insert(content, " - " .. file)
         end
-        table.insert(content, "")
     end
+    table.insert(content, "")
 
     return content
 end
@@ -280,7 +280,8 @@ local function create_commit_builtin(callback)
                 multiline = true
             }, function(message)
                 if not message or message:match("^%s*$") then
-                    handle_empty_message_error(callback)
+                    ui.show_error(i18n.t('commit.error.empty_message'))
+                    if callback then callback(false) end
                     return false
                 end
                     
@@ -289,7 +290,8 @@ local function create_commit_builtin(callback)
                 local success, output = utils.execute_command("git commit -m " .. escaped_message)
                 
                 if not success then
-                    handle_commit_error(output, callback)
+                    ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
+                    if callback then callback(false) end
                     return false
                 end
                 
@@ -319,7 +321,8 @@ local function amend_commit_builtin(callback)
     -- Récupérer le dernier message de commit
     local success, last_message = utils.execute_command("git log -1 --format=%B")
     if not success then
-        handle_commit_error(last_message, callback)
+        ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (last_message or ""))
+        if callback then callback(false) end
         return false
     end
 
@@ -329,7 +332,8 @@ local function amend_commit_builtin(callback)
         multiline = true
     }, function(message)
         if not message or message:match("^%s*$") then
-            handle_empty_message_error(callback)
+            ui.show_error(i18n.t('commit.error.empty_message'))
+            if callback then callback(false) end
             return false
         end
             
@@ -338,7 +342,8 @@ local function amend_commit_builtin(callback)
         local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
         
         if not amend_success then
-            handle_amend_error(output, callback)
+            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
+            if callback then callback(false) end
             return false
         end
         
@@ -363,25 +368,14 @@ local function fixup_commit(commit_hash, callback)
         return false
     end
 
-    local success, files = get_staged_files()
-    if not success then
-        ui.show_error(i18n.t('commit.error.status_failed'))
-        if callback then callback(false) end
-        return false
-    end
-
-    -- Vérifier s'il y a des fichiers stagés
-    local has_staged = #files.modified > 0 or #files.added > 0 or 
-                      #files.deleted > 0 or #files.renamed > 0
-
-    if not has_staged then
+    if not has_changes() then
         ui.show_error(i18n.t('commit.error.no_changes'))
         if callback then callback(false) end
         return false
     end
 
-    local fixup_success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
-    if not fixup_success then
+    local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
+    if not success then
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
         if callback then callback(false) end
         return false
@@ -426,15 +420,17 @@ function M.create_commit(callback)
     end
 end
 
-function M.amend_commit()
+function M.amend_commit(callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
         return false
     end
 
     local success, last_commit = utils.execute_command("git log -1 --format=%H")
     if not success or not last_commit or last_commit == "" then
         ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
         return false
     end
 
@@ -448,6 +444,7 @@ function M.amend_commit()
     }, function(message)
         if not message or message == "" then
             ui.show_error(i18n.t('commit.error.empty_message'))
+            if callback then callback(false) end
             return false
         end
             
@@ -456,100 +453,118 @@ function M.amend_commit()
         local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
         if amend_success then
             ui.show_success(i18n.t('commit.success.amended'))
+            if callback then callback(true) end
             return true
         else
             ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
+            if callback then callback(false) end
             return false
         end
     end)
 end
 
-function M.fixup_commit(commit_hash)
+function M.fixup_commit(commit_hash, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
         return false
     end
 
     if not commit_hash or not commit_exists(commit_hash) then
         ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
         return false
     end
 
     local success, files = get_staged_files()
     if not success or #files == 0 then
         ui.show_error(i18n.t('commit.error.no_changes'))
+        if callback then callback(false) end
         return false
     end
 
     local fixup_success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
     if fixup_success then
         ui.show_success(i18n.t('commit.success.fixup'))
+        if callback then callback(true) end
         return true
     else
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. output)
+        if callback then callback(false) end
         return false
     end
 end
 
 -- Fixup un commit
-function M.revert_commit(commit_hash)
+function M.revert_commit(commit_hash, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
         return false
     end
 
     if not commit_exists(commit_hash) then
         ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
         return false
     end
 
     local success, output = utils.execute_command("git revert --no-edit " .. utils.escape_string(commit_hash))
     if success then
         ui.show_success(i18n.t('commit.success.reverted'))
+        if callback then callback(true) end
         return true
     else
         ui.show_error(i18n.t('commit.error.revert_failed') .. "\n" .. (output or ""))
+        if callback then callback(false) end
         return false
     end
 end
 
 -- Cherry-pick un commit
-function M.cherry_pick_commit(commit_hash)
+function M.cherry_pick_commit(commit_hash, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
         return false
     end
 
     if not commit_exists(commit_hash) then
         ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
         return false
     end
 
     local success, output = utils.execute_command("git cherry-pick " .. utils.escape_string(commit_hash))
     if success then
         ui.show_success(i18n.t('commit.success.cherry_picked'))
+        if callback then callback(true) end
         return true
     else
         ui.show_error(i18n.t('commit.error.cherry_pick_failed') .. "\n" .. (output or ""))
+        if callback then callback(false) end
         return false
     end
 end
 
 -- Affiche les détails d'un commit
-function M.show_commit(commit_hash)
+function M.show_commit(commit_hash, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
         return false
     end
 
     if not commit_exists(commit_hash) then
         ui.show_error(i18n.t('commit.error.invalid_commit'))
+        if callback then callback(false) end
         return false
     end
 
     local success, details = utils.execute_command("git show " .. utils.escape_string(commit_hash))
     if not success then
         ui.show_error(i18n.t('commit.error.show_failed'))
+        if callback then callback(false) end
         return false
     end
 
@@ -558,6 +573,7 @@ function M.show_commit(commit_hash)
         content = details
     })
 
+    if callback then callback(true) end
     return true
 end
 
@@ -565,6 +581,7 @@ end
 function M.show_commit_log(callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
         return false
     end
 
@@ -574,6 +591,7 @@ function M.show_commit_log(callback)
     ))
     if not success or not log or log == "" then
         ui.show_error(i18n.t('commit.error.log_failed'))
+        if callback then callback(false) end
         return false
     end
 
@@ -589,6 +607,7 @@ function M.show_commit_log(callback)
 
     if #commits == 0 then
         ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
         return false
     end
 
@@ -603,15 +622,18 @@ function M.show_commit_log(callback)
         end
     end)
 
+    if callback then callback(true) end
     return true
 end
 
-function M.push_changes()
+function M.push_changes(callback)
     local success, output = utils.execute_command("git push")
     if success then
         ui.show_success(i18n.t('commit.success.pushed'))
+        if callback then callback(true) end
     else
         ui.show_error(i18n.t('commit.error.push_failed') .. "\n" .. (output or ""))
+        if callback then callback(false) end
     end
     return success
 end
