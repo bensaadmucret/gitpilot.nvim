@@ -122,6 +122,16 @@ local function push_changes()
     return success
 end
 
+function M.push_changes()
+    local success, output = utils.execute_command("git push")
+    if success then
+        ui.show_success(i18n.t('commit.success.pushed'))
+    else
+        ui.show_error(i18n.t('commit.error.push_failed') .. (output and ("\n" .. output) or ""))
+    end
+    return success
+end
+
 -- Crée un nouveau commit avec l'éditeur intégré
 local function create_commit_builtin()
     local commit_success = false
