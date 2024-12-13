@@ -50,11 +50,22 @@ describe("commit", function()
     local commit
 
     before_each(function()
-        -- Replace the real modules with mocks
+        -- Clear mocks before each test
+        mock_ui.show_error:clear()
+        mock_ui.show_success:clear()
+        mock_ui.input:clear()
+        mock_ui.select:clear()
+        mock_ui.float_window:clear()
+        mock_utils.execute_command:clear()
+        mock_utils.escape_string:clear()
+        mock_i18n.t:clear()
+
+        -- Reset mocks
         package.loaded['gitpilot.ui'] = mock_ui
         package.loaded['gitpilot.utils'] = mock_utils
         package.loaded['gitpilot.i18n'] = mock_i18n
 
+        -- Load commit module
         commit = require('gitpilot.features.commit')
     end)
 
