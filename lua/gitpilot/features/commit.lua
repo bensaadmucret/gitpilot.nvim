@@ -29,11 +29,22 @@ local function commit_exists(commit_hash)
     return success
 end
 
+-- Vérifie s'il y a des changements à commiter
+local function has_changes()
+    local success, status = utils.execute_command("git status --porcelain")
+    return success and status and status ~= ""
+end
+
 -- Affiche le statut Git détaillé
 local function show_git_status(callback)
     local success, status = utils.execute_command("git status -s")
     if not success then
         ui.show_error(i18n.t('commit.error.status_failed'))
+        return false
+    end
+
+    if not status or status == "" then
+        ui.show_error(i18n.t('commit.error.no_changes'))
         return false
     end
 
@@ -65,54 +76,23 @@ local function show_git_status(callback)
     end
 
     -- Construire le message de statut ligne par ligne
-    local lines = {}
-    table.insert(lines, i18n.t('commit.status.title'))
-    table.insert(lines, "")
+    local lines = {i18n.t('commit.status.title'), ""}
 
-    if #files.modified > 0 then
-        table.insert(lines, i18n.t('commit.status.modified') .. ":")
-        for _, file in ipairs(files.modified) do
-            table.insert(lines, " - " .. file)
+    local function add_category(category, title)
+        if #files[category] > 0 then
+            table.insert(lines, title .. ":")
+            for _, file in ipairs(files[category]) do
+                table.insert(lines, " - " .. file)
+            end
+            table.insert(lines, "")
         end
-        table.insert(lines, "")
     end
 
-    if #files.added > 0 then
-        table.insert(lines, i18n.t('commit.status.added') .. ":")
-        for _, file in ipairs(files.added) do
-            table.insert(lines, " - " .. file)
-        end
-        table.insert(lines, "")
-    end
-
-    if #files.deleted > 0 then
-        table.insert(lines, i18n.t('commit.status.deleted') .. ":")
-        for _, file in ipairs(files.deleted) do
-            table.insert(lines, " - " .. file)
-        end
-        table.insert(lines, "")
-    end
-
-    if #files.renamed > 0 then
-        table.insert(lines, i18n.t('commit.status.renamed') .. ":")
-        for _, file in ipairs(files.renamed) do
-            table.insert(lines, " - " .. file)
-        end
-        table.insert(lines, "")
-    end
-
-    if #files.untracked > 0 then
-        table.insert(lines, i18n.t('commit.status.untracked') .. ":")
-        for _, file in ipairs(files.untracked) do
-            table.insert(lines, " - " .. file)
-        end
-        table.insert(lines, "")
-    end
-
-    if not status or status == "" then
-        ui.show_error(i18n.t('commit.error.no_changes'))
-        return false
-    end
+    add_category("modified", i18n.t('commit.status.modified'))
+    add_category("added", i18n.t('commit.status.added'))
+    add_category("deleted", i18n.t('commit.status.deleted'))
+    add_category("renamed", i18n.t('commit.status.renamed'))
+    add_category("untracked", i18n.t('commit.status.untracked'))
 
     ui.float_window(lines, {
         title = i18n.t('commit.status.window_title'),
@@ -154,8 +134,7 @@ function M.create_commit()
     end
 
     -- Vérifie s'il y a des changements à commiter
-    local success, status = utils.execute_command("git status --porcelain")
-    if not success or status == "" then
+    if not has_changes() then
         ui.show_error(i18n.t('commit.error.no_changes'))
         return false
     end
@@ -251,8 +230,7 @@ function M.fixup_commit(commit_hash)
     end
 
     -- Vérifie s'il y a des changements à commiter
-    local success, status = utils.execute_command("git status --porcelain")
-    if not success or status == "" then
+    if not has_changes() then
         ui.show_error(i18n.t('commit.error.no_changes'))
         return false
     end
