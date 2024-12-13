@@ -68,11 +68,8 @@ end
 local function escape_commit_message(message, quote_type)
     if not message then return "" end
     
-    -- Préserver les sauts de ligne pour les messages multilignes
-    local escaped = message:gsub("\n", "\\n")
-    
     -- Échapper d'abord les backslashes pour éviter les problèmes avec les autres échappements
-    escaped = escaped:gsub([[\]], [[\\]])
+    local escaped = message:gsub([[\]], [[\\]])
     
     -- Échapper les autres caractères spéciaux en fonction du type de guillemets
     if quote_type == "single" then
@@ -208,8 +205,9 @@ local function create_commit_builtin(callback)
                     return handle_empty_message_error(callback)
                 end
 
-                -- Échapper les caractères spéciaux pour git commit
-                local success, output = utils.execute_command("git commit", {"-m", message})
+                -- Construire la commande git avec le message de commit
+                local cmd = string.format("git commit -m %s", escape_commit_message(message, "double"))
+                local success, output = utils.execute_command(cmd)
 
                 if not success then
                     return handle_commit_error(output, callback)
@@ -257,8 +255,9 @@ local function amend_commit_builtin(callback)
             return handle_empty_message_error(callback)
         end
 
-        -- Échapper les caractères spéciaux pour git commit
-        local amend_success, output = utils.execute_command("git commit", {"--amend", "-m", message})
+        -- Construire la commande git avec le message de commit
+        local cmd = string.format("git commit --amend -m %s", escape_commit_message(message, "double"))
+        local amend_success, output = utils.execute_command(cmd)
 
         if not amend_success then
             return handle_amend_error(output, callback)
@@ -289,7 +288,9 @@ function M.fixup_commit(commit_hash, callback)
         return false
     end
 
-    local success, output = utils.execute_command("git commit", {"--fixup=" .. commit_hash})
+    -- Construire la commande git avec le hash du commit
+    local cmd = string.format("git commit --fixup=%s", commit_hash)
+    local success, output = utils.execute_command(cmd)
 
     if not success then
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
@@ -531,8 +532,9 @@ local function create_commit_builtin_test(callback)
                     return false
                 end
                     
-                -- Échapper les caractères spéciaux pour git commit
-                local success, output = utils.execute_command("git commit", {"-m", message})
+                -- Construire la commande git avec le message de commit
+                local cmd = string.format("git commit -m %s", escape_commit_message(message, "double"))
+                local success, output = utils.execute_command(cmd)
                 
                 if not success then
                     handle_commit_error(output, callback)
@@ -579,8 +581,9 @@ local function amend_commit_builtin_test(callback)
             return false
         end
             
-        -- Échapper les caractères spéciaux pour git commit
-        local amend_success, output = utils.execute_command("git commit", {"--amend", "-m", message})
+        -- Construire la commande git avec le message de commit
+        local cmd = string.format("git commit --amend -m %s", escape_commit_message(message, "double"))
+        local amend_success, output = utils.execute_command(cmd)
         
         if not amend_success then
             handle_amend_error(output, callback)
@@ -614,7 +617,10 @@ local function fixup_commit_test(commit_hash, callback)
         return false
     end
 
-    local success, output = utils.execute_command("git commit", {"--fixup=" .. commit_hash})
+    -- Construire la commande git avec le hash du commit
+    local cmd = string.format("git commit --fixup=%s", commit_hash)
+    local success, output = utils.execute_command(cmd)
+
     if not success then
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
         if callback then callback(false) end
