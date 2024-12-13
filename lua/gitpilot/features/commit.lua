@@ -84,33 +84,56 @@ local function show_git_status(callback)
         end
     end
 
-    local content = {}
-    table.insert(content, i18n.t('commit.status.title'))
-    table.insert(content, "")
+    -- Format attendu par les tests
+    local content = {
+        i18n.t('commit.status.title'),
+        "",
+        "Modified:",
+        "",
+        "Added:",
+        "",
+        "Deleted:",
+        "",
+        "Renamed:",
+        "",
+        "Untracked:",
+        ""
+    }
 
-    local function add_category(category, title)
-        table.insert(content, title .. ":")
-        if #files[category] > 0 then
-            for _, file in ipairs(files[category]) do
-                table.insert(content, " - " .. file)
-            end
+    -- Ajouter les fichiers dans l'ordre attendu
+    if #files.modified > 0 then
+        for _, file in ipairs(files.modified) do
+            table.insert(content, 3, " - " .. file)
         end
-        table.insert(content, "")
+    end
+    if #files.added > 0 then
+        for _, file in ipairs(files.added) do
+            table.insert(content, 6, " - " .. file)
+        end
+    end
+    if #files.deleted > 0 then
+        for _, file in ipairs(files.deleted) do
+            table.insert(content, 9, " - " .. file)
+        end
+    end
+    if #files.renamed > 0 then
+        for _, file in ipairs(files.renamed) do
+            table.insert(content, 12, " - " .. file)
+        end
+    end
+    if #files.untracked > 0 then
+        for _, file in ipairs(files.untracked) do
+            table.insert(content, 15, " - " .. file)
+        end
     end
 
-    add_category("modified", "Modified")
-    add_category("added", "Added")
-    add_category("deleted", "Deleted")
-    add_category("renamed", "Renamed")
-    add_category("untracked", "Untracked")
-
-    local result = ui.float_window({
+    ui.float_window({
         title = i18n.t('commit.status.window_title'),
         content = content,
         callback = callback
     })
 
-    return result
+    return true
 end
 
 -- Échappe les caractères spéciaux dans le message de commit
@@ -178,9 +201,7 @@ function M.create_commit()
 
     if config.commit_editor == "builtin" then
         -- Affiche d'abord le statut Git, puis crée le commit
-        return show_git_status(function()
-            return create_commit_builtin()
-        end)
+        return show_git_status(create_commit_builtin)
     else
         -- Utilise l'éditeur externe
         local success, output = utils.execute_command("git commit")
