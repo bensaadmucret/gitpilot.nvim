@@ -22,6 +22,29 @@ local default_config = {
 -- Current configuration
 local current_config = vim.deepcopy(default_config)
 
+function M.setup(opts)
+    if opts then
+        current_config = vim.tbl_deep_extend('force', current_config, opts)
+    end
+    
+    -- Create config directory if it doesn't exist
+    local config_dir = vim.fn.fnamemodify(current_config.config_file, ':h')
+    vim.fn.mkdir(config_dir, 'p')
+    
+    -- Load existing mirrors configuration
+    M.load_config()
+    
+    -- Setup auto-sync if enabled
+    if current_config.auto_sync then
+        M.setup_auto_sync()
+    end
+    
+    -- Configure Git hooks if necessary
+    if current_config.sync_on_push then
+        M.setup_git_hooks()
+    end
+end
+
 -- Load mirrors configuration
 function M.load_config()
     if utils.is_file(current_config.config_file) then
@@ -35,23 +58,6 @@ function M.load_config()
                 current_config.sync_on_push = data.sync_on_push or default_config.sync_on_push
             end
         end
-    end
-end
-
--- Configure the module
-function M.setup(opts)
-    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
-    
-    -- Create configuration directory if it doesn't exist
-    local config_dir = vim.fn.fnamemodify(current_config.config_file, ":h")
-    vim.fn.mkdir(config_dir, "p")
-    
-    -- Load existing configuration
-    M.load_config()
-    
-    -- Configure Git hooks if necessary
-    if current_config.sync_on_push then
-        M.setup_git_hooks()
     end
 end
 
@@ -269,6 +275,25 @@ function M.setup_git_hooks()
         group = group,
         callback = function()
             M.sync_all_mirrors()
+        end,
+    })
+end
+
+function M.setup_auto_sync()
+    local group = vim.api.nvim_create_augroup('GitPilotMirrorAutoSync', { clear = true })
+    vim.api.nvim_create_autocmd('User', {
+        pattern = 'GitPilotAutoSync',
+        group = group,
+        callback = function()
+            M.sync_all_mirrors()
+        end,
+    })
+    vim.api.nvim_create_autocmd('VimEnter', {
+        group = group,
+        callback = function()
+            vim.fn.timer_start(current_config.sync_interval * 1000, function()
+                vim.api.nvim_notify('GitPilotMirrorAutoSync', vim.lsp.log_levels.INFO, {}, {})
+            end, { repeat = -1 })
         end,
     })
 end

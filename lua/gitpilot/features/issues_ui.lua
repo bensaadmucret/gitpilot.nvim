@@ -23,12 +23,13 @@ local default_config = {
     }
 }
 
--- Configuration actuelle
+-- Configuration active
 local current_config = vim.deepcopy(default_config)
 
--- Configure le module
 function M.setup(opts)
-    current_config = vim.tbl_deep_extend("force", current_config, opts or {})
+    if opts then
+        current_config = vim.tbl_deep_extend('force', current_config, opts)
+    end
     
     -- Configure le module issues
     issues.setup({

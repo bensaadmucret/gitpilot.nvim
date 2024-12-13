@@ -20,13 +20,18 @@ local default_config = {
     },
     details = {
         show_diff = true,
-        show_stats = true,
-        max_diff_lines = 500
+        show_stats = true
     }
 }
 
--- Configuration actuelle
+-- Configuration active
 local current_config = vim.deepcopy(default_config)
+
+function M.setup(opts)
+    if opts then
+        current_config = vim.tbl_deep_extend('force', current_config, opts)
+    end
+end
 
 -- Configure le module
 function M.setup(opts)
