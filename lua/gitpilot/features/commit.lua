@@ -26,7 +26,11 @@ end
 local function commit_exists(commit_hash)
     if not commit_hash then return false end
     local success, _ = utils.execute_command("git rev-parse --verify --quiet " .. utils.escape_string(commit_hash))
-    return success
+    if not success then
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        return false
+    end
+    return true
 end
 
 -- Vérifie s'il y a des changements à commiter
@@ -94,8 +98,9 @@ local function show_git_status(callback)
     add_category("renamed", i18n.t('commit.status.renamed'))
     add_category("untracked", i18n.t('commit.status.untracked'))
 
-    ui.float_window(lines, {
+    ui.float_window({
         title = i18n.t('commit.status.window_title'),
+        content = table.concat(lines, "\n"),
         callback = callback
     })
 

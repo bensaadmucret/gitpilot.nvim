@@ -191,30 +191,31 @@ end
 
 -- Display a confirmation window
 function M.confirm(opts)
-    opts = vim.tbl_deep_extend("force", {
-        prompt = i18n.t("confirm.prompt"),
-        callback = function(confirmed) end,
-        default = config.confirm.default
-    }, opts or {})
-    
+    opts = opts or {}
+    local callback = opts.callback or function(confirmed) end
+    local prompt = opts.prompt or i18n.t("confirm.prompt")
+    local default = opts.default or config.confirm.default
+
     if utils.is_test_env() then
-        opts.callback(true)
+        callback(default)
         return
     end
-    
+
     local choices = {
-        format_message(i18n.t(config.confirm.yes_text), "success"),
-        format_message(i18n.t(config.confirm.no_text), "error")
+        i18n.t(config.confirm.yes_text),
+        i18n.t(config.confirm.no_text)
     }
-    
-    M.select(choices, {
-        prompt = format_message(opts.prompt, "question"),
-        format_item = function(item) return item end
+
+    vim.ui.select(choices, {
+        prompt = prompt,
+        format_item = function(item)
+            return item
+        end
     }, function(choice)
         if choice then
-            opts.callback(choice == choices[1])
+            callback(choice == choices[1])
         else
-            opts.callback(false)
+            callback(false)
         end
     end)
 end
