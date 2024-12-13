@@ -272,7 +272,7 @@ local translations = {
 }
 
 -- Get translation for a key
-function M.t(key)
+function M.t(key, vars)
     local parts = vim.split(key, '.', { plain = true })
     local current = translations[current_lang]
     
@@ -284,7 +284,20 @@ function M.t(key)
         end
     end
     
-    return type(current) == 'string' and current or key
+    if type(current) ~= 'string' then
+        return key
+    end
+    
+    -- Si des variables sont fournies, les substituer dans la traduction
+    if vars then
+        local result = current
+        for name, value in pairs(vars) do
+            result = result:gsub("%%{" .. name .. "}", value)
+        end
+        return result
+    end
+    
+    return current
 end
 
 -- Set current language
