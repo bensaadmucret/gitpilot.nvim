@@ -24,6 +24,10 @@ end
 
 -- Vérifie si un commit existe
 local function commit_exists(commit_hash)
+    if not commit_hash then
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        return false
+    end
     local success = utils.execute_command(string.format("git rev-parse --verify --quiet %s", commit_hash))
     if not success then
         ui.show_error(i18n.t('commit.error.no_commits'))
@@ -231,15 +235,23 @@ local function amend_commit_builtin(message, callback)
         return false
     end
 
-    -- Vérifier s'il y a des changements à commiter
-    if not has_changes() then
-        ui.show_error(i18n.t('commit.error.no_changes'))
+    -- Vérifier si un commit existe
+    local success = utils.execute_command("git rev-parse HEAD")
+    if not success then
+        ui.show_error(i18n.t('commit.error.no_commits'))
         if callback then callback(false) end
         return false
     end
 
     if not message or message:match("^%s*$") then
         ui.show_error(i18n.t('commit.error.empty_message'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Vérifier s'il y a des changements à commiter
+    if not has_changes() then
+        ui.show_error(i18n.t('commit.error.no_changes'))
         if callback then callback(false) end
         return false
     end
@@ -294,6 +306,12 @@ end
 function M.fixup_commit(commit_hash, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
+        return false
+    end
+
+    if not commit_hash then
+        ui.show_error(i18n.t('commit.error.no_commits'))
         if callback then callback(false) end
         return false
     end
@@ -589,16 +607,9 @@ local function amend_commit_builtin_test(message, callback)
         return false
     end
 
-    -- Récupérer le dernier message de commit
-    local success, last_message = utils.execute_command("git log -1 --format=%B")
-    if not success then
-        handle_amend_error(last_message, callback)
-        return false
-    end
-
     ui.input({
         prompt = i18n.t("commit.enter_message"),
-        default = last_message,
+        default = message,
         multiline = true
     }, function(message)
         if not message or message:match("^%s*$") then

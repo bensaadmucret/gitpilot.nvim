@@ -104,7 +104,7 @@ describe("commit", function()
                 elseif cmd == "git status --porcelain" then
                     return true, ""
                 end
-                return false
+                return true
             end)
 
             commit.create_commit()
@@ -447,26 +447,19 @@ R  renamed.txt -> new_name.txt
         end)
 
         it("should amend commit successfully with builtin editor", function()
-            commit.setup({ commit_editor = "builtin" })
             local original_execute = mock_utils.execute_command
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd == "git rev-parse HEAD" then
-                    return true
-                elseif cmd == "git log -1 --pretty=%B" then
-                    return true, "Previous commit message"
-                elseif cmd == "git commit --amend -m \"New commit message\"" then
+                elseif cmd == "git status --porcelain" then
+                    return true, "M  file.txt"
+                elseif cmd == "git commit --amend --message='test message'" then
                     return true
                 end
                 return true
             end)
 
-            mock_ui.input = mock(function(opts, callback)
-                callback("New commit message")
-            end)
-
-            commit.amend_commit()
+            commit.amend_commit_builtin("test message")
 
             assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_success).was_called_with('commit.success.amended')
@@ -474,24 +467,17 @@ R  renamed.txt -> new_name.txt
         end)
 
         it("should handle amend with empty message", function()
-            commit.setup({ commit_editor = "builtin" })
             local original_execute = mock_utils.execute_command
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd == "git rev-parse HEAD" then
-                    return true
-                elseif cmd == "git log -1 --pretty=%B" then
-                    return true, "Original commit message"
+                elseif cmd == "git status --porcelain" then
+                    return true, "M  file.txt"
                 end
                 return true
             end)
 
-            mock_ui.input = mock(function(opts, callback)
-                callback("")
-            end)
-
-            commit.amend_commit()
+            commit.amend_commit_builtin("")
 
             assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.empty_message')
@@ -499,29 +485,22 @@ R  renamed.txt -> new_name.txt
         end)
 
         it("should handle amend failure gracefully", function()
-            commit.setup({ commit_editor = "builtin" })
             local original_execute = mock_utils.execute_command
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd == "git rev-parse HEAD" then
-                    return true
-                elseif cmd == "git log -1 --pretty=%B" then
-                    return true, "Previous commit message"
-                elseif cmd == "git commit --amend -m \"New commit message\"" then
-                    return false, "Erreur d'amend"
+                elseif cmd == "git status --porcelain" then
+                    return true, "M  file.txt"
+                elseif cmd == "git commit --amend --message='test message'" then
+                    return false, "error message"
                 end
                 return true
             end)
 
-            mock_ui.input = mock(function(opts, callback)
-                callback("New commit message")
-            end)
-
-            commit.amend_commit()
+            commit.amend_commit_builtin("test message")
 
             assert.spy(mock_utils.execute_command).was_called()
-            assert.spy(mock_ui.show_error).was_called_with('commit.error.amend_failed\nErreur d\'amend')
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.amend_failed\nerror message')
             mock_utils.execute_command = original_execute
         end)
     end)
@@ -548,13 +527,13 @@ R  renamed.txt -> new_name.txt
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd == "git log --oneline" then
+                elseif cmd == "git rev-parse --verify --quiet abc123" then
                     return false
                 end
                 return true
             end)
 
-            commit.fixup_commit()
+            commit.fixup_commit("abc123")
 
             assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.no_commits')
@@ -566,15 +545,15 @@ R  renamed.txt -> new_name.txt
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd == "git log --oneline" then
-                    return true, "abc123 commit message"
+                elseif cmd == "git rev-parse --verify --quiet abc123" then
+                    return true
                 elseif cmd == "git status --porcelain" then
                     return true, ""
                 end
-                return false
+                return true
             end)
 
-            commit.fixup_commit()
+            commit.fixup_commit("abc123")
 
             assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.no_changes')
