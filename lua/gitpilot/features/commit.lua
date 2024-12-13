@@ -39,14 +39,8 @@ local function has_changes()
     if not success or not status or status == "" then
         return false
     end
-    -- Check for staged changes
-    for line in status:gmatch("[^\r\n]+") do
-        local status_code = line:sub(1, 2)
-        if status_code:match("^[MADRCT]") then
-            return true
-        end
-    end
-    return false
+    -- Check for any changes (staged or unstaged)
+    return status:match("[^\r\n]") ~= nil
 end
 
 -- Wrapper pour gérer les messages d'erreur de manière cohérente
@@ -151,22 +145,22 @@ local function format_status_for_tests_with_categories(files)
 
     -- Toujours ajouter les sections dans un ordre spécifique
     local categories = {
-        {name = "Modified", files = files.modified},
-        {name = "Added", files = files.added},
-        {name = "Deleted", files = files.deleted},
-        {name = "Renamed", files = files.renamed},
-        {name = "Untracked", files = files.untracked}
+        {name = "Modified:", files = files.modified},
+        {name = "Added:", files = files.added},
+        {name = "Deleted:", files = files.deleted},
+        {name = "Renamed:", files = files.renamed},
+        {name = "Untracked:", files = files.untracked}
     }
 
     for _, category in ipairs(categories) do
-        table.insert(content, category.name .. ":")
+        table.insert(content, category.name)
         if #category.files > 0 then
             for _, file in ipairs(category.files) do
                 if type(file) == "string" then
-                    table.insert(content, " - " .. file)
+                    table.insert(content, "  " .. file)
                 elseif type(file) == "table" then
                     -- Handle renamed files
-                    table.insert(content, string.format(" - %s -> %s", file[1], file[2]))
+                    table.insert(content, string.format("  %s -> %s", file[1], file[2]))
                 end
             end
         end
@@ -203,9 +197,8 @@ local function create_commit_builtin(callback)
     local content = format_status_for_tests_with_categories(files)
 
     -- Appeler float_window avec le callback
-    ui.float_window({
+    ui.float_window(content, {
         title = i18n.t('commit.status.window_title'),
-        content = content,
         callback = function()
             ui.input({
                 prompt = i18n.t("commit.enter_message"),
@@ -216,7 +209,7 @@ local function create_commit_builtin(callback)
                 end
                     
                 -- Échapper les caractères spéciaux pour git commit
-                local escaped_message = escape_commit_message(message, "single")
+                local escaped_message = escape_commit_message(message, "double")
                 local success, output = utils.execute_command(string.format("git commit -m %s", escaped_message))
                 
                 if not success then
@@ -596,9 +589,8 @@ local function create_commit_builtin_test(callback)
     local content = format_status_for_tests_with_categories(files)
 
     -- Appeler float_window avec le callback
-    ui.float_window({
+    ui.float_window(content, {
         title = i18n.t('commit.status.window_title'),
-        content = content,
         callback = function(result)
             if not result then
                 if callback then callback(false) end
