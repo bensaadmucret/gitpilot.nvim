@@ -107,13 +107,49 @@ local function show_git_status(callback)
     return true
 end
 
--- Échapper un message de commit pour git
+-- Échappe les caractères spéciaux dans le message de commit
 local function escape_commit_message(message, quote_type)
+    if not message then return "" end
+    local escaped = message:gsub('"', '\\"'):gsub('`', '\\`'):gsub('$', '\\$')
     if quote_type == "single" then
-        return "'" .. message:gsub("'", "'\\''") .. "'"
+        escaped = "'" .. escaped .. "'"
     else
-        return '"' .. message:gsub('"', '\\"'):gsub('`', '\\`') .. '"'
+        escaped = '"' .. escaped .. '"'
     end
+    return escaped
+end
+
+-- Crée un nouveau commit avec l'éditeur intégré
+local function create_commit_builtin()
+    local commit_success = false
+    ui.input({
+        prompt = i18n.t("commit.enter_message"),
+        multiline = true
+    }, function(message)
+        if message and message ~= "" then
+            -- Échapper les caractères spéciaux pour git commit
+            local escaped_message = escape_commit_message(message, "single")
+            local success, output = utils.execute_command("git commit -m " .. escaped_message)
+            if success then
+                ui.show_success(i18n.t('commit.success.created'))
+                commit_success = true
+                -- Demande à l'utilisateur s'il veut pousser les modifications
+                ui.confirm({
+                    prompt = i18n.t("commit.push_prompt"),
+                    callback = function(confirmed)
+                        if confirmed then
+                            push_changes()
+                        end
+                    end
+                })
+            else
+                ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
+            end
+        else
+            ui.show_error(i18n.t('commit.error.empty_message'))
+        end
+    end)
+    return commit_success
 end
 
 -- Pousse les modifications vers le dépôt distant
@@ -135,39 +171,6 @@ function M.push_changes()
         ui.show_error(i18n.t('commit.error.push_failed') .. (output and ("\n" .. output) or ""))
     end
     return success
-end
-
--- Crée un nouveau commit avec l'éditeur intégré
-local function create_commit_builtin()
-    local commit_success = false
-    ui.input({
-        prompt = i18n.t("commit.enter_message"),
-        multiline = true
-    }, function(message)
-        if message and message ~= "" then
-            -- Échapper les caractères spéciaux pour git commit
-            local escaped_message = escape_commit_message(message)
-            local success, output = utils.execute_command('git commit -m ' .. escaped_message)
-            if success then
-                ui.show_success(i18n.t('commit.success.created'))
-                commit_success = true
-                -- Demande à l'utilisateur s'il veut pousser les modifications
-                ui.confirm({
-                    prompt = i18n.t("commit.push_prompt"),
-                    callback = function(confirmed)
-                        if confirmed then
-                            push_changes()
-                        end
-                    end
-                })
-            else
-                ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
-            end
-        else
-            ui.show_error(i18n.t('commit.error.empty_message'))
-        end
-    end)
-    return commit_success
 end
 
 -- Crée un nouveau commit
@@ -299,7 +302,7 @@ function M.fixup_commit(commit_hash)
 
     local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
     if success then
-        ui.show_success(i18n.t('commit.success.fixup'))
+        ui.show_success(i18n.t('commit.success.fixup', {hash = commit_hash}))
     else
         ui.show_error(i18n.t('commit.error.fixup_failed') .. (output and ("\n" .. output) or ""))
     end
@@ -337,7 +340,7 @@ function M.cherry_pick_commit(commit_hash)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.invalid_commit'))
+        ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
