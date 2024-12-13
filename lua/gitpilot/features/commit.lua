@@ -123,9 +123,9 @@ local function create_commit_builtin()
         multiline = true
     }, function(message)
         if message and message ~= "" then
-            -- Échapper les caractères spéciaux et entourer le message de guillemets simples
-            local escaped_message = "'" .. message:gsub("'", "'\\''") .. "'"
-            local success, _ = utils.execute_command("git commit -m " .. escaped_message)
+            -- Échapper les caractères spéciaux pour git commit
+            local escaped_message = message:gsub('"', '\\"'):gsub('`', '\\`')
+            local success, _ = utils.execute_command('git commit -m "' .. escaped_message .. '"')
             if success then
                 ui.show_success(i18n.t('commit.success.created'))
             else
