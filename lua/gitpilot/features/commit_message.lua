@@ -109,21 +109,13 @@ local function analyze_changes()
         local status_code = line:sub(1, 2)
         local file_path = line:sub(4)
         
-        -- Vérifie la validité du chemin de fichier
-        if not file_path or file_path == "" then
-            goto continue
+        -- Vérifie la validité du chemin de fichier et ignore les fichiers supprimés
+        if file_path and file_path ~= "" and not status_code:match("^%s*D") then
+            -- Analyse le type de changement
+            local change_type = detect_change_type(file_path)
+            changes[change_type] = changes[change_type] or {}
+            table.insert(changes[change_type], file_path)
         end
-
-        -- Ignore les fichiers supprimés
-        if status_code:match("^%s*D") then
-            goto continue
-        end
-        
-        local change_type = detect_change_type(file_path)
-        changes[change_type] = changes[change_type] or {}
-        table.insert(changes[change_type], file_path)
-        
-        ::continue::
     end
 
     -- Vérifie si des changements ont été détectés

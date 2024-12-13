@@ -97,7 +97,7 @@ local function handle_menu_selection(menu_type, selected, context)
     if text == i18n.t('menu.back') then
         current_menu = 'main'
         vim.schedule(function()
-            M.show_main_menu()
+            M.show_main_menu(context)
         end)
         return
     end
@@ -148,13 +148,13 @@ local function handle_menu_selection(menu_type, selected, context)
     end
 end
 
-function M.show_main_menu()
+function M.show_main_menu(context)
     current_menu = 'main'
     local items = get_menu_items('main')
     local opts = {
         title = get_menu_title('main'),
         callback = function(selected)
-            handle_menu_selection('main', selected)
+            handle_menu_selection('main', selected, context)
         end
     }
     ui.float_window(items, opts)

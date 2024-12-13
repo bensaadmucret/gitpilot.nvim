@@ -158,9 +158,10 @@ describe('menu', function()
             -- Setup mocks
             local actions = mock(require('gitpilot.actions'), true)
             
-            -- Setup ui.select to simulate selecting a menu item
-            stub(ui, 'select', function(items, opts, callback)
-                callback('📝 Create Commit')
+            -- Setup ui.float_window to simulate selecting a menu item
+            stub(ui, 'float_window', function(items, opts)
+                -- Simulate selecting "Create Commit"
+                opts.callback('📝 ' .. i18n.t('commit.create'))
             end)
             
             -- Show commit menu with context
@@ -170,7 +171,7 @@ describe('menu', function()
             -- Verify context was passed to action handler
             assert.stub(actions.handle_action).was_called_with('commit', 'create', context)
             
-            ui.select:revert()
+            ui.float_window:revert()
             mock.revert(actions)
         end)
     end)
