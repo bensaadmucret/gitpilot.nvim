@@ -207,15 +207,16 @@ local function create_commit_builtin(callback)
                 if not message or message:match("^%s*$") then
                     return handle_empty_message_error(callback)
                 end
-                    
+
                 -- Échapper les caractères spéciaux pour git commit
                 local escaped_message = escape_commit_message(message, "double")
-                local success, output = utils.execute_command(string.format("git commit -m %s", escaped_message))
-                
+                local cmd = string.format("git commit -m %s", escaped_message)
+                local success, output = utils.execute_command(cmd)
+
                 if not success then
                     return handle_commit_error(output, callback)
                 end
-                
+
                 ui.show_success(i18n.t('commit.success.created'))
                 if callback then callback(true) end
                 return true
@@ -257,15 +258,16 @@ local function amend_commit_builtin(callback)
         if not message or message:match("^%s*$") then
             return handle_empty_message_error(callback)
         end
-            
+
         -- Échapper les caractères spéciaux pour git commit
         local escaped_message = escape_commit_message(message, "double")
-        local amend_success, output = utils.execute_command(string.format("git commit --amend -m %s", escaped_message))
-        
+        local cmd = string.format("git commit --amend -m %s", escaped_message)
+        local amend_success, output = utils.execute_command(cmd)
+
         if not amend_success then
             return handle_amend_error(output, callback)
         end
-        
+
         ui.show_success(i18n.t('commit.success.amended'))
         if callback then callback(true) end
         return true
@@ -292,7 +294,9 @@ function M.fixup_commit(commit_hash, callback)
     end
 
     local escaped_hash = utils.escape_string(commit_hash)
-    local success, output = utils.execute_command(string.format("git commit --fixup=%s", escaped_hash))
+    local cmd = string.format("git commit --fixup=%s", escaped_hash)
+    local success, output = utils.execute_command(cmd)
+
     if not success then
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
         if callback then callback(false) end
@@ -339,85 +343,11 @@ function M.create_commit(callback)
 end
 
 function M.amend_commit(callback)
-    if not is_git_repo() then
-        ui.show_error(i18n.t('commit.error.not_git_repo'))
-        if callback then callback(false) end
-        return false
+    if config.commit_editor == "external" then
+        return amend_commit_external(callback)
+    else
+        return amend_commit_builtin(callback)
     end
-
-    -- Vérifier si un commit existe
-    local success, last_commit = utils.execute_command("git rev-parse HEAD")
-    if not success or not last_commit or last_commit == "" then
-        ui.show_error(i18n.t('commit.error.no_commits'))
-        if callback then callback(false) end
-        return false
-    end
-
-    -- Récupérer le dernier message de commit
-    local success, last_message = utils.execute_command("git log -1 --format=%B")
-    if not success then
-        handle_amend_error(last_message, callback)
-        return false
-    end
-
-    ui.input({
-        prompt = i18n.t("commit.enter_message"),
-        default = last_message,
-        multiline = true
-    }, function(message)
-        if not message or message:match("^%s*$") then
-            handle_empty_message_error(callback)
-            return false
-        end
-            
-        -- Échapper les caractères spéciaux pour git commit
-        local escaped_message = escape_commit_message(message, "single")
-        local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
-        
-        if not amend_success then
-            handle_amend_error(output, callback)
-            return false
-        end
-        
-        ui.show_success(i18n.t('commit.success.amended'))
-        if callback then callback(true) end
-        return true
-    end)
-    return true
-end
-
-function M.fixup_commit(commit_hash, callback)
-    if not is_git_repo() then
-        ui.show_error(i18n.t('commit.error.not_git_repo'))
-        if callback then callback(false) end
-        return false
-    end
-
-    if not commit_hash or not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.no_commits'))
-        if callback then callback(false) end
-        return false
-    end
-
-    local success, files = get_staged_files()
-    if not success or #files == 0 then
-        ui.show_error(i18n.t('commit.error.no_changes'))
-        if callback then callback(false) end
-        return false
-    end
-
-    -- Échapper le hash du commit pour la commande git
-    local escaped_hash = utils.escape_string(commit_hash)
-    local fixup_success, output = utils.execute_command(string.format("git commit --fixup=%s", escaped_hash))
-    if not fixup_success then
-        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
-        if callback then callback(false) end
-        return false
-    end
-
-    ui.show_success(i18n.t('commit.success.fixup'))
-    if callback then callback(true) end
-    return true
 end
 
 -- Fixup un commit
