@@ -149,11 +149,20 @@ describe("commit", function()
             end
 
             local status_shown = false
+            local has_modified_file = false
+            local has_untracked_file = false
+
             mock_ui.float_window = function(content, opts)
                 status_shown = true
                 -- Vérifie que le contenu contient les fichiers modifiés et non suivis
-                assert.truthy(content[1]:match("file1.txt"))
-                assert.truthy(content[1]:match("file2.txt"))
+                for _, line in ipairs(content) do
+                    if line:match("file1.txt") then
+                        has_modified_file = true
+                    end
+                    if line:match("file2.txt") then
+                        has_untracked_file = true
+                    end
+                end
                 -- Simule la fermeture de la fenêtre
                 opts.callback()
             end
@@ -161,6 +170,8 @@ describe("commit", function()
             local input_shown = false
             mock_ui.input = function(opts, callback)
                 assert.truthy(status_shown, "Status should be shown before input")
+                assert.truthy(has_modified_file, "Modified file should be shown")
+                assert.truthy(has_untracked_file, "Untracked file should be shown")
                 input_shown = true
                 callback("test commit")
             end
@@ -191,9 +202,22 @@ R  renamed.txt -> new_name.txt
                 return false
             end
 
-            local status_content = nil
+            local files_found = {
+                modified = false,
+                added = false,
+                deleted = false,
+                renamed = false,
+                untracked = false
+            }
+
             mock_ui.float_window = function(content, opts)
-                status_content = content[1]
+                for _, line in ipairs(content) do
+                    if line:match("modified.txt") then files_found.modified = true end
+                    if line:match("added.txt") then files_found.added = true end
+                    if line:match("deleted.txt") then files_found.deleted = true end
+                    if line:match("renamed.txt") then files_found.renamed = true end
+                    if line:match("untracked.txt") then files_found.untracked = true end
+                end
                 opts.callback()
             end
 
@@ -204,11 +228,11 @@ R  renamed.txt -> new_name.txt
             commit.create_commit()
 
             -- Vérifie que chaque type de fichier est correctement catégorisé
-            assert.truthy(status_content:match("modified.txt"))
-            assert.truthy(status_content:match("added.txt"))
-            assert.truthy(status_content:match("deleted.txt"))
-            assert.truthy(status_content:match("renamed.txt"))
-            assert.truthy(status_content:match("untracked.txt"))
+            assert.truthy(files_found.modified, "Modified file should be shown")
+            assert.truthy(files_found.added, "Added file should be shown")
+            assert.truthy(files_found.deleted, "Deleted file should be shown")
+            assert.truthy(files_found.renamed, "Renamed file should be shown")
+            assert.truthy(files_found.untracked, "Untracked file should be shown")
         end)
 
         it("should not show status window when no changes", function()
