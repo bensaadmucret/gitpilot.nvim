@@ -102,6 +102,15 @@ local function show_git_status(callback)
     return true
 end
 
+-- Échapper un message de commit pour git
+local function escape_commit_message(message, quote_type)
+    if quote_type == "single" then
+        return "'" .. message:gsub("'", "'\\''") .. "'"
+    else
+        return '"' .. message:gsub('"', '\\"'):gsub('`', '\\`') .. '"'
+    end
+end
+
 -- Crée un nouveau commit avec l'éditeur intégré
 local function create_commit_builtin()
     local commit_success = false
@@ -111,7 +120,7 @@ local function create_commit_builtin()
     }, function(message)
         if message and message ~= "" then
             -- Échapper les caractères spéciaux pour git commit
-            local escaped_message = '"' .. message:gsub('"', '\\"'):gsub('`', '\\`') .. '"'
+            local escaped_message = escape_commit_message(message)
             local success, output = utils.execute_command('git commit -m ' .. escaped_message)
             if success then
                 ui.show_success(i18n.t('commit.success.created'))
@@ -191,8 +200,8 @@ function M.amend_commit()
             default = last_message
         }, function(message)
             if message and message ~= "" then
-                -- Échapper les caractères spéciaux et entourer le message de guillemets simples
-                local escaped_message = "'" .. message:gsub("'", "'\\''") .. "'"
+                -- Échapper les caractères spéciaux pour git commit
+                local escaped_message = escape_commit_message(message, "single")
                 local success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
                 if success then
                     ui.show_success(i18n.t('commit.success.amended'))
