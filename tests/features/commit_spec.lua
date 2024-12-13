@@ -456,7 +456,7 @@ R  renamed.txt -> new_name.txt
                     return true
                 elseif cmd == "git log -1 --pretty=%B" then
                     return true, "Previous commit message"
-                elseif cmd:match("^git commit --amend") then
+                elseif cmd == "git commit --amend -m \"New commit message\"" then
                     return true
                 end
                 return true
@@ -508,7 +508,7 @@ R  renamed.txt -> new_name.txt
                     return true
                 elseif cmd == "git log -1 --pretty=%B" then
                     return true, "Previous commit message"
-                elseif cmd:match("^git commit --amend") then
+                elseif cmd == "git commit --amend -m \"New commit message\"" then
                     return false, "Erreur d'amend"
                 end
                 return true
