@@ -210,7 +210,9 @@ local function create_commit_builtin(callback)
                 local success, output = utils.execute_command(cmd)
 
                 if not success then
-                    return handle_commit_error(output, callback)
+                    ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. output)
+                    if callback then callback(false) end
+                    return false
                 end
 
                 ui.show_success(i18n.t('commit.success.created'))
@@ -260,7 +262,7 @@ local function amend_commit_builtin(callback)
         local amend_success, output = utils.execute_command(cmd)
 
         if not amend_success then
-            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
+            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
             if callback then callback(false) end
             return false
         end
@@ -291,7 +293,7 @@ local function amend_commit_external(callback)
     -- Amend le commit avec l'éditeur externe
     local amend_success, output = utils.execute_command("git commit --amend")
     if not amend_success then
-        ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
+        ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
         if callback then callback(false) end
         return false
     end
@@ -324,7 +326,7 @@ function M.fixup_commit(commit_hash, callback)
     local success, output = utils.execute_command(cmd)
 
     if not success then
-        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
+        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. output)
         if callback then callback(false) end
         return false
     end
@@ -653,7 +655,7 @@ local function fixup_commit_test(commit_hash, callback)
     local success, output = utils.execute_command(cmd)
 
     if not success then
-        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
+        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. output)
         if callback then callback(false) end
         return false
     end
