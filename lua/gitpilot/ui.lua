@@ -251,11 +251,32 @@ function M.float_window(content, opts)
     local win = vim.api.nvim_open_win(buf, true, win_opts)
     if not win then return false end
     
-    -- Configure mappings
-    vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':close<CR>', {
-        noremap = true,
-        silent = true
-    })
+    -- Set buffer content
+    vim.api.nvim_buf_set_option(buf, 'modifiable', true)
+    if type(content) == 'string' then
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, {content})
+    elseif type(content) == 'table' then
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
+    end
+    vim.api.nvim_buf_set_option(buf, 'modifiable', false)
+    
+    -- Set buffer options
+    vim.api.nvim_buf_set_option(buf, 'filetype', 'gitpilot-menu')
+    vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
+    
+    -- Set keymaps
+    local keymaps = {
+        ['q'] = ':q<CR>',
+        ['<Esc>'] = ':q<CR>',
+    }
+    
+    for key, mapping in pairs(keymaps) do
+        vim.api.nvim_buf_set_keymap(buf, 'n', key, mapping, {
+            nowait = true,
+            noremap = true,
+            silent = true
+        })
+    end
     
     return true
 end
