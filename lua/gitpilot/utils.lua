@@ -232,4 +232,9 @@ function M.read_file(path)
     return data
 end
 
+-- Function to check if we're in a test environment
+function M.is_test_env()
+    return false
+end
+
 return M
