@@ -33,6 +33,7 @@ end
 local function show_git_status(callback)
     local success, status = utils.execute_command("git status -s")
     if not success then
+        ui.show_error(i18n.t('commit.error.status_failed'))
         return false
     end
 
@@ -108,6 +109,11 @@ local function show_git_status(callback)
         table.insert(lines, "")
     end
 
+    if not status or status == "" then
+        ui.show_error(i18n.t('commit.error.no_changes'))
+        return false
+    end
+
     ui.float_window(lines, {
         title = i18n.t('commit.status.window_title'),
         callback = callback
@@ -118,21 +124,26 @@ end
 
 -- Crée un nouveau commit avec l'éditeur intégré
 local function create_commit_builtin()
+    local commit_success = false
     ui.input({
         prompt = i18n.t("commit.enter_message"),
         multiline = true
     }, function(message)
         if message and message ~= "" then
             -- Échapper les caractères spéciaux pour git commit
-            local escaped_message = message:gsub('"', '\\"'):gsub('`', '\\`')
-            local success, _ = utils.execute_command('git commit -m "' .. escaped_message .. '"')
+            local escaped_message = '"' .. message:gsub('"', '\\"'):gsub('`', '\\`') .. '"'
+            local success, output = utils.execute_command('git commit -m ' .. escaped_message)
             if success then
                 ui.show_success(i18n.t('commit.success.created'))
+                commit_success = true
             else
-                ui.show_error(i18n.t('commit.error.create_failed'))
+                ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
             end
+        else
+            ui.show_error(i18n.t('commit.error.empty_message'))
         end
     end)
+    return commit_success
 end
 
 -- Crée un nouveau commit
@@ -151,12 +162,17 @@ function M.create_commit()
 
     if config.commit_editor == "builtin" then
         -- Affiche d'abord le statut Git, puis crée le commit
-        show_git_status(create_commit_builtin)
+        if not show_git_status(function()
+            return create_commit_builtin()
+        end) then
+            ui.show_error(i18n.t('commit.error.status_failed'))
+            return false
+        end
     else
         -- Utilise l'éditeur externe
-        local success, _ = utils.execute_command("git commit")
+        local success, output = utils.execute_command("git commit")
         if not success then
-            ui.show_error(i18n.t('commit.error.create_failed'))
+            ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
             return false
         else
             ui.show_success(i18n.t('commit.success.created'))
@@ -188,6 +204,7 @@ function M.amend_commit()
             return false
         end
 
+        local amend_success = false
         -- Utilise l'éditeur intégré
         ui.input({
             prompt = i18n.t("commit.enter_amend_message"),
@@ -197,24 +214,28 @@ function M.amend_commit()
             if message and message ~= "" then
                 -- Échapper les caractères spéciaux et entourer le message de guillemets simples
                 local escaped_message = "'" .. message:gsub("'", "'\\''") .. "'"
-                local success, _ = utils.execute_command("git commit --amend -m " .. escaped_message)
+                local success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
                 if success then
                     ui.show_success(i18n.t('commit.success.amended'))
+                    amend_success = true
                 else
-                    ui.show_error(i18n.t('commit.error.amend_failed'))
+                    ui.show_error(i18n.t('commit.error.amend_failed') .. (output and ("\n" .. output) or ""))
                 end
+            else
+                ui.show_error(i18n.t('commit.error.empty_message'))
             end
         end)
+        return amend_success
     else
         -- Utilise l'éditeur externe
-        local success, _ = utils.execute_command("git commit --amend")
+        local success, output = utils.execute_command("git commit --amend")
         if not success then
-            ui.show_error(i18n.t('commit.error.amend_failed'))
+            ui.show_error(i18n.t('commit.error.amend_failed') .. (output and ("\n" .. output) or ""))
             return false
         end
+        ui.show_success(i18n.t('commit.success.amended'))
+        return true
     end
-
-    return true
 end
 
 -- Fixup un commit
@@ -236,14 +257,14 @@ function M.fixup_commit(commit_hash)
         return false
     end
 
-    local success, _ = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
-    if not success then
-        ui.show_error(i18n.t('commit.error.fixup_failed'))
-        return false
+    local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
+    if success then
+        ui.show_success(i18n.t('commit.success.fixup'))
+    else
+        ui.show_error(i18n.t('commit.error.fixup_failed') .. (output and ("\n" .. output) or ""))
     end
 
-    ui.show_success(i18n.t('commit.success.fixup'))
-    return true
+    return success
 end
 
 -- Revert un commit
@@ -258,14 +279,14 @@ function M.revert_commit(commit_hash)
         return false
     end
 
-    local success, _ = utils.execute_command("git revert --no-edit " .. utils.escape_string(commit_hash))
-    if not success then
-        ui.show_error(i18n.t('commit.error.revert_failed'))
-        return false
+    local success, output = utils.execute_command("git revert --no-edit " .. utils.escape_string(commit_hash))
+    if success then
+        ui.show_success(i18n.t('commit.success.reverted'))
+    else
+        ui.show_error(i18n.t('commit.error.revert_failed') .. (output and ("\n" .. output) or ""))
     end
 
-    ui.show_success(i18n.t('commit.success.reverted'))
-    return true
+    return success
 end
 
 -- Cherry-pick un commit
@@ -280,14 +301,14 @@ function M.cherry_pick_commit(commit_hash)
         return false
     end
 
-    local success, _ = utils.execute_command("git cherry-pick " .. utils.escape_string(commit_hash))
-    if not success then
-        ui.show_error(i18n.t('commit.error.cherry_pick_failed'))
-        return false
+    local success, output = utils.execute_command("git cherry-pick " .. utils.escape_string(commit_hash))
+    if success then
+        ui.show_success(i18n.t('commit.success.cherry_picked'))
+    else
+        ui.show_error(i18n.t('commit.error.cherry_pick_failed') .. (output and ("\n" .. output) or ""))
     end
 
-    ui.show_success(i18n.t('commit.success.cherry_picked'))
-    return true
+    return success
 end
 
 -- Affiche les détails d'un commit
@@ -327,7 +348,7 @@ function M.show_commit_log(callback)
         "git log -n %d --pretty=format:'%%h - %%s (%%cr) <%%an>'",
         config.max_commit_log
     ))
-    if not success then
+    if not success or not log or log == "" then
         ui.show_error(i18n.t('commit.error.log_failed'))
         return false
     end

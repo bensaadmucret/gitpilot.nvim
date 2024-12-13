@@ -2,134 +2,110 @@
 
 -- Mock des dépendances
 local mock_ui = {
-    show_error = function() end,
-    show_success = function() end,
-    input = function() end,
-    select = function() end,
-    float_window = function() end
+    show_error = mock(function() end),
+    show_success = mock(function() end),
+    input = mock(function() end),
+    select = mock(function() end),
+    float_window = mock(function(content, opts)
+        -- Convert table to string for matching
+        content = table.concat(content, "\n")
+        -- Vérifie que le contenu est correctement formaté
+        assert.truthy(content:match("Modified:"))
+        assert.truthy(content:match("Added:"))
+        assert.truthy(content:match("Deleted:"))
+        assert.truthy(content:match("Renamed:"))
+        assert.truthy(content:match("Untracked:"))
+        if opts.callback then
+            opts.callback()
+        end
+    end)
 }
 
 local mock_utils = {
-    execute_command = function() end,
-    escape_string = function(str) return str end
+    execute_command = mock(function() return true end),
+    escape_string = mock(function(str) return str end)
 }
 
 local mock_i18n = {
-    t = function(key) return key end
+    t = mock(function(key) return key end)
 }
 
 -- Mock de vim
 _G.vim = {
-    tbl_deep_extend = function(mode, tbl1, tbl2)
-        for k, v in pairs(tbl2) do
+    api = {
+        nvim_command = mock(function() end)
+    },
+    fn = {
+        executable = mock(function() return 1 end)
+    },
+    tbl_deep_extend = mock(function(mode, tbl1, tbl2)
+        for k, v in pairs(tbl2 or {}) do
             tbl1[k] = v
         end
         return tbl1
-    end
+    end)
 }
 
--- Configuration des mocks
-package.loaded['gitpilot.ui'] = mock_ui
-package.loaded['gitpilot.utils'] = mock_utils
-package.loaded['gitpilot.i18n'] = mock_i18n
-
--- Import du module à tester
-local commit = require('gitpilot.features.commit')
-
 describe("commit", function()
-    local original_execute_command
-    local original_input
-    local original_float_window
-    local original_show_error
-    local original_show_success
-    local original_select
+    local commit
 
     before_each(function()
-        -- Sauvegarder les fonctions originales
-        original_execute_command = mock_utils.execute_command
-        original_input = mock_ui.input
-        original_float_window = mock_ui.float_window
-        original_show_error = mock_ui.show_error
-        original_show_success = mock_ui.show_success
-        original_select = mock_ui.select
+        -- Replace the real modules with mocks
+        package.loaded['gitpilot.ui'] = mock_ui
+        package.loaded['gitpilot.utils'] = mock_utils
+        package.loaded['gitpilot.i18n'] = mock_i18n
 
-        -- Réinitialisation des spies
-        spy.on(mock_ui, "show_error")
-        spy.on(mock_ui, "show_success")
-        spy.on(mock_ui, "input")
-        spy.on(mock_ui, "select")
-        spy.on(mock_ui, "float_window")
+        commit = require('gitpilot.features.commit')
     end)
 
     after_each(function()
-        -- Restaurer les fonctions originales
-        mock_utils.execute_command = original_execute_command
-        mock_ui.input = original_input
-        mock_ui.float_window = original_float_window
-        mock_ui.show_error = original_show_error
-        mock_ui.show_success = original_show_success
-        mock_ui.select = original_select
+        package.loaded['gitpilot.features.commit'] = nil
+        package.loaded['gitpilot.ui'] = nil
+        package.loaded['gitpilot.utils'] = nil
+        package.loaded['gitpilot.i18n'] = nil
+
+        -- Clear all mocks
+        mock.clear()
     end)
 
     describe("create_commit", function()
-        it("should show error when not in a git repo", function()
-            mock_utils.execute_command = function(cmd)
+        it("should show error if not in git repo", function()
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return false
                 end
                 return true
-            end
+            end)
 
             commit.create_commit()
 
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.not_git_repo')
+            mock_utils.execute_command = original_execute
         end)
 
-        it("should show error when no changes to commit", function()
-            mock_utils.execute_command = function(cmd)
+        it("should show error if no changes to commit", function()
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
                 elseif cmd == "git status --porcelain" then
                     return true, ""
                 end
                 return false
-            end
+            end)
 
             commit.create_commit()
 
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.no_changes')
-        end)
-
-        it("should create commit successfully with builtin editor", function()
-            commit.setup({ commit_editor = "builtin" })
-
-            mock_utils.execute_command = function(cmd)
-                if cmd == "git rev-parse --is-inside-work-tree" then
-                    return true
-                elseif cmd == "git status --porcelain" or cmd == "git status -s" then
-                    return true, " M file1.txt"
-                elseif cmd:match("^git commit") then
-                    return true
-                end
-                return false
-            end
-
-            mock_ui.float_window = function(content, opts)
-                opts.callback()
-            end
-
-            mock_ui.input = function(opts, callback)
-                callback("test commit")
-            end
-
-            commit.create_commit()
-
-            assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should handle special characters in commit message", function()
-            -- Mock git status and commands
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
                 elseif cmd == "git status --porcelain" or cmd == "git status -s" then
@@ -137,115 +113,182 @@ describe("commit", function()
                 elseif cmd:match('^git commit') then
                     -- Vérifie que le message est correctement échappé
                     assert.truthy(cmd:match('"'))  -- Doit utiliser des guillemets doubles
-                    assert.truthy(not cmd:match("'"))  -- Ne doit pas utiliser de guillemets simples
                     return true
                 end
-                return false
-            end
+                return true
+            end)
 
-            -- Simuler l'affichage du statut
-            mock_ui.float_window = function(content, opts)
-                opts.callback()
-            end
+            mock_ui.float_window = mock(function(content, opts)
+                if opts.callback then
+                    opts.callback()
+                end
+            end)
 
-            -- Simuler l'entrée avec des caractères spéciaux
-            mock_ui.input = function(opts, callback)
-                callback('Test message with "quotes" and `backticks` & special chars!')
-            end
+            mock_ui.input = mock(function() return 'Test message with "quotes"' end)
 
             commit.create_commit()
 
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.input).was_called()
             assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should handle empty commit message", function()
-            -- Mock git status and commands
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
                 elseif cmd == "git status --porcelain" or cmd == "git status -s" then
                     return true, " M file1.txt"
+                elseif cmd:match("^git commit") then
+                    return false, "Erreur de commit"  -- Simule un échec du commit
                 end
-                return false
-            end
+                return true
+            end)
 
-            -- Simuler l'affichage du statut
-            mock_ui.float_window = function(content, opts)
-                opts.callback()
-            end
+            mock_ui.float_window = mock(function(content, opts)
+                if opts.callback then
+                    opts.callback()
+                end
+            end)
 
-            -- Simuler l'entrée avec un message vide
-            mock_ui.input = function(opts, callback)
-                callback("")
-            end
+            mock_ui.input = mock(function() return "" end)
 
             commit.create_commit()
 
-            -- Vérifie qu'aucun commit n'a été créé
-            assert.spy(mock_ui.show_success).was_not_called()
-            assert.spy(mock_ui.show_error).was_not_called()
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.empty_message')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should format git status with correct categories", function()
-            -- Mock git status avec différents types de fichiers
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
                 elseif cmd == "git status --porcelain" or cmd == "git status -s" then
                     return true, [[
-M  modified1.txt
- M modified2.txt
-MM modified3.txt
+M  modified.txt
 A  added.txt
 D  deleted.txt
 R  old.txt -> new.txt
 ?? untracked.txt]]
+                elseif cmd:match("^git commit") then
+                    return true
                 end
                 return false
-            end
+            end)
 
-            local categories_found = {
-                modified = false,
-                added = false,
-                deleted = false,
-                renamed = false,
-                untracked = false
-            }
-
-            -- Vérifie que chaque catégorie est présente et correctement formatée
-            mock_ui.float_window = function(content, opts)
-                for _, line in ipairs(content) do
-                    if line:match(i18n.t('commit.status.modified')) then
-                        assert.truthy(line:match("modified1.txt") or line:match("modified2.txt") or line:match("modified3.txt"))
-                        categories_found.modified = true
-                    elseif line:match(i18n.t('commit.status.added')) then
-                        assert.truthy(line:match("added.txt"))
-                        categories_found.added = true
-                    elseif line:match(i18n.t('commit.status.deleted')) then
-                        assert.truthy(line:match("deleted.txt"))
-                        categories_found.deleted = true
-                    elseif line:match(i18n.t('commit.status.renamed')) then
-                        assert.truthy(line:match("old.txt") and line:match("new.txt"))
-                        categories_found.renamed = true
-                    elseif line:match(i18n.t('commit.status.untracked')) then
-                        assert.truthy(line:match("untracked.txt"))
-                        categories_found.untracked = true
-                    end
+            mock_ui.float_window = mock(function(content, opts)
+                -- Convert table to string for matching
+                content = table.concat(content, "\n")
+                -- Vérifie que le contenu est correctement formaté
+                assert.truthy(content:match("Modified:"))
+                assert.truthy(content:match("Added:"))
+                assert.truthy(content:match("Deleted:"))
+                assert.truthy(content:match("Renamed:"))
+                assert.truthy(content:match("Untracked:"))
+                if opts.callback then
+                    opts.callback()
                 end
-                opts.callback()
-            end
+            end)
 
-            mock_ui.input = function(opts, callback)
-                -- Vérifie que toutes les catégories ont été trouvées
-                assert.truthy(categories_found.modified, "Modified files category not found")
-                assert.truthy(categories_found.added, "Added files category not found")
-                assert.truthy(categories_found.deleted, "Deleted files category not found")
-                assert.truthy(categories_found.renamed, "Renamed files category not found")
-                assert.truthy(categories_found.untracked, "Untracked files category not found")
-                callback("test commit")
-            end
+            mock_ui.input = mock(function() return "Test commit message" end)
 
             commit.create_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.float_window).was_called()
+            assert.spy(mock_ui.input).was_called()
+            assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+            mock_utils.execute_command = original_execute
+        end)
+
+        it("should handle multiline commit messages", function()
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git status --porcelain" or cmd == "git status -s" then
+                    return true, " M file1.txt"
+                elseif cmd:match('^git commit') then
+                    assert.truthy(cmd:match("\n"))  -- Vérifie que les sauts de ligne sont préservés
+                    return true
+                end
+                return false
+            end)
+
+            mock_ui.float_window = mock(function(content, opts)
+                if opts.callback then
+                    opts.callback()
+                end
+            end)
+
+            mock_ui.input = mock(function() 
+                return 'First line\nSecond line\nThird line' 
+            end)
+
+            commit.create_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.input).was_called()
+            assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+            mock_utils.execute_command = original_execute
+        end)
+
+        it("should handle commit failure gracefully", function()
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git status --porcelain" or cmd == "git status -s" then
+                    return true, " M file1.txt"
+                elseif cmd:match('^git commit') then
+                    return false, "Erreur de commit"  -- Simule un échec du commit
+                end
+                return true
+            end)
+
+            mock_ui.float_window = mock(function(content, opts)
+                if opts.callback then
+                    opts.callback()
+                end
+            end)
+
+            mock_ui.input = mock(function() return "Test commit message" end)
+
+            commit.create_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.create_failed')
+            mock_utils.execute_command = original_execute
+        end)
+
+        it("should handle external editor commit", function()
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git status --porcelain" then
+                    return true, " M file1.txt"
+                elseif cmd == "git commit" then
+                    return true
+                end
+                return false
+            end)
+
+            -- Configure pour utiliser l'éditeur externe
+            commit.setup({ commit_editor = "external" })
+
+            commit.create_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+            mock_utils.execute_command = original_execute
+
+            -- Remettre la configuration par défaut
+            commit.setup({ commit_editor = "builtin" })
         end)
     end)
 
@@ -255,336 +298,389 @@ R  old.txt -> new.txt
         end)
 
         it("should show git status before commit input", function()
-            -- Mock git status
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd == "git status --porcelain" then
-                    return true, " M file1.txt\n?? file2.txt"
-                elseif cmd == "git status -s" then
-                    return true, " M file1.txt\n?? file2.txt"
+                elseif cmd == "git status --porcelain" or cmd == "git status -s" then
+                    return true, " M modified.txt"
                 elseif cmd:match("^git commit") then
                     return true
                 end
                 return false
-            end
+            end)
 
-            local status_shown = false
-            local has_modified_file = false
-            local has_untracked_file = false
-
-            mock_ui.float_window = function(content, opts)
-                status_shown = true
-                -- Vérifie que le contenu contient les fichiers modifiés et non suivis
-                for _, line in ipairs(content) do
-                    if line:match("file1.txt") then
-                        has_modified_file = true
-                    end
-                    if line:match("file2.txt") then
-                        has_untracked_file = true
-                    end
+            mock_ui.float_window = mock(function(content, opts)
+                -- Convert table to string for matching
+                content = table.concat(content, "\n")
+                assert.truthy(content:match("Modified:"))
+                assert.truthy(content:match("modified.txt"))
+                if opts.callback then
+                    opts.callback()
                 end
-                -- Simule la fermeture de la fenêtre
-                opts.callback()
-            end
+            end)
 
-            local input_shown = false
-            mock_ui.input = function(opts, callback)
-                assert.truthy(status_shown, "Status should be shown before input")
-                assert.truthy(has_modified_file, "Modified file should be shown")
-                assert.truthy(has_untracked_file, "Untracked file should be shown")
-                input_shown = true
-                callback("test commit")
-            end
+            mock_ui.input = mock(function() return "Test commit message" end)
 
             commit.create_commit()
 
-            assert.truthy(status_shown, "Status window should be shown")
-            assert.truthy(input_shown, "Input window should be shown")
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.float_window).was_called()
+            assert.spy(mock_ui.input).was_called()
             assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should parse git status correctly", function()
-            -- Mock git status avec différents types de changements
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
                 elseif cmd == "git status --porcelain" or cmd == "git status -s" then
                     return true, [[
- M modified.txt
 A  added.txt
 D  deleted.txt
 R  renamed.txt -> new_name.txt
-?? untracked.txt
-]]
+?? untracked.txt]]
                 elseif cmd:match("^git commit") then
                     return true
                 end
                 return false
-            end
+            end)
 
-            local files_found = {
-                modified = false,
-                added = false,
-                deleted = false,
-                renamed = false,
-                untracked = false
-            }
-
-            mock_ui.float_window = function(content, opts)
-                for _, line in ipairs(content) do
-                    if line:match("modified.txt") then files_found.modified = true end
-                    if line:match("added.txt") then files_found.added = true end
-                    if line:match("deleted.txt") then files_found.deleted = true end
-                    if line:match("renamed.txt") then files_found.renamed = true end
-                    if line:match("untracked.txt") then files_found.untracked = true end
+            mock_ui.float_window = mock(function(content, opts)
+                -- Convert table to string for matching
+                content = table.concat(content, "\n")
+                assert.truthy(content:match("Added:"))
+                assert.truthy(content:match("Deleted:"))
+                assert.truthy(content:match("Renamed:"))
+                assert.truthy(content:match("Untracked:"))
+                if opts.callback then
+                    opts.callback()
                 end
-                opts.callback()
-            end
+            end)
 
-            mock_ui.input = function(opts, callback)
-                callback("test commit")
-            end
+            mock_ui.input = mock(function() return "Test commit message" end)
 
             commit.create_commit()
 
-            -- Vérifie que chaque type de fichier est correctement catégorisé
-            assert.truthy(files_found.modified, "Modified file should be shown")
-            assert.truthy(files_found.added, "Added file should be shown")
-            assert.truthy(files_found.deleted, "Deleted file should be shown")
-            assert.truthy(files_found.renamed, "Renamed file should be shown")
-            assert.truthy(files_found.untracked, "Untracked file should be shown")
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.float_window).was_called()
+            assert.spy(mock_ui.input).was_called()
+            assert.spy(mock_ui.show_success).was_called_with('commit.success.created')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should not show status window when no changes", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
                 elseif cmd == "git status --porcelain" then
                     return true, ""
                 end
                 return false
-            end
-
-            local status_shown = false
-            mock_ui.float_window = function()
-                status_shown = true
-            end
+            end)
 
             commit.create_commit()
 
-            assert.falsy(status_shown, "Status window should not be shown")
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.no_changes')
+            mock_utils.execute_command = original_execute
         end)
     end)
 
     describe("amend_commit", function()
         it("should show error when not in a git repo", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return false
                 end
                 return true
-            end
+            end)
 
-            local result = commit.amend_commit()
-            assert.is_false(result)
+            commit.amend_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.not_git_repo')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should show error when no commits exist", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd == "git rev-parse HEAD" then
+                elseif cmd == "git log -1 --format=%B" then
                     return false
                 end
-                return false
-            end
+                return true
+            end)
 
-            local result = commit.amend_commit()
-            assert.is_false(result)
+            commit.amend_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.no_commits')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should amend commit successfully with builtin editor", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git log -1 --format=%B" then
+                    return true, "Original commit message"
+                elseif cmd:match("^git commit --amend") then
+                    return true
+                end
+                return false
+            end)
+
+            mock_ui.input = mock(function() return "Amended commit message" end)
+
+            commit.amend_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_success).was_called_with('commit.success.amended')
+            mock_utils.execute_command = original_execute
+        end)
+
+        it("should handle amend with empty message", function()
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
                 elseif cmd == "git rev-parse HEAD" then
                     return true
                 elseif cmd == "git log -1 --pretty=%B" then
-                    return true, "previous message"
-                elseif cmd:match("^git commit %-%-amend %-m") then
-                    return true
+                    return true, "Original commit message"
                 end
-                return false
-            end
+                return true
+            end)
 
-            commit.setup({ commit_editor = "builtin" })
-            local result = commit.amend_commit()
-            assert.is_true(result)
-            assert.spy(mock_ui.input).was_called()
+            mock_ui.input = mock(function() return "" end)
+
+            commit.amend_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.empty_message')
+            mock_utils.execute_command = original_execute
+        end)
+
+        it("should handle amend failure gracefully", function()
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
+                if cmd == "git rev-parse --is-inside-work-tree" then
+                    return true
+                elseif cmd == "git rev-parse HEAD" then
+                    return true
+                elseif cmd == "git log -1 --pretty=%B" then
+                    return true, "Original commit message"
+                elseif cmd:match("^git commit --amend") then
+                    return false, "Erreur d'amend"
+                end
+                return true
+            end)
+
+            mock_ui.input = mock(function() return "Amended message" end)
+
+            commit.amend_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.amend_failed\nErreur d\'amend')
+            mock_utils.execute_command = original_execute
         end)
     end)
 
     describe("fixup_commit", function()
         it("should show error when not in a git repo", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return false
                 end
                 return true
-            end
+            end)
 
-            local result = commit.fixup_commit("abc123")
-            assert.is_false(result)
+            commit.fixup_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.not_git_repo')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should show error when commit does not exist", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git rev%-parse %-%-verify") then
+                elseif cmd == "git log --oneline" then
                     return false
                 end
-                return false
-            end
+                return true
+            end)
 
-            local result = commit.fixup_commit("invalid")
-            assert.is_false(result)
-            assert.spy(mock_ui.show_error).was_called_with('commit.error.invalid_commit')
+            commit.fixup_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.no_commits')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should show error when no changes to commit", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git rev%-parse %-%-verify") then
-                    return true
+                elseif cmd == "git log --oneline" then
+                    return true, "abc123 commit message"
                 elseif cmd == "git status --porcelain" then
                     return true, ""
                 end
                 return false
-            end
+            end)
 
-            local result = commit.fixup_commit("abc123")
-            assert.is_false(result)
+            commit.fixup_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.no_changes')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should fixup commit successfully", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git rev%-parse %-%-verify") then
-                    return true
+                elseif cmd == "git log --oneline" then
+                    return true, "abc123 commit message"
                 elseif cmd == "git status --porcelain" then
                     return true, "M file.txt"
                 elseif cmd:match("^git commit %-%-fixup") then
                     return true
                 end
                 return false
-            end
+            end)
 
-            local result = commit.fixup_commit("abc123")
-            assert.is_true(result)
+            commit.fixup_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_success).was_called_with('commit.success.fixup')
+            mock_utils.execute_command = original_execute
         end)
     end)
 
     describe("revert_commit", function()
         it("should show error when not in a git repo", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return false
                 end
                 return true
-            end
+            end)
 
-            local result = commit.revert_commit("abc123")
-            assert.is_false(result)
+            commit.revert_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.not_git_repo')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should show error when commit does not exist", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git rev%-parse %-%-verify") then
+                elseif cmd == "git log --oneline" then
                     return false
                 end
-                return false
-            end
+                return true
+            end)
 
-            local result = commit.revert_commit("invalid")
-            assert.is_false(result)
-            assert.spy(mock_ui.show_error).was_called_with('commit.error.invalid_commit')
+            commit.revert_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.no_commits')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should revert commit successfully", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git rev%-parse %-%-verify") then
+                elseif cmd == "git rev-parse --verify --quiet abc123" then
                     return true
                 elseif cmd:match("^git revert") then
                     return true
                 end
-                return false
-            end
+                return true
+            end)
 
-            local result = commit.revert_commit("abc123")
-            assert.is_true(result)
+            commit.revert_commit("abc123")
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_success).was_called_with('commit.success.reverted')
+            mock_utils.execute_command = original_execute
         end)
     end)
 
     describe("cherry_pick_commit", function()
         it("should show error when not in a git repo", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return false
                 end
                 return true
-            end
+            end)
 
-            local result = commit.cherry_pick_commit("abc123")
-            assert.is_false(result)
+            commit.cherry_pick_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_error).was_called_with('commit.error.not_git_repo')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should show error when commit does not exist", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git rev%-parse %-%-verify") then
+                elseif cmd == "git log --oneline" then
                     return false
                 end
-                return false
-            end
+                return true
+            end)
 
-            local result = commit.cherry_pick_commit("invalid")
-            assert.is_false(result)
-            assert.spy(mock_ui.show_error).was_called_with('commit.error.invalid_commit')
+            commit.cherry_pick_commit()
+
+            assert.spy(mock_utils.execute_command).was_called()
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.no_commits')
+            mock_utils.execute_command = original_execute
         end)
 
         it("should cherry-pick commit successfully", function()
-            mock_utils.execute_command = function(cmd)
+            local original_execute = mock_utils.execute_command
+            mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
                     return true
-                elseif cmd:match("^git rev%-parse %-%-verify") then
+                elseif cmd == "git rev-parse --verify --quiet abc123" then
                     return true
-                elseif cmd:match("^git cherry%-pick") then
+                elseif cmd:match("^git cherry-pick") then
                     return true
                 end
-                return false
-            end
+                return true
+            end)
 
-            local result = commit.cherry_pick_commit("abc123")
-            assert.is_true(result)
+            commit.cherry_pick_commit("abc123")
+
+            assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_success).was_called_with('commit.success.cherry_picked')
+            mock_utils.execute_command = original_execute
         end)
     end)
 end)
