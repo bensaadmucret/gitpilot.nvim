@@ -38,25 +38,37 @@ local commit = require('gitpilot.features.commit')
 
 describe("commit", function()
     local original_execute_command
+    local original_input
+    local original_float_window
+    local original_show_error
+    local original_show_success
+    local original_select
 
     before_each(function()
-        -- Réinitialisation des spies avant chaque test
+        -- Sauvegarder les fonctions originales
+        original_execute_command = mock_utils.execute_command
+        original_input = mock_ui.input
+        original_float_window = mock_ui.float_window
+        original_show_error = mock_ui.show_error
+        original_show_success = mock_ui.show_success
+        original_select = mock_ui.select
+
+        -- Réinitialisation des spies
         spy.on(mock_ui, "show_error")
         spy.on(mock_ui, "show_success")
         spy.on(mock_ui, "input")
         spy.on(mock_ui, "select")
         spy.on(mock_ui, "float_window")
-        original_execute_command = mock_utils.execute_command
     end)
 
     after_each(function()
-        -- Nettoyage des spies après chaque test
+        -- Restaurer les fonctions originales
         mock_utils.execute_command = original_execute_command
-        mock_ui.show_error:revert()
-        mock_ui.show_success:revert()
-        mock_ui.input:revert()
-        mock_ui.select:revert()
-        mock_ui.float_window:revert()
+        mock_ui.input = original_input
+        mock_ui.float_window = original_float_window
+        mock_ui.show_error = original_show_error
+        mock_ui.show_success = original_show_success
+        mock_ui.select = original_select
     end)
 
     describe("create_commit", function()

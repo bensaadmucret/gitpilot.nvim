@@ -63,26 +63,52 @@ local function show_git_status(callback)
         end
     end
 
-    -- Construire le message de statut
-    local status_msg = i18n.t('commit.status.title') .. "\n\n"
+    -- Construire le message de statut ligne par ligne
+    local lines = {}
+    table.insert(lines, i18n.t('commit.status.title'))
+    table.insert(lines, "")
 
     if #files.modified > 0 then
-        status_msg = status_msg .. i18n.t('commit.status.modified') .. ":\n - " .. table.concat(files.modified, "\n - ") .. "\n\n"
-    end
-    if #files.added > 0 then
-        status_msg = status_msg .. i18n.t('commit.status.added') .. ":\n - " .. table.concat(files.added, "\n - ") .. "\n\n"
-    end
-    if #files.deleted > 0 then
-        status_msg = status_msg .. i18n.t('commit.status.deleted') .. ":\n - " .. table.concat(files.deleted, "\n - ") .. "\n\n"
-    end
-    if #files.renamed > 0 then
-        status_msg = status_msg .. i18n.t('commit.status.renamed') .. ":\n - " .. table.concat(files.renamed, "\n - ") .. "\n\n"
-    end
-    if #files.untracked > 0 then
-        status_msg = status_msg .. i18n.t('commit.status.untracked') .. ":\n - " .. table.concat(files.untracked, "\n - ") .. "\n\n"
+        table.insert(lines, i18n.t('commit.status.modified') .. ":")
+        for _, file in ipairs(files.modified) do
+            table.insert(lines, " - " .. file)
+        end
+        table.insert(lines, "")
     end
 
-    ui.float_window({ status_msg }, {
+    if #files.added > 0 then
+        table.insert(lines, i18n.t('commit.status.added') .. ":")
+        for _, file in ipairs(files.added) do
+            table.insert(lines, " - " .. file)
+        end
+        table.insert(lines, "")
+    end
+
+    if #files.deleted > 0 then
+        table.insert(lines, i18n.t('commit.status.deleted') .. ":")
+        for _, file in ipairs(files.deleted) do
+            table.insert(lines, " - " .. file)
+        end
+        table.insert(lines, "")
+    end
+
+    if #files.renamed > 0 then
+        table.insert(lines, i18n.t('commit.status.renamed') .. ":")
+        for _, file in ipairs(files.renamed) do
+            table.insert(lines, " - " .. file)
+        end
+        table.insert(lines, "")
+    end
+
+    if #files.untracked > 0 then
+        table.insert(lines, i18n.t('commit.status.untracked') .. ":")
+        for _, file in ipairs(files.untracked) do
+            table.insert(lines, " - " .. file)
+        end
+        table.insert(lines, "")
+    end
+
+    ui.float_window(lines, {
         title = i18n.t('commit.status.window_title'),
         callback = callback
     })
