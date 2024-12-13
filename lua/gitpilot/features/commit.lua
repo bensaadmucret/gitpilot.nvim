@@ -29,6 +29,86 @@ local function commit_exists(commit_hash)
     return success
 end
 
+-- Affiche le statut Git détaillé
+local function show_git_status(callback)
+    local success, status = utils.execute_command("git status -s")
+    if not success then
+        return false
+    end
+
+    -- Créer un tableau pour stocker les fichiers par catégorie
+    local files = {
+        modified = {},
+        added = {},
+        deleted = {},
+        renamed = {},
+        untracked = {}
+    }
+
+    -- Analyser le statut
+    for line in status:gmatch("[^\r\n]+") do
+        local status_code = line:sub(1, 2)
+        local file_path = line:sub(4)
+        
+        if status_code:match("^M") or status_code:match("^.M") then
+            table.insert(files.modified, file_path)
+        elseif status_code:match("^A") then
+            table.insert(files.added, file_path)
+        elseif status_code:match("^D") or status_code:match("^.D") then
+            table.insert(files.deleted, file_path)
+        elseif status_code:match("^R") then
+            table.insert(files.renamed, file_path)
+        elseif status_code:match("^%?%?") then
+            table.insert(files.untracked, file_path)
+        end
+    end
+
+    -- Construire le message de statut
+    local status_msg = i18n.t('commit.status.title') .. "\n\n"
+
+    if #files.modified > 0 then
+        status_msg = status_msg .. i18n.t('commit.status.modified') .. ":\n - " .. table.concat(files.modified, "\n - ") .. "\n\n"
+    end
+    if #files.added > 0 then
+        status_msg = status_msg .. i18n.t('commit.status.added') .. ":\n - " .. table.concat(files.added, "\n - ") .. "\n\n"
+    end
+    if #files.deleted > 0 then
+        status_msg = status_msg .. i18n.t('commit.status.deleted') .. ":\n - " .. table.concat(files.deleted, "\n - ") .. "\n\n"
+    end
+    if #files.renamed > 0 then
+        status_msg = status_msg .. i18n.t('commit.status.renamed') .. ":\n - " .. table.concat(files.renamed, "\n - ") .. "\n\n"
+    end
+    if #files.untracked > 0 then
+        status_msg = status_msg .. i18n.t('commit.status.untracked') .. ":\n - " .. table.concat(files.untracked, "\n - ") .. "\n\n"
+    end
+
+    ui.float_window({ status_msg }, {
+        title = i18n.t('commit.status.window_title'),
+        callback = callback
+    })
+
+    return true
+end
+
+-- Crée un nouveau commit avec l'éditeur intégré
+local function create_commit_builtin()
+    ui.input({
+        prompt = i18n.t("commit.enter_message"),
+        multiline = true
+    }, function(message)
+        if message and message ~= "" then
+            -- Échapper les caractères spéciaux et entourer le message de guillemets simples
+            local escaped_message = "'" .. message:gsub("'", "'\\''") .. "'"
+            local success, _ = utils.execute_command("git commit -m " .. escaped_message)
+            if success then
+                ui.show_success(i18n.t('commit.success.created'))
+            else
+                ui.show_error(i18n.t('commit.error.create_failed'))
+            end
+        end
+    end)
+end
+
 -- Crée un nouveau commit
 function M.create_commit()
     if not is_git_repo() then
@@ -44,28 +124,16 @@ function M.create_commit()
     end
 
     if config.commit_editor == "builtin" then
-        -- Utilise l'éditeur intégré
-        ui.input({
-            prompt = i18n.t("commit.enter_message"),
-            multiline = true
-        }, function(message)
-            if message and message ~= "" then
-                -- Échapper les caractères spéciaux et entourer le message de guillemets simples
-                local escaped_message = "'" .. message:gsub("'", "'\\''") .. "'"
-                local success, _ = utils.execute_command("git commit -m " .. escaped_message)
-                if success then
-                    ui.show_success(i18n.t('commit.success.created'))
-                else
-                    ui.show_error(i18n.t('commit.error.create_failed'))
-                end
-            end
-        end)
+        -- Affiche d'abord le statut Git, puis crée le commit
+        show_git_status(create_commit_builtin)
     else
         -- Utilise l'éditeur externe
         local success, _ = utils.execute_command("git commit")
         if not success then
             ui.show_error(i18n.t('commit.error.create_failed'))
             return false
+        else
+            ui.show_success(i18n.t('commit.success.created'))
         end
     end
 

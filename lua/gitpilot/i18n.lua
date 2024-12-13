@@ -107,6 +107,15 @@ local translations = {
             reset = 'Annuler un commit',
             push = 'Pousser les commits',
             pull = 'Tirer les commits',
+            status = {
+                title = 'Statut des modifications',
+                window_title = 'GitPilot - Statut Git',
+                modified = 'Fichiers modifiés',
+                added = 'Fichiers ajoutés',
+                deleted = 'Fichiers supprimés',
+                renamed = 'Fichiers renommés',
+                untracked = 'Fichiers non suivis'
+            },
             enter_message = 'Message du commit :',
             confirm_amend = 'Voulez-vous modifier le dernier commit ?',
             confirm_fixup = 'Voulez-vous faire un fixup du commit %{hash} ?',
