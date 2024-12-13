@@ -84,20 +84,20 @@ local function show_git_status(callback)
     table.insert(content, "")
 
     local function add_category(category, title)
+        table.insert(content, title .. ":")
         if #files[category] > 0 then
-            table.insert(content, title .. ":")
             for _, file in ipairs(files[category]) do
                 table.insert(content, " - " .. file)
             end
-            table.insert(content, "")
         end
+        table.insert(content, "")
     end
 
-    add_category("modified", i18n.t('commit.status.modified'))
-    add_category("added", i18n.t('commit.status.added'))
-    add_category("deleted", i18n.t('commit.status.deleted'))
-    add_category("renamed", i18n.t('commit.status.renamed'))
-    add_category("untracked", i18n.t('commit.status.untracked'))
+    add_category("modified", "Modified")
+    add_category("added", "Added")
+    add_category("deleted", "Deleted")
+    add_category("renamed", "Renamed")
+    add_category("untracked", "Untracked")
 
     ui.float_window({
         title = i18n.t('commit.status.window_title'),
@@ -150,7 +150,7 @@ local function create_commit_builtin()
                 })
             end
         else
-            ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
+            ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
         end
     end)
     return commit_success
@@ -162,7 +162,7 @@ local function push_changes()
     if success then
         ui.show_success(i18n.t('commit.success.pushed'))
     else
-        ui.show_error(i18n.t('commit.error.push_failed') .. (output and ("\n" .. output) or ""))
+        ui.show_error(i18n.t('commit.error.push_failed') .. "\n" .. (output or ""))
     end
     return success
 end
@@ -172,7 +172,7 @@ function M.push_changes()
     if success then
         ui.show_success(i18n.t('commit.success.pushed'))
     else
-        ui.show_error(i18n.t('commit.error.push_failed') .. (output and ("\n" .. output) or ""))
+        ui.show_error(i18n.t('commit.error.push_failed') .. "\n" .. (output or ""))
     end
     return success
 end
@@ -192,27 +192,21 @@ function M.create_commit()
 
     if config.commit_editor == "builtin" then
         -- Affiche d'abord le statut Git, puis crée le commit
-        if not show_git_status(function()
+        return show_git_status(function()
             return create_commit_builtin()
-        end) then
-            ui.show_error(i18n.t('commit.error.status_failed'))
-            return false
-        end
+        end)
     else
         -- Utilise l'éditeur externe
         local success, output = utils.execute_command("git commit")
         if not success then
-            ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
+            ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
             return false
-        else
-            ui.show_success(i18n.t('commit.success.created'))
         end
+        ui.show_success(i18n.t('commit.success.created'))
+        return true
     end
-
-    return true
 end
 
--- Modifie le dernier commit
 function M.amend_commit()
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
@@ -234,27 +228,28 @@ function M.amend_commit()
         default = last_message,
         multiline = true
     }, function(message)
-        if message and message ~= "" then
-            local escaped_message = escape_commit_message(message, "single")
-            local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
-            if amend_success then
-                ui.show_success(i18n.t('commit.success.amended'))
-                -- Only try to show confirm dialog if it exists
-                if ui.confirm then
-                    ui.confirm({
-                        prompt = i18n.t("commit.push_prompt"),
-                        callback = function(confirmed)
-                            if confirmed then
-                                push_changes()
-                            end
+        if not message or message == "" then
+            ui.show_error(i18n.t('commit.error.empty_message'))
+            return
+        end
+            
+        local escaped_message = escape_commit_message(message, "single")
+        local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
+        if amend_success then
+            ui.show_success(i18n.t('commit.success.amended'))
+            -- Only try to show confirm dialog if it exists
+            if ui.confirm then
+                ui.confirm({
+                    prompt = i18n.t("commit.push_prompt"),
+                    callback = function(confirmed)
+                        if confirmed then
+                            push_changes()
                         end
-                    })
-                end
-            else
-                ui.show_error(i18n.t('commit.error.amend_failed') .. (output and ("\n" .. output) or ""))
+                    end
+                })
             end
         else
-            ui.show_error(i18n.t('commit.error.empty_message'))
+            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
         end
     end)
 end
@@ -271,17 +266,11 @@ function M.fixup_commit(commit_hash)
         return false
     end
 
-    -- Vérifie s'il y a des changements à commiter
-    if not has_changes() then
-        ui.show_error(i18n.t('commit.error.no_changes'))
-        return false
-    end
-
     local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
     if success then
         ui.show_success(i18n.t('commit.success.fixup'))
     else
-        ui.show_error(i18n.t('commit.error.fixup_failed') .. (output and ("\n" .. output) or ""))
+        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
     end
     return success
 end
@@ -302,7 +291,7 @@ function M.revert_commit(commit_hash)
     if success then
         ui.show_success(i18n.t('commit.success.reverted'))
     else
-        ui.show_error(i18n.t('commit.error.revert_failed') .. (output and ("\n" .. output) or ""))
+        ui.show_error(i18n.t('commit.error.revert_failed') .. "\n" .. (output or ""))
     end
     return success
 end
@@ -323,7 +312,7 @@ function M.cherry_pick_commit(commit_hash)
     if success then
         ui.show_success(i18n.t('commit.success.cherry_picked'))
     else
-        ui.show_error(i18n.t('commit.error.cherry_pick_failed') .. (output and ("\n" .. output) or ""))
+        ui.show_error(i18n.t('commit.error.cherry_pick_failed') .. "\n" .. (output or ""))
     end
     return success
 end
