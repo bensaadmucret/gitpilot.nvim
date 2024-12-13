@@ -39,6 +39,53 @@ local function has_changes()
     return success and status and status ~= ""
 end
 
+-- Récupère la liste des fichiers stagés
+local function get_staged_files()
+    local success, status = utils.execute_command("git status -s")
+    if not success then
+        ui.show_error(i18n.t('commit.error.status_failed'))
+        return false, {}
+    end
+
+    if not status or status == "" then
+        return true, {}
+    end
+
+    -- Créer un tableau pour stocker les fichiers par catégorie
+    local files = {
+        modified = {},
+        added = {},
+        deleted = {},
+        renamed = {},
+        untracked = {}
+    }
+
+    -- Analyser le statut
+    for line in status:gmatch("[^\r\n]+") do
+        local status_code = line:sub(1, 2)
+        local file_path = line:sub(4)
+        
+        if status_code:match("^M") or status_code:match("^.M") then
+            table.insert(files.modified, file_path)
+        elseif status_code:match("^A") then
+            table.insert(files.added, file_path)
+        elseif status_code:match("^D") or status_code:match("^.D") then
+            table.insert(files.deleted, file_path)
+        elseif status_code:match("^R") then
+            local old_new = file_path:match("(.*) %-> (.*)")
+            if old_new then
+                table.insert(files.renamed, old_new)
+            else
+                table.insert(files.renamed, file_path)
+            end
+        elseif status_code:match("^%?%?") then
+            table.insert(files.untracked, file_path)
+        end
+    end
+
+    return true, files
+end
+
 -- Format spécifique pour les tests
 local function format_status_for_tests(files)
     local content = {
