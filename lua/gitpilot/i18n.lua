@@ -43,34 +43,112 @@ local translations = {
             rebase = 'Rebase',
             backup = 'Sauvegarde'
         },
-        actions = {
-            branch = {
-                create = 'Créer une branche',
-                switch = 'Changer de branche',
-                merge = 'Fusionner une branche',
-                delete = 'Supprimer une branche'
-            },
-            commit = {
-                create = 'Créer un commit',
-                amend = 'Modifier le dernier commit',
-                reset = 'Reset un commit'
-            },
-            remote = {
-                add = 'Ajouter un remote',
-                remove = 'Supprimer un remote',
-                push = 'Push',
-                pull = 'Pull'
-            },
-            stash = {
-                save = 'Sauvegarder les modifications',
-                pop = 'Appliquer et supprimer un stash',
-                apply = 'Appliquer un stash',
-                drop = 'Supprimer un stash'
+        branch = {
+            create_new = 'Créer une nouvelle branche',
+            checkout = 'Changer de branche',
+            merge = 'Fusionner une branche',
+            delete = 'Supprimer une branche',
+            push = 'Pousser la branche',
+            pull = 'Tirer la branche',
+            rebase = 'Rebaser la branche',
+            refresh = 'Rafraîchir',
+            enter_name = 'Nom de la branche :',
+            error = {
+                invalid_name = 'Nom de branche invalide',
+                not_found = 'Branche non trouvée',
+                already_exists = 'La branche existe déjà',
+                delete_current = 'Impossible de supprimer la branche courante'
+            }
+        },
+        commit = {
+            create = 'Créer un commit',
+            amend = 'Modifier le dernier commit',
+            reset = 'Annuler un commit',
+            push = 'Pousser les commits',
+            pull = 'Tirer les commits',
+            enter_message = 'Message du commit :',
+            error = {
+                empty_message = 'Le message ne peut pas être vide',
+                no_changes = 'Aucun changement à commiter'
+            }
+        },
+        remote = {
+            add = 'Ajouter un remote',
+            remove = 'Supprimer un remote',
+            push = 'Pousser vers un remote',
+            pull = 'Tirer depuis un remote',
+            fetch = 'Mettre à jour les remotes',
+            prune = 'Nettoyer les branches distantes',
+            enter_name = 'Nom du remote :',
+            enter_url = 'URL du remote :',
+            error = {
+                invalid_name = 'Nom de remote invalide',
+                invalid_url = 'URL de remote invalide',
+                not_found = 'Remote non trouvé',
+                already_exists = 'Le remote existe déjà'
+            }
+        },
+        tag = {
+            create = 'Créer un tag',
+            delete = 'Supprimer un tag',
+            push = 'Pousser un tag',
+            list = 'Lister les tags',
+            enter_name = 'Nom du tag :',
+            enter_message = 'Message du tag :',
+            error = {
+                invalid_name = 'Nom de tag invalide',
+                not_found = 'Tag non trouvé',
+                already_exists = 'Le tag existe déjà'
+            }
+        },
+        stash = {
+            save = 'Sauvegarder les modifications',
+            pop = 'Appliquer et supprimer un stash',
+            apply = 'Appliquer un stash',
+            drop = 'Supprimer un stash',
+            list = 'Lister les stash',
+            enter_message = 'Message du stash :',
+            error = {
+                no_changes = 'Aucun changement à sauvegarder',
+                not_found = 'Stash non trouvé'
+            }
+        },
+        search = {
+            commits = 'Rechercher dans les commits',
+            files = 'Rechercher dans les fichiers',
+            content = 'Rechercher dans le contenu',
+            enter_query = 'Recherche :',
+            error = {
+                empty_query = 'La recherche ne peut pas être vide',
+                no_results = 'Aucun résultat trouvé'
+            }
+        },
+        rebase = {
+            interactive = 'Rebase interactif',
+            onto = 'Rebase sur une branche',
+            continue = 'Continuer le rebase',
+            abort = 'Annuler le rebase',
+            error = {
+                in_progress = 'Un rebase est déjà en cours',
+                no_changes = 'Rien à rebaser'
+            }
+        },
+        backup = {
+            create = 'Créer une sauvegarde',
+            restore = 'Restaurer une sauvegarde',
+            list = 'Lister les sauvegardes',
+            delete = 'Supprimer une sauvegarde',
+            enter_name = 'Nom de la sauvegarde :',
+            error = {
+                invalid_name = 'Nom de sauvegarde invalide',
+                not_found = 'Sauvegarde non trouvée',
+                already_exists = 'La sauvegarde existe déjà'
             }
         },
         error = {
             invalid_menu = 'Menu invalide',
-            command_failed = 'La commande a échoué'
+            command_failed = 'La commande a échoué',
+            not_git_repo = 'Ce n\'est pas un dépôt Git'
         }
     }
 }
