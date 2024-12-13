@@ -244,7 +244,8 @@ local function amend_commit_builtin(callback)
     -- Récupérer le dernier message de commit
     local success, last_message = utils.execute_command("git log -1 --pretty=%B")
     if not success then
-        handle_amend_error(last_message, callback)
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
         return false
     end
 
@@ -258,7 +259,7 @@ local function amend_commit_builtin(callback)
         end
             
         -- Échapper les caractères spéciaux pour git commit
-        local escaped_message = escape_commit_message(message, "single")
+        local escaped_message = escape_commit_message(message, "double")
         local amend_success, output = utils.execute_command(string.format("git commit --amend -m %s", escaped_message))
         
         if not amend_success then
@@ -281,8 +282,6 @@ function M.fixup_commit(commit_hash, callback)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.no_commits'))
-        if callback then callback(false) end
         return false
     end
 
@@ -355,7 +354,7 @@ function M.amend_commit(callback)
     end
 
     -- Récupérer le dernier message de commit
-    local success, last_message = utils.execute_command("git log -1 --pretty=%B")
+    local success, last_message = utils.execute_command("git log -1 --format=%B")
     if not success then
         handle_amend_error(last_message, callback)
         return false
@@ -367,15 +366,17 @@ function M.amend_commit(callback)
         multiline = true
     }, function(message)
         if not message or message:match("^%s*$") then
-            return handle_empty_message_error(callback)
+            handle_empty_message_error(callback)
+            return false
         end
             
         -- Échapper les caractères spéciaux pour git commit
         local escaped_message = escape_commit_message(message, "single")
-        local amend_success, output = utils.execute_command(string.format("git commit --amend -m %s", escaped_message))
+        local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
         
         if not amend_success then
-            return handle_amend_error(output, callback)
+            handle_amend_error(output, callback)
+            return false
         end
         
         ui.show_success(i18n.t('commit.success.amended'))
