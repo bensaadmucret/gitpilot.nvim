@@ -270,6 +270,33 @@ local function amend_commit_builtin(callback)
     return true
 end
 
+-- Amend le dernier commit avec l'éditeur externe
+local function amend_commit_external(callback)
+    if not is_git_repo() then
+        ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Vérifier si un commit existe
+    local success, last_commit = utils.execute_command("git rev-parse HEAD")
+    if not success or not last_commit or last_commit == "" then
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Amend le commit avec l'éditeur externe
+    local amend_success, output = utils.execute_command("git commit --amend")
+    if not amend_success then
+        return handle_amend_error(output, callback)
+    end
+
+    ui.show_success(i18n.t('commit.success.amended'))
+    if callback then callback(true) end
+    return true
+end
+
 -- Fixup le commit spécifié
 function M.fixup_commit(commit_hash, callback)
     if not is_git_repo() then
@@ -329,7 +356,7 @@ local function create_commit_external(callback)
     return true
 end
 
-function M.create_commit(callback)
+M.create_commit = function(callback)
     if config.commit_editor == "external" then
         return create_commit_external(callback)
     else
@@ -337,7 +364,7 @@ function M.create_commit(callback)
     end
 end
 
-function M.amend_commit(callback)
+M.amend_commit = function(callback)
     if config.commit_editor == "external" then
         return amend_commit_external(callback)
     else
