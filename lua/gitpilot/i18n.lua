@@ -50,8 +50,8 @@ local translations = {
         },
         confirm = {
             prompt = 'Êtes-vous sûr ?',
-            yes_text = 'Oui',
-            no_text = 'Non'
+            yes = 'Oui',
+            no = 'Non'
         },
         branch = {
             create_new = 'Créer une nouvelle branche',

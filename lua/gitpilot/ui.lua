@@ -32,9 +32,9 @@ local config = {
         footer = true
     },
     confirm = {
+        default = true,
         yes_text = "confirm.yes",
-        no_text = "confirm.no",
-        default = false
+        no_text = "confirm.no"
     }
 }
 
