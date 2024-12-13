@@ -71,11 +71,31 @@ local translations = {
             confirm_push = 'Voulez-vous pousser la branche %{branch} ?',
             confirm_pull = 'Voulez-vous tirer la branche %{branch} ?',
             confirm_rebase = 'Voulez-vous rebaser sur la branche %{branch} ?',
+            success = {
+                created = 'Branche "%{name}" créée avec succès',
+                checked_out = 'Basculé sur la branche "%{name}"',
+                merged = 'Branche "%{name}" fusionnée avec succès',
+                deleted = 'Branche "%{name}" supprimée avec succès',
+                pushed = 'Branche poussée avec succès',
+                pulled = 'Branche tirée avec succès',
+                rebased = 'Rebase effectué avec succès'
+            },
             error = {
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
                 invalid_name = 'Nom de branche invalide',
-                not_found = 'Branche non trouvée',
-                already_exists = 'La branche existe déjà',
-                delete_current = 'Impossible de supprimer la branche courante'
+                already_exists = 'La branche "%{name}" existe déjà',
+                not_found = 'La branche "%{name}" n\'existe pas',
+                create_failed = 'Échec de la création de la branche "%{name}"',
+                checkout_failed = 'Échec du basculement vers la branche "%{name}"',
+                merge_failed = 'Échec de la fusion de la branche "%{name}"',
+                delete_failed = 'Échec de la suppression de la branche "%{name}"',
+                delete_current = 'Impossible de supprimer la branche courante',
+                invalid_start_point = 'Le point de départ "%{name}" n\'existe pas',
+                no_branches = 'Aucune branche trouvée',
+                list_failed = 'Échec de la récupération de la liste des branches',
+                unmerged = 'La branche "%{name}" n\'est pas entièrement fusionnée',
+                uncommitted = 'Vous avez des modifications non commitées',
+                no_upstream = 'La branche "%{name}" n\'a pas de branche amont'
             }
         },
         commit = {
@@ -88,9 +108,23 @@ local translations = {
             confirm_amend = 'Voulez-vous modifier le dernier commit ?',
             confirm_fixup = 'Voulez-vous faire un fixup du commit %{hash} ?',
             confirm_revert = 'Voulez-vous annuler le commit %{hash} ?',
+            success = {
+                created = 'Commit créé avec succès',
+                amended = 'Commit modifié avec succès',
+                reverted = 'Commit annulé avec succès',
+                cherry_picked = 'Cherry-pick effectué avec succès'
+            },
             error = {
-                empty_message = 'Le message ne peut pas être vide',
-                no_changes = 'Aucun changement à commiter'
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
+                no_changes = 'Aucun changement à commiter',
+                create_failed = 'Échec de la création du commit',
+                no_commits = 'Aucun commit dans l\'historique',
+                amend_failed = 'Échec de la modification du dernier commit',
+                revert_failed = 'Échec de l\'annulation du commit',
+                cherry_pick_failed = 'Échec du cherry-pick',
+                invalid_hash = 'Hash de commit invalide',
+                not_found = 'Commit non trouvé',
+                empty_message = 'Le message ne peut pas être vide'
             }
         },
         remote = {
@@ -104,11 +138,28 @@ local translations = {
             enter_url = 'URL du remote :',
             select_remote = 'Sélectionnez un remote',
             confirm_remove = 'Voulez-vous supprimer le remote %{remote} ?',
+            success = {
+                added = 'Remote "%{name}" ajouté avec succès',
+                removed = 'Remote "%{name}" supprimé avec succès',
+                fetched = 'Mise à jour depuis "%{name}" effectuée avec succès',
+                pulled = 'Tiré depuis le remote avec succès',
+                pushed = 'Poussé vers le remote avec succès',
+                pruned = 'Nettoyage des branches distantes effectué avec succès'
+            },
             error = {
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
+                list_failed = 'Échec de la récupération de la liste des remotes',
+                no_remotes = 'Aucun remote trouvé',
                 invalid_name = 'Nom de remote invalide',
                 invalid_url = 'URL de remote invalide',
-                not_found = 'Remote non trouvé',
-                already_exists = 'Le remote existe déjà'
+                already_exists = 'Le remote "%{name}" existe déjà',
+                not_found = 'Le remote "%{name}" n\'existe pas',
+                add_failed = 'Échec de l\'ajout du remote',
+                remove_failed = 'Échec de la suppression du remote',
+                fetch_failed = 'Échec de la mise à jour depuis le remote',
+                pull_failed = 'Échec du tirage depuis le remote',
+                push_failed = 'Échec de la poussée vers le remote',
+                prune_failed = 'Échec du nettoyage des branches distantes'
             }
         },
         tag = {
@@ -120,10 +171,19 @@ local translations = {
             enter_message = 'Message du tag :',
             select_tag = 'Sélectionnez un tag',
             confirm_delete = 'Voulez-vous supprimer le tag %{tag} ?',
+            success = {
+                created = 'Tag "%{name}" créé avec succès',
+                deleted = 'Tag "%{name}" supprimé avec succès',
+                pushed = 'Tag poussé avec succès'
+            },
             error = {
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
                 invalid_name = 'Nom de tag invalide',
                 not_found = 'Tag non trouvé',
-                already_exists = 'Le tag existe déjà'
+                already_exists = 'Le tag "%{name}" existe déjà',
+                create_failed = 'Échec de la création du tag',
+                delete_failed = 'Échec de la suppression du tag',
+                push_failed = 'Échec de la poussée du tag'
             }
         },
         stash = {
@@ -135,9 +195,18 @@ local translations = {
             enter_message = 'Message du stash :',
             select_stash = 'Sélectionnez un stash',
             confirm_drop = 'Voulez-vous supprimer ce stash ?',
+            success = {
+                saved = 'Modifications sauvegardées avec succès',
+                applied = 'Stash appliqué avec succès',
+                dropped = 'Stash supprimé avec succès'
+            },
             error = {
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
                 no_changes = 'Aucun changement à sauvegarder',
-                not_found = 'Stash non trouvé'
+                not_found = 'Stash non trouvé',
+                save_failed = 'Échec de la sauvegarde des modifications',
+                apply_failed = 'Échec de l\'application du stash',
+                drop_failed = 'Échec de la suppression du stash'
             }
         },
         search = {
@@ -145,9 +214,14 @@ local translations = {
             files = 'Rechercher dans les fichiers',
             content = 'Rechercher dans le contenu',
             enter_query = 'Recherche :',
+            success = {
+                found = 'Résultats trouvés avec succès'
+            },
             error = {
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
                 empty_query = 'La recherche ne peut pas être vide',
-                no_results = 'Aucun résultat trouvé'
+                no_results = 'Aucun résultat trouvé',
+                search_failed = 'Échec de la recherche'
             }
         },
         rebase = {
@@ -155,9 +229,14 @@ local translations = {
             onto = 'Rebase sur une branche',
             continue = 'Continuer le rebase',
             abort = 'Annuler le rebase',
+            success = {
+                rebased = 'Rebase effectué avec succès'
+            },
             error = {
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
                 in_progress = 'Un rebase est déjà en cours',
-                no_changes = 'Rien à rebaser'
+                no_changes = 'Rien à rebaser',
+                rebase_failed = 'Échec du rebase'
             }
         },
         backup = {
@@ -168,10 +247,19 @@ local translations = {
             enter_name = 'Nom de la sauvegarde :',
             select_backup = 'Sélectionnez une sauvegarde',
             confirm_delete = 'Voulez-vous supprimer la sauvegarde %{backup} ?',
+            success = {
+                created = 'Sauvegarde "%{name}" créée avec succès',
+                restored = 'Sauvegarde "%{name}" restaurée avec succès',
+                deleted = 'Sauvegarde "%{name}" supprimée avec succès'
+            },
             error = {
+                not_git_repo = 'Ce n\'est pas un dépôt Git',
                 invalid_name = 'Nom de sauvegarde invalide',
                 not_found = 'Sauvegarde non trouvée',
-                already_exists = 'La sauvegarde existe déjà'
+                already_exists = 'La sauvegarde "%{name}" existe déjà',
+                create_failed = 'Échec de la création de la sauvegarde',
+                restore_failed = 'Échec de la restauration de la sauvegarde',
+                delete_failed = 'Échec de la suppression de la sauvegarde'
             }
         },
         error = {
