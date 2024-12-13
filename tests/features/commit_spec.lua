@@ -457,7 +457,7 @@ R  renamed.txt -> new_name.txt
             commit.amend_commit()
 
             assert.spy(mock_utils.execute_command).was_called()
-            assert.spy(mock_ui.show_success).was_called_with('commit.success.amended')
+            assert.spy(mock_ui.show_success).was_called_with('commit.success.amended\nNew commit message')
             mock_utils.execute_command = original_execute
         end)
 
@@ -576,13 +576,13 @@ R  renamed.txt -> new_name.txt
                     return true, "abc123 commit message"
                 elseif cmd == "git status --porcelain" then
                     return true, "M file.txt"
-                elseif cmd:match("^git commit %-%-fixup") then
+                elseif cmd:match("^git commit %-%-fixup abc123") then
                     return true
                 end
                 return false
             end)
 
-            commit.fixup_commit()
+            commit.fixup_commit("abc123")
 
             assert.spy(mock_utils.execute_command).was_called()
             assert.spy(mock_ui.show_success).was_called_with('commit.success.fixup')
