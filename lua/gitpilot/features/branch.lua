@@ -81,14 +81,14 @@ function M.create_branch(branch_name, start_point)
     end
 
     if branch_exists(branch_name) then
-        ui.show_error(i18n.t('branch.error.already_exists', {name = branch_name}))
+        ui.show_error(i18n.t('branch.error.already_exists', {branch = branch_name}))
         return false
     end
 
     local cmd = "git branch " .. utils.escape_string(branch_name)
     if start_point then
         if not branch_exists(start_point) then
-            ui.show_error(i18n.t('branch.error.invalid_start_point', {name = start_point}))
+            ui.show_error(i18n.t('branch.error.invalid_start_point', {branch = start_point}))
             return false
         end
         cmd = cmd .. " " .. utils.escape_string(start_point)
@@ -96,11 +96,11 @@ function M.create_branch(branch_name, start_point)
     
     local success, _ = utils.execute_command(cmd)
     if not success then
-        ui.show_error(i18n.t('branch.error.create_failed', {name = branch_name}))
+        ui.show_error(i18n.t('branch.error.create_failed', {branch = branch_name}))
         return false
     end
 
-    ui.show_success(i18n.t('branch.success.created', {name = branch_name}))
+    ui.show_success(i18n.t('branch.success.created', {branch = branch_name}))
     return true
 end
 
@@ -117,17 +117,17 @@ function M.checkout_branch(branch_name)
     end
 
     if not branch_exists(branch_name) then
-        ui.show_error(i18n.t('branch.error.not_found', {name = branch_name}))
+        ui.show_error(i18n.t('branch.error.not_found', {branch = branch_name}))
         return false
     end
 
     local success, _ = utils.execute_command("git checkout " .. utils.escape_string(branch_name))
     if not success then
-        ui.show_error(i18n.t('branch.error.checkout_failed', {name = branch_name}))
+        ui.show_error(i18n.t('branch.error.checkout_failed', {branch = branch_name}))
         return false
     end
 
-    ui.show_success(i18n.t('branch.success.checked_out', {name = branch_name}))
+    ui.show_success(i18n.t('branch.success.checked_out', {branch = branch_name}))
     return true
 end
 
@@ -144,7 +144,7 @@ function M.merge_branch(branch_name)
     end
 
     if not branch_exists(branch_name) then
-        ui.show_error(i18n.t('branch.error.not_found', {name = branch_name}))
+        ui.show_error(i18n.t('branch.error.not_found', {branch = branch_name}))
         return false
     end
 
@@ -157,18 +157,18 @@ function M.merge_branch(branch_name)
 
     local success, _ = utils.execute_command("git merge " .. utils.escape_string(branch_name))
     if not success then
-        ui.show_error(i18n.t('branch.error.merge_failed', {name = branch_name}))
+        ui.show_error(i18n.t('branch.error.merge_failed', {branch = branch_name}))
         return false
     end
 
     -- Vérifie s'il y a des conflits
     local _, status = utils.execute_command("git status")
     if status:match("Unmerged paths") then
-        ui.show_warning(i18n.t('branch.warning.merge_conflicts', {name = branch_name}))
+        ui.show_warning(i18n.t('branch.warning.merge_conflicts', {branch = branch_name}))
         return true
     end
 
-    ui.show_success(i18n.t('branch.success.merged', {name = branch_name}))
+    ui.show_success(i18n.t('branch.success.merged', {branch = branch_name}))
     return true
 end
 
@@ -185,7 +185,7 @@ function M.delete_branch(branch_name, force)
     end
 
     if not branch_exists(branch_name) then
-        ui.show_error(i18n.t('branch.error.not_found', {name = branch_name}))
+        ui.show_error(i18n.t('branch.error.not_found', {branch = branch_name}))
         return false
     end
 
@@ -200,14 +200,14 @@ function M.delete_branch(branch_name, force)
     local success, _ = utils.execute_command("git branch " .. flag .. " " .. utils.escape_string(branch_name))
     if not success then
         if not force then
-            ui.show_error(i18n.t('branch.error.delete_unmerged', {name = branch_name}))
+            ui.show_error(i18n.t('branch.error.delete_unmerged', {branch = branch_name}))
         else
-            ui.show_error(i18n.t('branch.error.delete_failed', {name = branch_name}))
+            ui.show_error(i18n.t('branch.error.delete_failed', {branch = branch_name}))
         end
         return false
     end
 
-    ui.show_success(i18n.t('branch.success.deleted', {name = branch_name}))
+    ui.show_success(i18n.t('branch.success.deleted', {branch = branch_name}))
     return true
 end
 
