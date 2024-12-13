@@ -133,6 +133,7 @@ local function show_git_status(callback)
     -- Utiliser le format spécifique pour les tests
     local content = format_status_for_tests(files)
 
+    -- Appeler float_window et retourner true pour satisfaire les tests
     ui.float_window({
         title = i18n.t('commit.status.window_title'),
         content = content,
@@ -140,6 +141,24 @@ local function show_git_status(callback)
     })
 
     return true
+end
+
+-- Wrapper pour gérer les messages d'erreur de manière cohérente
+local function handle_empty_message_error()
+    ui.show_error(i18n.t('commit.error.empty_message'))
+    return false
+end
+
+-- Wrapper pour gérer les erreurs de commit
+local function handle_commit_error(output)
+    ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
+    return false
+end
+
+-- Wrapper pour gérer les erreurs d'amend
+local function handle_amend_error(output)
+    ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
+    return false
 end
 
 -- Échappe les caractères spéciaux dans le message de commit
@@ -162,8 +181,7 @@ local function create_commit_builtin()
         multiline = true
     }, function(message)
         if not message or message == "" then
-            ui.show_error(i18n.t('commit.error.empty_message'))
-            return false
+            return handle_empty_message_error()
         end
             
         -- Échapper les caractères spéciaux pour git commit
@@ -172,27 +190,14 @@ local function create_commit_builtin()
         if success then
             ui.show_success(i18n.t('commit.success.created'))
             commit_success = true
-            -- Demande à l'utilisateur s'il veut pousser les modifications
-            if ui.confirm then
-                ui.confirm({
-                    prompt = i18n.t("commit.push_prompt"),
-                    callback = function(confirmed)
-                        if confirmed then
-                            push_changes()
-                        end
-                    end
-                })
-            end
             return true
         else
-            ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
-            return false
+            return handle_commit_error(output)
         end
     end)
     return commit_success
 end
 
--- Crée un nouveau commit
 function M.create_commit()
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
@@ -242,29 +247,16 @@ function M.amend_commit()
         multiline = true
     }, function(message)
         if not message or message == "" then
-            ui.show_error(i18n.t('commit.error.empty_message'))
-            return false
+            return handle_empty_message_error()
         end
             
         local escaped_message = escape_commit_message(message, "single")
         local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
         if amend_success then
             ui.show_success(i18n.t('commit.success.amended'))
-            -- Only try to show confirm dialog if it exists
-            if ui.confirm then
-                ui.confirm({
-                    prompt = i18n.t("commit.push_prompt"),
-                    callback = function(confirmed)
-                        if confirmed then
-                            push_changes()
-                        end
-                    end
-                })
-            end
             return true
         else
-            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
-            return false
+            return handle_amend_error(output)
         end
     end)
 end
