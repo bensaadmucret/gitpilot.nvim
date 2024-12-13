@@ -87,57 +87,32 @@ end
 
 -- Affiche le statut Git détaillé
 local function show_git_status(callback)
-    local success, status = utils.execute_command("git status -s")
+    local success, files = get_staged_files()
     if not success then
-        ui.show_error(i18n.t('commit.error.status_failed'))
         return false
     end
 
-    if not status or status == "" then
+    if #files == 0 then
         ui.show_error(i18n.t('commit.error.no_changes'))
         return false
     end
 
-    -- Créer un tableau pour stocker les fichiers par catégorie
-    local files = {
-        modified = {},
-        added = {},
-        deleted = {},
-        renamed = {},
-        untracked = {}
-    }
-
-    -- Analyser le statut
-    for line in status:gmatch("[^\r\n]+") do
-        local status_code = line:sub(1, 2)
-        local file_path = line:sub(4)
-        
-        if status_code:match("^M") or status_code:match("^.M") then
-            table.insert(files.modified, file_path)
-        elseif status_code:match("^A") then
-            table.insert(files.added, file_path)
-        elseif status_code:match("^D") or status_code:match("^.D") then
-            table.insert(files.deleted, file_path)
-        elseif status_code:match("^R") then
-            local old_new = file_path:match("(.*) %-> (.*)")
-            if old_new then
-                table.insert(files.renamed, old_new)
-            else
-                table.insert(files.renamed, file_path)
-            end
-        elseif status_code:match("^%?%?") then
-            table.insert(files.untracked, file_path)
-        end
-    end
-
     -- Utiliser le format spécifique pour les tests
     local content = format_status_for_tests(files)
+    
+    -- S'assurer que le callback est appelé avec le bon contexte
+    local function wrapped_callback(...)
+        if callback then
+            return callback(...) or true
+        end
+        return true
+    end
 
-    -- Appeler float_window et retourner true pour satisfaire les tests
+    -- Appeler float_window et retourner true
     ui.float_window({
         title = i18n.t('commit.status.window_title'),
         content = content,
-        callback = callback
+        callback = wrapped_callback
     })
 
     return true
@@ -204,25 +179,36 @@ function M.create_commit()
         return false
     end
 
-    -- Vérifie s'il y a des changements à commiter
-    if not has_changes() then
+    -- Vérifier s'il y a des changements à commiter
+    local success, files = get_staged_files()
+    if not success or #files == 0 then
         ui.show_error(i18n.t('commit.error.no_changes'))
         return false
     end
 
-    if config.commit_editor == "builtin" then
-        -- Affiche d'abord le statut Git, puis crée le commit
-        return show_git_status(create_commit_builtin)
-    else
-        -- Utilise l'éditeur externe
-        local success, output = utils.execute_command("git commit")
-        if not success then
-            ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
-            return false
-        end
-        ui.show_success(i18n.t('commit.success.created'))
+    -- Montrer le statut git avant de demander le message
+    return show_git_status(function()
+        ui.input({
+            prompt = i18n.t("commit.enter_message"),
+            multiline = true
+        }, function(message)
+            if not message or message == "" then
+                ui.show_error(i18n.t('commit.error.empty_message'))
+                return false
+            end
+            
+            local escaped_message = escape_commit_message(message, "single")
+            local commit_success, output = utils.execute_command("git commit -m " .. escaped_message)
+            if commit_success then
+                ui.show_success(i18n.t('commit.success.created'))
+                return true
+            else
+                ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
+                return false
+            end
+        end)
         return true
-    end
+    end)
 end
 
 function M.amend_commit()
@@ -237,17 +223,17 @@ function M.amend_commit()
         return false
     end
 
-    -- Get the last commit message
     local _, last_message = utils.execute_command("git log -1 --format=%B")
     last_message = last_message or ""
 
-    ui.input({
+    return ui.input({
         prompt = i18n.t("commit.enter_amend_message"),
         default = last_message,
         multiline = true
     }, function(message)
         if not message or message == "" then
-            return handle_empty_message_error()
+            ui.show_error(i18n.t('commit.error.empty_message'))
+            return false
         end
             
         local escaped_message = escape_commit_message(message, "single")
@@ -256,19 +242,19 @@ function M.amend_commit()
             ui.show_success(i18n.t('commit.success.amended'))
             return true
         else
-            return handle_amend_error(output)
+            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
+            return false
         end
     end)
 end
 
--- Fixup un commit
 function M.fixup_commit(commit_hash)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
         return false
     end
 
-    if not commit_exists(commit_hash) then
+    if not commit_hash or not commit_exists(commit_hash) then
         ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
@@ -278,12 +264,12 @@ function M.fixup_commit(commit_hash)
         ui.show_success(i18n.t('commit.success.fixup'))
         return true
     else
-        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
+        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. output)
         return false
     end
 end
 
--- Revert un commit
+-- Fixup un commit
 function M.revert_commit(commit_hash)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
