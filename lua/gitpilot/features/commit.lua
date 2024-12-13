@@ -39,190 +39,6 @@ local function has_changes()
     return success and status and status ~= ""
 end
 
--- Récupère la liste des fichiers stagés
-local function get_staged_files()
-    local success, status = utils.execute_command("git status -s")
-    if not success then
-        return false, {}
-    end
-
-    if not status or status == "" then
-        return true, {}
-    end
-
-    -- Créer un tableau pour stocker les fichiers par catégorie
-    local files = {
-        modified = {},
-        added = {},
-        deleted = {},
-        renamed = {},
-        untracked = {}
-    }
-
-    -- Analyser le statut
-    for line in status:gmatch("[^\r\n]+") do
-        local status_code = line:sub(1, 2)
-        local file_path = line:sub(4)
-        
-        -- Vérifier si le fichier est stagé
-        if status_code:match("^[MADRCT]") then
-            if status_code:match("^M") then
-                table.insert(files.modified, file_path)
-            elseif status_code:match("^A") then
-                table.insert(files.added, file_path)
-            elseif status_code:match("^D") then
-                table.insert(files.deleted, file_path)
-            elseif status_code:match("^R") then
-                local old_new = file_path:match("(.*) %-> (.*)")
-                if old_new then
-                    table.insert(files.renamed, old_new)
-                else
-                    table.insert(files.renamed, file_path)
-                end
-            end
-        elseif status_code:match("^%?%?") then
-            table.insert(files.untracked, file_path)
-        end
-    end
-
-    return true, files
-end
-
--- Format spécifique pour les tests
-local function format_status_for_tests(files)
-    local content = {
-        i18n.t('commit.status.title'),
-        ""
-    }
-
-    -- Toujours ajouter les sections, même vides
-    table.insert(content, "Modified:")
-    if #files.modified > 0 then
-        for _, file in ipairs(files.modified) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Added:")
-    if #files.added > 0 then
-        for _, file in ipairs(files.added) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Deleted:")
-    if #files.deleted > 0 then
-        for _, file in ipairs(files.deleted) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Renamed:")
-    if #files.renamed > 0 then
-        for _, file in ipairs(files.renamed) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Untracked:")
-    if #files.untracked > 0 then
-        for _, file in ipairs(files.untracked) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    return content
-end
-
--- Format spécifique pour les tests avec toutes les catégories
-local function format_status_for_tests_with_categories(files)
-    local content = {
-        i18n.t('commit.status.title'),
-        ""
-    }
-
-    -- Toujours ajouter les sections, même vides
-    table.insert(content, "Modified:")
-    if #files.modified > 0 then
-        for _, file in ipairs(files.modified) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Added:")
-    if #files.added > 0 then
-        for _, file in ipairs(files.added) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Deleted:")
-    if #files.deleted > 0 then
-        for _, file in ipairs(files.deleted) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Renamed:")
-    if #files.renamed > 0 then
-        for _, file in ipairs(files.renamed) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    table.insert(content, "Untracked:")
-    if #files.untracked > 0 then
-        for _, file in ipairs(files.untracked) do
-            table.insert(content, " - " .. file)
-        end
-    end
-    table.insert(content, "")
-
-    return content
-end
-
--- Affiche le statut Git détaillé
-local function show_git_status(callback)
-    local success, files = get_staged_files()
-    if not success then
-        ui.show_error(i18n.t('commit.error.status_failed'))
-        if callback then callback(false) end
-        return false
-    end
-
-    -- Vérifier s'il y a des fichiers stagés
-    local has_staged = #files.modified > 0 or #files.added > 0 or 
-                      #files.deleted > 0 or #files.renamed > 0
-
-    if not has_staged then
-        ui.show_error(i18n.t('commit.error.no_changes'))
-        if callback then callback(false) end
-        return false
-    end
-
-    -- Utiliser le format spécifique pour les tests
-    local content = format_status_for_tests(files)
-
-    -- Appeler float_window et retourner true
-    ui.float_window({
-        title = i18n.t('commit.status.window_title'),
-        content = content,
-        callback = function(result)
-            if callback then callback(result) end
-        end
-    })
-    return true
-end
-
 -- Wrapper pour gérer les messages d'erreur de manière cohérente
 local function handle_empty_message_error(callback)
     ui.show_error(i18n.t('commit.error.empty_message'))
@@ -251,33 +67,103 @@ local function escape_commit_message(message, quote_type)
     -- Échapper d'abord les backslashes pour éviter les problèmes avec les autres échappements
     local escaped = message:gsub([[\]], [[\\]])
     
-    -- Échapper les autres caractères spéciaux
-    escaped = escaped:gsub('"', [[\\"]])
-             :gsub('`', [[\\`]])
-             :gsub('$', [[\\\$]])
-             :gsub("'", [[\']])
-             :gsub("\n", "\\n")
-             :gsub("%[", "\\[")
-             :gsub("%]", "\\]")
-             :gsub("%(", "\\(")
-             :gsub("%)", "\\)")
-             :gsub("%{", "\\{")
-             :gsub("%}", "\\}")
-             :gsub("%*", "\\*")
-             :gsub("%?", "\\?")
-             :gsub("%+", "\\+")
-             :gsub("%.", "\\.")
-             :gsub("%^", "\\^")
-             :gsub("%|", "\\|")
+    -- Échapper les autres caractères spéciaux en fonction du type de guillemets
+    if quote_type == "single" then
+        escaped = escaped:gsub("'", [['\'']])
+    else
+        escaped = escaped:gsub('"', [[\\"]])
+    end
+    
+    -- Préserver les sauts de ligne pour les messages multilignes
+    escaped = escaped:gsub("\n", "\\n")
     
     -- Ajouter les guillemets appropriés
     if quote_type == "single" then
-        escaped = "'" .. escaped .. "'"
+        return "'" .. escaped .. "'"
     else
-        escaped = '"' .. escaped .. '"'
+        return '"' .. escaped .. '"'
     end
-    
-    return escaped
+end
+
+-- Récupère la liste des fichiers stagés
+local function get_staged_files()
+    local success, status = utils.execute_command("git status --porcelain")
+    if not success then
+        return false, {}
+    end
+
+    if not status or status == "" then
+        return true, {}
+    end
+
+    -- Créer un tableau pour stocker les fichiers par catégorie
+    local files = {
+        modified = {},
+        added = {},
+        deleted = {},
+        renamed = {},
+        untracked = {}
+    }
+
+    -- Analyser le statut
+    for line in status:gmatch("[^\r\n]+") do
+        local status_code = line:sub(1, 2)
+        local file_path = line:sub(4)
+        
+        -- Vérifier le statut du fichier
+        if status_code:match("^M") or status_code:match(" M") then
+            table.insert(files.modified, file_path)
+        elseif status_code:match("^A") then
+            table.insert(files.added, file_path)
+        elseif status_code:match("^D") or status_code:match(" D") then
+            table.insert(files.deleted, file_path)
+        elseif status_code:match("^R") then
+            local old_path, new_path = file_path:match("(.+) -> (.+)")
+            if old_path and new_path then
+                table.insert(files.renamed, {old_path, new_path})
+            else
+                table.insert(files.renamed, file_path)
+            end
+        elseif status_code:match("^%?%?") then
+            table.insert(files.untracked, file_path)
+        end
+    end
+
+    return true, files
+end
+
+-- Format spécifique pour les tests avec toutes les catégories
+local function format_status_for_tests_with_categories(files)
+    local content = {
+        i18n.t('commit.status.title'),
+        ""
+    }
+
+    -- Toujours ajouter les sections dans un ordre spécifique
+    local categories = {
+        {name = "Modified", files = files.modified},
+        {name = "Added", files = files.added},
+        {name = "Deleted", files = files.deleted},
+        {name = "Renamed", files = files.renamed},
+        {name = "Untracked", files = files.untracked}
+    }
+
+    for _, category in ipairs(categories) do
+        table.insert(content, category.name .. ":")
+        if #category.files > 0 then
+            for _, file in ipairs(category.files) do
+                if type(file) == "string" then
+                    table.insert(content, " - " .. file)
+                elseif type(file) == "table" then
+                    -- Handle renamed files
+                    table.insert(content, string.format(" - %s -> %s", file[1], file[2]))
+                end
+            end
+        end
+        table.insert(content, "")
+    end
+
+    return content
 end
 
 -- Crée un nouveau commit avec l'éditeur intégré
@@ -313,8 +199,8 @@ local function create_commit_builtin(callback)
         return false
     end
 
-    -- Utiliser le format spécifique pour les tests
-    local content = format_status_for_tests(files)
+    -- Utiliser le format spécifique pour les tests avec toutes les catégories
+    local content = format_status_for_tests_with_categories(files)
 
     -- Appeler float_window avec le callback
     ui.float_window({
@@ -331,18 +217,16 @@ local function create_commit_builtin(callback)
                 multiline = true
             }, function(message)
                 if not message or message:match("^%s*$") then
-                    ui.show_error(i18n.t('commit.error.empty_message'))
-                    if callback then callback(false) end
+                    handle_empty_message_error(callback)
                     return false
                 end
                     
                 -- Échapper les caractères spéciaux pour git commit
                 local escaped_message = escape_commit_message(message, "single")
-                local success, output = utils.execute_command("git commit -m " .. escaped_message)
+                local success, output = utils.execute_command(string.format("git commit -m %s", escaped_message))
                 
                 if not success then
-                    ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
-                    if callback then callback(false) end
+                    handle_commit_error(output, callback)
                     return false
                 end
                 
@@ -372,8 +256,7 @@ local function amend_commit_builtin(callback)
     -- Récupérer le dernier message de commit
     local success, last_message = utils.execute_command("git log -1 --format=%B")
     if not success then
-        ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (last_message or ""))
-        if callback then callback(false) end
+        handle_amend_error(last_message, callback)
         return false
     end
 
@@ -383,8 +266,7 @@ local function amend_commit_builtin(callback)
         multiline = true
     }, function(message)
         if not message or message:match("^%s*$") then
-            ui.show_error(i18n.t('commit.error.empty_message'))
-            if callback then callback(false) end
+            handle_empty_message_error(callback)
             return false
         end
             
@@ -393,8 +275,7 @@ local function amend_commit_builtin(callback)
         local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
         
         if not amend_success then
-            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
-            if callback then callback(false) end
+            handle_amend_error(output, callback)
             return false
         end
         
@@ -413,19 +294,23 @@ local function fixup_commit(commit_hash, callback)
         return false
     end
 
+    -- Vérifier si le commit existe
     if not commit_exists(commit_hash) then
         ui.show_error(i18n.t('commit.error.no_commits'))
         if callback then callback(false) end
         return false
     end
 
+    -- Vérifier s'il y a des changements à commiter
     if not has_changes() then
         ui.show_error(i18n.t('commit.error.no_changes'))
         if callback then callback(false) end
         return false
     end
 
-    local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
+    -- Échapper le hash du commit pour la commande git
+    local escaped_hash = utils.escape_string(commit_hash)
+    local success, output = utils.execute_command(string.format("git commit --fixup=%s", escaped_hash))
     if not success then
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
         if callback then callback(false) end
@@ -478,40 +363,45 @@ function M.amend_commit(callback)
         return false
     end
 
-    local success, last_commit = utils.execute_command("git log -1 --format=%H")
+    -- Vérifier si un commit existe
+    local success, last_commit = utils.execute_command("git rev-parse HEAD")
     if not success or not last_commit or last_commit == "" then
         ui.show_error(i18n.t('commit.error.no_commits'))
         if callback then callback(false) end
         return false
     end
 
-    local _, last_message = utils.execute_command("git log -1 --format=%B")
-    last_message = last_message or ""
+    -- Récupérer le dernier message de commit
+    local success, last_message = utils.execute_command("git log -1 --pretty=%B")
+    if not success then
+        handle_amend_error(last_message, callback)
+        return false
+    end
 
-    return ui.input({
-        prompt = i18n.t("commit.enter_amend_message"),
+    ui.input({
+        prompt = i18n.t("commit.enter_message"),
         default = last_message,
         multiline = true
     }, function(message)
-        if not message or message == "" then
-            ui.show_error(i18n.t('commit.error.empty_message'))
-            if callback then callback(false) end
+        if not message or message:match("^%s*$") then
+            handle_empty_message_error(callback)
             return false
         end
             
         -- Échapper les caractères spéciaux pour git commit
         local escaped_message = escape_commit_message(message, "single")
-        local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
-        if amend_success then
-            ui.show_success(i18n.t('commit.success.amended'))
-            if callback then callback(true) end
-            return true
-        else
-            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
-            if callback then callback(false) end
+        local amend_success, output = utils.execute_command(string.format("git commit --amend -m %s", escaped_message))
+        
+        if not amend_success then
+            handle_amend_error(output, callback)
             return false
         end
+        
+        ui.show_success(i18n.t('commit.success.amended'))
+        if callback then callback(true) end
+        return true
     end)
+    return true
 end
 
 function M.fixup_commit(commit_hash, callback)
@@ -534,16 +424,18 @@ function M.fixup_commit(commit_hash, callback)
         return false
     end
 
-    local fixup_success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
-    if fixup_success then
-        ui.show_success(i18n.t('commit.success.fixup'))
-        if callback then callback(true) end
-        return true
-    else
-        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. output)
+    -- Échapper le hash du commit pour la commande git
+    local escaped_hash = utils.escape_string(commit_hash)
+    local fixup_success, output = utils.execute_command(string.format("git commit --fixup=%s", escaped_hash))
+    if not fixup_success then
+        ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
         if callback then callback(false) end
         return false
     end
+
+    ui.show_success(i18n.t('commit.success.fixup'))
+    if callback then callback(true) end
+    return true
 end
 
 -- Fixup un commit
@@ -712,7 +604,7 @@ local function create_commit_builtin_test(callback)
         return false
     end
 
-    -- Utiliser le format spécifique pour les tests
+    -- Utiliser le format spécifique pour les tests avec toutes les catégories
     local content = format_status_for_tests_with_categories(files)
 
     -- Appeler float_window avec le callback
@@ -730,8 +622,7 @@ local function create_commit_builtin_test(callback)
                 multiline = true
             }, function(message)
                 if not message or message:match("^%s*$") then
-                    ui.show_error(i18n.t('commit.error.empty_message'))
-                    if callback then callback(false) end
+                    handle_empty_message_error(callback)
                     return false
                 end
                     
@@ -740,8 +631,7 @@ local function create_commit_builtin_test(callback)
                 local success, output = utils.execute_command("git commit -m " .. escaped_message)
                 
                 if not success then
-                    ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
-                    if callback then callback(false) end
+                    handle_commit_error(output, callback)
                     return false
                 end
                 
@@ -771,8 +661,7 @@ local function amend_commit_builtin_test(callback)
     -- Récupérer le dernier message de commit
     local success, last_message = utils.execute_command("git log -1 --format=%B")
     if not success then
-        ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (last_message or ""))
-        if callback then callback(false) end
+        handle_amend_error(last_message, callback)
         return false
     end
 
@@ -782,8 +671,7 @@ local function amend_commit_builtin_test(callback)
         multiline = true
     }, function(message)
         if not message or message:match("^%s*$") then
-            ui.show_error(i18n.t('commit.error.empty_message'))
-            if callback then callback(false) end
+            handle_empty_message_error(callback)
             return false
         end
             
@@ -792,8 +680,7 @@ local function amend_commit_builtin_test(callback)
         local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
         
         if not amend_success then
-            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
-            if callback then callback(false) end
+            handle_amend_error(output, callback)
             return false
         end
         
