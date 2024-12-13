@@ -291,9 +291,11 @@ function M.setup_auto_sync()
     vim.api.nvim_create_autocmd('VimEnter', {
         group = group,
         callback = function()
+            local timer_opts = {}
+            timer_opts.recurring = -1  -- Use recurring instead of repeat
             vim.fn.timer_start(current_config.sync_interval * 1000, function()
                 vim.api.nvim_notify('GitPilotMirrorAutoSync', vim.lsp.log_levels.INFO, {}, {})
-            end, { repeat = -1 })
+            end, timer_opts)
         end,
     })
 end
