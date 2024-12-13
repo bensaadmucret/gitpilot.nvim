@@ -50,7 +50,9 @@ function M.create_commit()
             multiline = true
         }, function(message)
             if message and message ~= "" then
-                local success, _ = utils.execute_command("git commit -m " .. utils.escape_string(message))
+                -- Échapper les caractères spéciaux et entourer le message de guillemets simples
+                local escaped_message = "'" .. message:gsub("'", "'\\''") .. "'"
+                local success, _ = utils.execute_command("git commit -m " .. escaped_message)
                 if success then
                     ui.show_success(i18n.t('commit.success.created'))
                 else
@@ -99,7 +101,9 @@ function M.amend_commit()
             default = last_message
         }, function(message)
             if message and message ~= "" then
-                local success, _ = utils.execute_command("git commit --amend -m " .. utils.escape_string(message))
+                -- Échapper les caractères spéciaux et entourer le message de guillemets simples
+                local escaped_message = "'" .. message:gsub("'", "'\\''") .. "'"
+                local success, _ = utils.execute_command("git commit --amend -m " .. escaped_message)
                 if success then
                     ui.show_success(i18n.t('commit.success.amended'))
                 else
