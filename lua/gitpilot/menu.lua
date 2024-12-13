@@ -152,7 +152,10 @@ function M.show_main_menu()
     current_menu = 'main'
     local items = get_menu_items('main')
     local opts = {
-        title = get_menu_title('main')
+        title = get_menu_title('main'),
+        callback = function(selected)
+            handle_menu_selection('main', selected)
+        end
     }
     ui.float_window(items, opts)
 end
@@ -169,12 +172,13 @@ function M.show_menu(menu_type, context)
     end
     
     local opts = {
-        title = get_menu_title(menu_type)
+        title = get_menu_title(menu_type),
+        callback = function(selected)
+            handle_menu_selection(menu_type, selected, context)
+        end
     }
     
-    ui.select(items, opts, function(selected)
-        handle_menu_selection(menu_type, selected, context)
-    end)
+    ui.float_window(items, opts)
 end
 
 return M

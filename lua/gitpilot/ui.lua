@@ -209,7 +209,8 @@ function M.float_window(content, opts)
         height = config.window.height,
         border = config.window.border,
         title = config.window.title and " GitPilot " or nil,
-        footer = config.window.footer and " Press q to close " or nil
+        footer = config.window.footer and " Press q to close " or nil,
+        callback = nil -- Callback function for selection
     }, opts or {})
     
     if utils.is_test_env() then
@@ -264,19 +265,50 @@ function M.float_window(content, opts)
     vim.api.nvim_buf_set_option(buf, 'filetype', 'gitpilot-menu')
     vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
     
+    -- Function to handle item selection
+    local function select_item()
+        local current_line = vim.api.nvim_win_get_cursor(win)[1]
+        local selected = content[current_line]
+        if selected and opts.callback then
+            opts.callback(selected)
+        end
+        vim.api.nvim_win_close(win, true)
+    end
+    
     -- Set keymaps
     local keymaps = {
         ['q'] = ':q<CR>',
         ['<Esc>'] = ':q<CR>',
+        ['j'] = 'j',
+        ['k'] = 'k',
+        ['<Down>'] = 'j',
+        ['<Up>'] = 'k',
+        ['<CR>'] = select_item,
+        ['<Space>'] = select_item
     }
     
     for key, mapping in pairs(keymaps) do
-        vim.api.nvim_buf_set_keymap(buf, 'n', key, mapping, {
-            nowait = true,
-            noremap = true,
-            silent = true
-        })
+        if type(mapping) == 'string' then
+            vim.api.nvim_buf_set_keymap(buf, 'n', key, mapping, {
+                nowait = true,
+                noremap = true,
+                silent = true
+            })
+        else
+            vim.api.nvim_buf_set_keymap(buf, 'n', key, '', {
+                nowait = true,
+                noremap = true,
+                silent = true,
+                callback = mapping
+            })
+        end
     end
+    
+    -- Set cursor line highlight
+    vim.api.nvim_win_set_option(win, 'cursorline', true)
+    
+    -- Set initial cursor position
+    vim.api.nvim_win_set_cursor(win, {1, 0})
     
     return true
 end
