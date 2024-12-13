@@ -232,6 +232,13 @@ function M.read_file(path)
     return data
 end
 
+-- Échappe une chaîne de caractères pour une utilisation sûre dans les commandes shell
+function M.escape_string(str)
+    if not str then return "" end
+    -- Échappe les caractères spéciaux
+    return str:gsub('([%(%)%[%]%{%}%\\%*%+%-%~%`%!%@%#%$%%%^%&%*%=%|%<%>%,%?%\'%"%_%/%.])', '\\%1')
+end
+
 -- Function to check if we're in a test environment
 function M.is_test_env()
     return false
