@@ -185,12 +185,14 @@ return {
     ["commit.error.cherry_pick_failed"] = "Échec du cherry-pick du commit",
     ["commit.error.invalid_hash"] = "Hash de commit invalide",
     ["commit.error.not_found"] = "Commit non trouvé",
+    ["commit.error.push_failed"] = "Échec du push des modifications",
 
     -- Messages de succès pour les commits
     ["commit.success.created"] = "Commit créé avec succès",
     ["commit.success.amended"] = "Commit modifié avec succès",
     ["commit.success.reverted"] = "Commit annulé avec succès",
     ["commit.success.cherry_picked"] = "Commit appliqué avec succès",
+    ["commit.success.pushed"] = "Modifications poussées avec succès",
 
     -- Messages d'interaction pour les commits
     ["commit.enter_message"] = "Message du commit :",
@@ -201,6 +203,7 @@ return {
     ["commit.confirm.amend"] = "Voulez-vous modifier le dernier commit ?",
     ["commit.confirm.revert"] = "Voulez-vous annuler ce commit ?",
     ["commit.confirm.cherry_pick"] = "Voulez-vous appliquer ce commit ?",
+    ["commit.push_prompt"] = "Voulez-vous pousser les modifications ?",
 
     -- Actions de tag
     ["tag.create"] = "Créer un tag",
@@ -892,4 +895,43 @@ return {
     ["backup.create"] = "Créer une sauvegarde",
     ["backup.restore"] = "Restaurer une sauvegarde",
     ["backup.delete"] = "Supprimer une sauvegarde",
+    commit = {
+        error = {
+            not_git_repo = "Ce n'est pas un dépôt git",
+            no_changes = "Aucun changement à valider",
+            no_commits = "Aucun commit existant",
+            empty_message = "Le message de commit ne peut pas être vide",
+            create_failed = "Échec de la création du commit",
+            amend_failed = "Échec de l'amendement du commit",
+            fixup_failed = "Échec du fixup du commit",
+            revert_failed = "Échec du revert du commit",
+            cherry_pick_failed = "Échec du cherry-pick du commit",
+            show_failed = "Impossible d'afficher les détails du commit",
+            log_failed = "Impossible d'afficher l'historique des commits",
+            status_failed = "Impossible d'afficher le statut git",
+            invalid_commit = "Hash de commit invalide",
+            push_failed = "Échec du push des modifications"
+        },
+        success = {
+            created = "Commit créé avec succès",
+            amended = "Commit amendé avec succès",
+            fixup = "Fixup effectué avec succès",
+            reverted = "Commit annulé avec succès",
+            cherry_picked = "Cherry-pick effectué avec succès",
+            pushed = "Modifications poussées avec succès"
+        },
+        status = {
+            title = "Statut Git",
+            window_title = "Statut Git",
+            modified = "Modifiés",
+            added = "Ajoutés",
+            deleted = "Supprimés",
+            renamed = "Renommés",
+            untracked = "Non suivis"
+        },
+        enter_message = "Entrez votre message de commit",
+        enter_amend_message = "Entrez votre message d'amendement",
+        select_commit = "Sélectionnez un commit",
+        push_prompt = "Voulez-vous pousser les modifications ?"
+    },
 }

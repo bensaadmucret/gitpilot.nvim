@@ -111,6 +111,17 @@ local function escape_commit_message(message, quote_type)
     end
 end
 
+-- Pousse les modifications vers le dépôt distant
+local function push_changes()
+    local success, output = utils.execute_command("git push")
+    if success then
+        ui.show_success(i18n.t('commit.success.pushed'))
+    else
+        ui.show_error(i18n.t('commit.error.push_failed') .. (output and ("\n" .. output) or ""))
+    end
+    return success
+end
+
 -- Crée un nouveau commit avec l'éditeur intégré
 local function create_commit_builtin()
     local commit_success = false
@@ -125,6 +136,15 @@ local function create_commit_builtin()
             if success then
                 ui.show_success(i18n.t('commit.success.created'))
                 commit_success = true
+                -- Demande à l'utilisateur s'il veut pousser les modifications
+                ui.confirm({
+                    prompt = i18n.t("commit.push_prompt"),
+                    callback = function(confirmed)
+                        if confirmed then
+                            push_changes()
+                        end
+                    end
+                })
             else
                 ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
             end
@@ -206,6 +226,15 @@ function M.amend_commit()
                 if success then
                     ui.show_success(i18n.t('commit.success.amended'))
                     amend_success = true
+                    -- Demande à l'utilisateur s'il veut pousser les modifications
+                    ui.confirm({
+                        prompt = i18n.t("commit.push_prompt"),
+                        callback = function(confirmed)
+                            if confirmed then
+                                push_changes()
+                            end
+                        end
+                    })
                 else
                     ui.show_error(i18n.t('commit.error.amend_failed') .. (output and ("\n" .. output) or ""))
                 end
@@ -222,6 +251,15 @@ function M.amend_commit()
             return false
         end
         ui.show_success(i18n.t('commit.success.amended'))
+        -- Demande à l'utilisateur s'il veut pousser les modifications
+        ui.confirm({
+            prompt = i18n.t("commit.push_prompt"),
+            callback = function(confirmed)
+                if confirmed then
+                    push_changes()
+                end
+            end
+        })
         return true
     end
 end
