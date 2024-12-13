@@ -11,6 +11,12 @@ local config = {
     auto_refresh = true
 }
 
+function M.setup(opts)
+    if opts then
+        config = vim.tbl_deep_extend('force', config, opts)
+    end
+end
+
 -- Gestionnaires d'actions par menu
 local handlers = {
     branch = {
@@ -507,10 +513,6 @@ function M.handle_action(menu_id, action_id, context)
 
     handler(context)
     return true
-end
-
-function M.setup(opts)
-    config = vim.tbl_deep_extend("force", config, opts or {})
 end
 
 return M

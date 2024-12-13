@@ -20,6 +20,7 @@ local config = {
         error = "❌ ",
         warning = "⚠️ ",
         info = "ℹ️ ",
+        debug = "🔍 ",
         success = "✅ ",
         question = "❓ "
     },
@@ -42,7 +43,9 @@ local menu_items = {}
 
 -- Module initialization
 function M.setup(opts)
-    config = vim.tbl_deep_extend("force", config, opts or {})
+    if opts then
+        config = vim.tbl_deep_extend('force', config, opts)
+    end
 end
 
 -- Internal function to format message
@@ -62,6 +65,8 @@ local function format_message(msg, level)
         icon = config.icons.success
     elseif level == "question" then
         icon = config.icons.question
+    elseif level == M.levels.DEBUG then
+        icon = config.icons.debug
     end
     
     return icon .. msg
