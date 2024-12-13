@@ -281,6 +281,8 @@ end
 
 function M.setup_auto_sync()
     local group = vim.api.nvim_create_augroup('GitPilotMirrorAutoSync', { clear = true })
+    
+    -- Create an autocmd for the sync event
     vim.api.nvim_create_autocmd('User', {
         pattern = 'GitPilotAutoSync',
         group = group,
@@ -288,14 +290,19 @@ function M.setup_auto_sync()
             M.sync_all_mirrors()
         end,
     })
+    
+    -- Setup the recurring timer using a different approach
     vim.api.nvim_create_autocmd('VimEnter', {
         group = group,
         callback = function()
-            local timer_opts = {}
-            timer_opts.recurring = -1  -- Use recurring instead of repeat
-            vim.fn.timer_start(current_config.sync_interval * 1000, function()
-                vim.api.nvim_notify('GitPilotMirrorAutoSync', vim.lsp.log_levels.INFO, {}, {})
-            end, timer_opts)
+            -- Create a function that will reschedule itself
+            local function schedule_sync()
+                M.sync_all_mirrors()
+                vim.defer_fn(schedule_sync, current_config.sync_interval * 1000)
+            end
+            
+            -- Start the first sync
+            vim.defer_fn(schedule_sync, current_config.sync_interval * 1000)
         end,
     })
 end
