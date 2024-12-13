@@ -79,16 +79,17 @@ local function show_git_status(callback)
         end
     end
 
-    -- Construire le message de statut ligne par ligne
-    local lines = {i18n.t('commit.status.title'), ""}
+    local content = {}
+    table.insert(content, i18n.t('commit.status.title'))
+    table.insert(content, "")
 
     local function add_category(category, title)
         if #files[category] > 0 then
-            table.insert(lines, title .. ":")
+            table.insert(content, title .. ":")
             for _, file in ipairs(files[category]) do
-                table.insert(lines, " - " .. file)
+                table.insert(content, " - " .. file)
             end
-            table.insert(lines, "")
+            table.insert(content, "")
         end
     end
 
@@ -100,7 +101,7 @@ local function show_git_status(callback)
 
     ui.float_window({
         title = i18n.t('commit.status.window_title'),
-        content = table.concat(lines, "\n"),
+        content = content,
         callback = callback
     })
 
@@ -126,14 +127,19 @@ local function create_commit_builtin()
         prompt = i18n.t("commit.enter_message"),
         multiline = true
     }, function(message)
-        if message and message ~= "" then
-            -- Échapper les caractères spéciaux pour git commit
-            local escaped_message = escape_commit_message(message, "single")
-            local success, output = utils.execute_command("git commit -m " .. escaped_message)
-            if success then
-                ui.show_success(i18n.t('commit.success.created'))
-                commit_success = true
-                -- Demande à l'utilisateur s'il veut pousser les modifications
+        if not message or message == "" then
+            ui.show_error(i18n.t('commit.error.empty_message'))
+            return
+        end
+            
+        -- Échapper les caractères spéciaux pour git commit
+        local escaped_message = escape_commit_message(message, "single")
+        local success, output = utils.execute_command("git commit -m " .. escaped_message)
+        if success then
+            ui.show_success(i18n.t('commit.success.created'))
+            commit_success = true
+            -- Demande à l'utilisateur s'il veut pousser les modifications
+            if ui.confirm then
                 ui.confirm({
                     prompt = i18n.t("commit.push_prompt"),
                     callback = function(confirmed)
@@ -142,11 +148,9 @@ local function create_commit_builtin()
                         end
                     end
                 })
-            else
-                ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
             end
         else
-            ui.show_error(i18n.t('commit.error.empty_message'))
+            ui.show_error(i18n.t('commit.error.create_failed') .. (output and ("\n" .. output) or ""))
         end
     end)
     return commit_success
@@ -215,36 +219,28 @@ function M.amend_commit()
         return false
     end
 
-    -- Vérifie si un commit existe
-    local success, _ = utils.execute_command("git rev-parse HEAD")
-    if not success then
+    local success, last_commit = utils.execute_command("git log -1 --format=%H")
+    if not success or not last_commit or last_commit == "" then
         ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
-    if config.commit_editor == "builtin" then
-        -- Récupère le message du dernier commit
-        local success, last_message = utils.execute_command("git log -1 --pretty=%B")
-        if not success then
-            ui.show_error(i18n.t('commit.error.amend_failed'))
-            return false
-        end
+    -- Get the last commit message
+    local _, last_message = utils.execute_command("git log -1 --format=%B")
+    last_message = last_message or ""
 
-        local amend_success = false
-        -- Utilise l'éditeur intégré
-        ui.input({
-            prompt = i18n.t("commit.enter_amend_message"),
-            multiline = true,
-            default = last_message
-        }, function(message)
-            if message and message ~= "" then
-                -- Échapper les caractères spéciaux pour git commit
-                local escaped_message = escape_commit_message(message, "single")
-                local success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
-                if success then
-                    ui.show_success(i18n.t('commit.success.amended'))
-                    amend_success = true
-                    -- Demande à l'utilisateur s'il veut pousser les modifications
+    ui.input({
+        prompt = i18n.t("commit.enter_amend_message"),
+        default = last_message,
+        multiline = true
+    }, function(message)
+        if message and message ~= "" then
+            local escaped_message = escape_commit_message(message, "single")
+            local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
+            if amend_success then
+                ui.show_success(i18n.t('commit.success.amended'))
+                -- Only try to show confirm dialog if it exists
+                if ui.confirm then
                     ui.confirm({
                         prompt = i18n.t("commit.push_prompt"),
                         callback = function(confirmed)
@@ -253,33 +249,14 @@ function M.amend_commit()
                             end
                         end
                     })
-                else
-                    ui.show_error(i18n.t('commit.error.amend_failed') .. (output and ("\n" .. output) or ""))
                 end
             else
-                ui.show_error(i18n.t('commit.error.empty_message'))
+                ui.show_error(i18n.t('commit.error.amend_failed') .. (output and ("\n" .. output) or ""))
             end
-        end)
-        return amend_success
-    else
-        -- Utilise l'éditeur externe
-        local success, output = utils.execute_command("git commit --amend")
-        if not success then
-            ui.show_error(i18n.t('commit.error.amend_failed') .. (output and ("\n" .. output) or ""))
-            return false
+        else
+            ui.show_error(i18n.t('commit.error.empty_message'))
         end
-        ui.show_success(i18n.t('commit.success.amended'))
-        -- Demande à l'utilisateur s'il veut pousser les modifications
-        ui.confirm({
-            prompt = i18n.t("commit.push_prompt"),
-            callback = function(confirmed)
-                if confirmed then
-                    push_changes()
-                end
-            end
-        })
-        return true
-    end
+    end)
 end
 
 -- Fixup un commit
@@ -290,7 +267,7 @@ function M.fixup_commit(commit_hash)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.invalid_commit'))
+        ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
@@ -302,11 +279,10 @@ function M.fixup_commit(commit_hash)
 
     local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
     if success then
-        ui.show_success(i18n.t('commit.success.fixup', {hash = commit_hash}))
+        ui.show_success(i18n.t('commit.success.fixup'))
     else
         ui.show_error(i18n.t('commit.error.fixup_failed') .. (output and ("\n" .. output) or ""))
     end
-
     return success
 end
 
@@ -318,7 +294,7 @@ function M.revert_commit(commit_hash)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.invalid_commit'))
+        ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
@@ -328,7 +304,6 @@ function M.revert_commit(commit_hash)
     else
         ui.show_error(i18n.t('commit.error.revert_failed') .. (output and ("\n" .. output) or ""))
     end
-
     return success
 end
 
@@ -350,7 +325,6 @@ function M.cherry_pick_commit(commit_hash)
     else
         ui.show_error(i18n.t('commit.error.cherry_pick_failed') .. (output and ("\n" .. output) or ""))
     end
-
     return success
 end
 
