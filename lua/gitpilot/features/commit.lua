@@ -262,7 +262,9 @@ local function amend_commit_builtin(callback)
         local amend_success, output = utils.execute_command(cmd)
 
         if not amend_success then
-            return handle_amend_error(output, callback)
+            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
+            if callback then callback(false) end
+            return false
         end
 
         ui.show_success(i18n.t('commit.success.amended'))
