@@ -87,7 +87,7 @@ function M.get_menu_items()
 end
 
 -- Display a message with notification
-function M.show_message(msg, level)
+function M.show_message(msg, level, vars)
     if not msg then return false end
     
     level = level or M.levels.INFO
@@ -96,28 +96,45 @@ function M.show_message(msg, level)
         return true
     end
     
-    if vim and vim.notify then
-        local notify_level = vim.log.levels[level:upper()] or vim.log.levels.INFO
-        vim.notify(format_message(msg, level), notify_level)
-        return true
+    -- Format le message avec les variables si elles sont fournies
+    local formatted_msg = msg
+    if vars then
+        for key, value in pairs(vars) do
+            formatted_msg = formatted_msg:gsub("%%{" .. key .. "}", value)
+        end
     end
     
+    if vim and vim.notify then
+        local notify_level = vim.log.levels[level:upper()] or vim.log.levels.INFO
+        vim.notify(format_message(formatted_msg, level), notify_level)
+        return true
+    end
     return false
 end
 
--- Display an error message
-function M.show_error(msg)
-    return M.show_message(msg, M.levels.ERROR)
+-- Show error message
+function M.show_error(msg, vars)
+    return M.show_message(msg, M.levels.ERROR, vars)
 end
 
--- Display a warning message
-function M.show_warning(msg)
-    return M.show_message(msg, M.levels.WARNING)
+-- Show warning message
+function M.show_warning(msg, vars)
+    return M.show_message(msg, M.levels.WARNING, vars)
 end
 
--- Display a success message
-function M.show_success(msg)
-    return M.show_message(format_message(msg, "success"), M.levels.INFO)
+-- Show info message
+function M.show_info(msg, vars)
+    return M.show_message(msg, M.levels.INFO, vars)
+end
+
+-- Show success message
+function M.show_success(msg, vars)
+    return M.show_message(msg, "success", vars)
+end
+
+-- Show debug message
+function M.show_debug(msg, vars)
+    return M.show_message(msg, M.levels.DEBUG, vars)
 end
 
 -- Selection from a list of items
