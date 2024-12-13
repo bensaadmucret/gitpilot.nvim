@@ -51,6 +51,8 @@ local handlers = {
             }, function(choice)
                 if choice then
                     if branch.checkout_branch(choice) and config.auto_refresh then
+                        -- Affiche un message de succès avec le nom de la branche
+                        ui.show_success(i18n.t('branch.success.checked_out', {branch = choice}))
                         require('gitpilot.menu').show_menu("branch")
                     end
                 end
