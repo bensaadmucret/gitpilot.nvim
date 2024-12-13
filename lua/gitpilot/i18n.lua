@@ -5,6 +5,21 @@ local M = {}
 -- Default language
 local current_lang = 'fr'
 
+-- Configuration
+local config = {
+    language = 'fr'
+}
+
+-- Setup function
+function M.setup(opts)
+    if opts then
+        config = vim.tbl_deep_extend('force', config, opts)
+    end
+    if config.language then
+        M.set_lang(config.language)
+    end
+end
+
 -- Translations
 local translations = {
     fr = {
