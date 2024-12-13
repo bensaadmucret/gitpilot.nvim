@@ -194,25 +194,24 @@ function M.confirm(opts)
     opts = vim.tbl_deep_extend("force", {
         prompt = i18n.t("confirm.prompt"),
         callback = function(confirmed) end,
-        default = config.confirm.default
+        default = config.confirm.default,
+        yes_text = i18n.t(config.confirm.yes_text),
+        no_text = i18n.t(config.confirm.no_text)
     }, opts or {})
-    
-    if utils.is_test_env() then
-        opts.callback(true)
-        return
-    end
-    
+
     local choices = {
-        format_message(i18n.t(config.confirm.yes_text), "success"),
-        format_message(i18n.t(config.confirm.no_text), "error")
+        opts.yes_text,
+        opts.no_text
     }
-    
-    M.select(choices, {
-        prompt = format_message(opts.prompt, "question"),
-        format_item = function(item) return item end
+
+    vim.ui.select(choices, {
+        prompt = opts.prompt,
+        format_item = function(item)
+            return item
+        end
     }, function(choice)
         if choice then
-            opts.callback(choice == choices[1])
+            opts.callback(choice == opts.yes_text)
         else
             opts.callback(false)
         end

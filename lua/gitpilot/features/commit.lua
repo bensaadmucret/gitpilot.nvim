@@ -26,7 +26,11 @@ end
 local function commit_exists(commit_hash)
     if not commit_hash then return false end
     local success, _ = utils.execute_command("git rev-parse --verify --quiet " .. utils.escape_string(commit_hash))
-    return success
+    if not success then
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        return false
+    end
+    return true
 end
 
 -- Vérifie s'il y a des changements à commiter
@@ -49,7 +53,7 @@ local function show_git_status(callback)
     end
 
     -- Créer un tableau pour stocker les fichiers par catégorie
-    local files = {
+    local categories = {
         modified = {},
         added = {},
         deleted = {},
@@ -57,45 +61,47 @@ local function show_git_status(callback)
         untracked = {}
     }
 
-    -- Analyser le statut
+    -- Parser le statut git
     for line in status:gmatch("[^\r\n]+") do
         local status_code = line:sub(1, 2)
         local file_path = line:sub(4)
-        
-        if status_code:match("^M") or status_code:match("^.M") then
-            table.insert(files.modified, file_path)
-        elseif status_code:match("^A") then
-            table.insert(files.added, file_path)
-        elseif status_code:match("^D") or status_code:match("^.D") then
-            table.insert(files.deleted, file_path)
-        elseif status_code:match("^R") then
-            table.insert(files.renamed, file_path)
-        elseif status_code:match("^%?%?") then
-            table.insert(files.untracked, file_path)
+
+        if status_code:match("M") then
+            table.insert(categories.modified, file_path)
+        elseif status_code:match("A") then
+            table.insert(categories.added, file_path)
+        elseif status_code:match("D") then
+            table.insert(categories.deleted, file_path)
+        elseif status_code:match("R") then
+            table.insert(categories.renamed, file_path)
+        elseif status_code:match("%?%?") then
+            table.insert(categories.untracked, file_path)
         end
     end
 
-    -- Construire le message de statut ligne par ligne
-    local lines = {i18n.t('commit.status.title'), ""}
+    -- Formater le message
+    local message = i18n.t("commit.status.title") .. ":\n\n"
 
-    local function add_category(category, title)
-        if #files[category] > 0 then
-            table.insert(lines, title .. ":")
-            for _, file in ipairs(files[category]) do
-                table.insert(lines, " - " .. file)
+    local function add_category(title, files)
+        if #files > 0 then
+            message = message .. title .. ":\n"
+            for _, file in ipairs(files) do
+                message = message .. "  - " .. file .. "\n"
             end
-            table.insert(lines, "")
+            message = message .. "\n"
         end
     end
 
-    add_category("modified", i18n.t('commit.status.modified'))
-    add_category("added", i18n.t('commit.status.added'))
-    add_category("deleted", i18n.t('commit.status.deleted'))
-    add_category("renamed", i18n.t('commit.status.renamed'))
-    add_category("untracked", i18n.t('commit.status.untracked'))
+    add_category(i18n.t("commit.status.modified"), categories.modified)
+    add_category(i18n.t("commit.status.added"), categories.added)
+    add_category(i18n.t("commit.status.deleted"), categories.deleted)
+    add_category(i18n.t("commit.status.renamed"), categories.renamed)
+    add_category(i18n.t("commit.status.untracked"), categories.untracked)
 
-    ui.float_window(lines, {
-        title = i18n.t('commit.status.window_title'),
+    -- Afficher le statut dans une fenêtre flottante
+    ui.float_window({
+        title = i18n.t("commit.status.window_title"),
+        content = message,
         callback = callback
     })
 
@@ -282,7 +288,7 @@ function M.fixup_commit(commit_hash)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.invalid_commit'))
+        ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
@@ -298,7 +304,6 @@ function M.fixup_commit(commit_hash)
     else
         ui.show_error(i18n.t('commit.error.fixup_failed') .. (output and ("\n" .. output) or ""))
     end
-
     return success
 end
 
@@ -310,7 +315,7 @@ function M.revert_commit(commit_hash)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.invalid_commit'))
+        ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
@@ -332,7 +337,7 @@ function M.cherry_pick_commit(commit_hash)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.invalid_commit'))
+        ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
@@ -354,7 +359,7 @@ function M.show_commit(commit_hash)
     end
 
     if not commit_exists(commit_hash) then
-        ui.show_error(i18n.t('commit.error.invalid_commit'))
+        ui.show_error(i18n.t('commit.error.no_commits'))
         return false
     end
 
