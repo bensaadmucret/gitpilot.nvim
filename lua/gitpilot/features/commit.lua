@@ -24,8 +24,7 @@ end
 
 -- Vérifie si un commit existe
 local function commit_exists(commit_hash)
-    if not commit_hash then return false end
-    local success, _ = utils.execute_command("git rev-parse --verify --quiet " .. utils.escape_string(commit_hash))
+    local success = utils.execute_command(string.format("git rev-parse --verify --quiet %s", commit_hash))
     if not success then
         ui.show_error(i18n.t('commit.error.no_commits'))
         return false
@@ -225,54 +224,42 @@ local function create_commit_builtin(callback)
 end
 
 -- Amend le dernier commit avec l'éditeur intégré
-local function amend_commit_builtin(callback)
+local function amend_commit_builtin(message, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
         if callback then callback(false) end
         return false
     end
 
-    -- Vérifier si un commit existe
-    local success, last_commit = utils.execute_command("git rev-parse HEAD")
-    if not success or not last_commit or last_commit == "" then
-        ui.show_error(i18n.t('commit.error.no_commits'))
+    -- Vérifier s'il y a des changements à commiter
+    if not has_changes() then
+        ui.show_error(i18n.t('commit.error.no_changes'))
         if callback then callback(false) end
         return false
     end
 
-    -- Récupérer le dernier message de commit
-    local success, last_message = utils.execute_command("git log -1 --pretty=%B")
+    if not message or message:match("^%s*$") then
+        ui.show_error(i18n.t('commit.error.empty_message'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Construire la commande git avec le message de commit
+    local cmd = string.format("git commit --amend --message=%s", escape_commit_message(message, "single"))
+    local success, output = utils.execute_command(cmd)
+
     if not success then
-        ui.show_error(i18n.t('commit.error.no_commits'))
+        ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
         if callback then callback(false) end
         return false
     end
 
-    ui.input({
-        prompt = i18n.t("commit.enter_message"),
-        default = last_message,
-        multiline = true
-    }, function(message)
-        if not message or message:match("^%s*$") then
-            return handle_empty_message_error(callback)
-        end
-
-        -- Construire la commande git avec le message de commit
-        local cmd = string.format("git commit --amend -m %s", escape_commit_message(message, "double"))
-        local amend_success, output = utils.execute_command(cmd)
-
-        if not amend_success then
-            ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. output)
-            if callback then callback(false) end
-            return false
-        end
-
-        ui.show_success(i18n.t('commit.success.amended'))
-        if callback then callback(true) end
-        return true
-    end)
+    ui.show_success(i18n.t('commit.success.amended'))
+    if callback then callback(true) end
     return true
 end
+
+M.amend_commit_builtin = amend_commit_builtin
 
 -- Amend le dernier commit avec l'éditeur externe
 local function amend_commit_external(callback)
@@ -311,10 +298,15 @@ function M.fixup_commit(commit_hash, callback)
         return false
     end
 
-    if not commit_exists(commit_hash) then
+    -- Vérifier si le commit existe
+    local success = utils.execute_command(string.format("git rev-parse --verify --quiet %s", commit_hash))
+    if not success then
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
         return false
     end
 
+    -- Vérifier s'il y a des changements à commiter
     if not has_changes() then
         ui.show_error(i18n.t('commit.error.no_changes'))
         if callback then callback(false) end
@@ -374,7 +366,7 @@ M.amend_commit = function(callback)
     if config.commit_editor == "external" then
         return amend_commit_external(callback)
     else
-        return amend_commit_builtin(callback)
+        return amend_commit_builtin("", callback)
     end
 end
 
@@ -584,7 +576,7 @@ local function create_commit_builtin_test(callback)
 end
 
 -- Amend le dernier commit avec l'éditeur intégré pour les tests
-local function amend_commit_builtin_test(callback)
+local function amend_commit_builtin_test(message, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
         if callback then callback(false) end
