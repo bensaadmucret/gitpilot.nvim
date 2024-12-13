@@ -36,7 +36,17 @@ end
 -- Vérifie s'il y a des changements à commiter
 local function has_changes()
     local success, status = utils.execute_command("git status --porcelain")
-    return success and status and status ~= ""
+    if not success or not status or status == "" then
+        return false
+    end
+    -- Check for staged changes
+    for line in status:gmatch("[^\r\n]+") do
+        local status_code = line:sub(1, 2)
+        if status_code:match("^[MADRCT]") then
+            return true
+        end
+    end
+    return false
 end
 
 -- Wrapper pour gérer les messages d'erreur de manière cohérente
@@ -189,16 +199,6 @@ local function create_commit_builtin(callback)
         return false
     end
 
-    -- Vérifier s'il y a des fichiers stagés
-    local has_staged = #files.modified > 0 or #files.added > 0 or 
-                      #files.deleted > 0 or #files.renamed > 0
-
-    if not has_staged then
-        ui.show_error(i18n.t('commit.error.no_changes'))
-        if callback then callback(false) end
-        return false
-    end
-
     -- Utiliser le format spécifique pour les tests avec toutes les catégories
     local content = format_status_for_tests_with_categories(files)
 
@@ -206,19 +206,13 @@ local function create_commit_builtin(callback)
     ui.float_window({
         title = i18n.t('commit.status.window_title'),
         content = content,
-        callback = function(result)
-            if not result then
-                if callback then callback(false) end
-                return
-            end
-
+        callback = function()
             ui.input({
                 prompt = i18n.t("commit.enter_message"),
                 multiline = true
             }, function(message)
                 if not message or message:match("^%s*$") then
-                    handle_empty_message_error(callback)
-                    return false
+                    return handle_empty_message_error(callback)
                 end
                     
                 -- Échapper les caractères spéciaux pour git commit
@@ -226,8 +220,7 @@ local function create_commit_builtin(callback)
                 local success, output = utils.execute_command(string.format("git commit -m %s", escaped_message))
                 
                 if not success then
-                    handle_commit_error(output, callback)
-                    return false
+                    return handle_commit_error(output, callback)
                 end
                 
                 ui.show_success(i18n.t('commit.success.created'))
@@ -247,14 +240,16 @@ local function amend_commit_builtin(callback)
         return false
     end
 
-    if not commit_exists("HEAD") then
+    -- Vérifier si un commit existe
+    local success, last_commit = utils.execute_command("git rev-parse HEAD")
+    if not success or not last_commit or last_commit == "" then
         ui.show_error(i18n.t('commit.error.no_commits'))
         if callback then callback(false) end
         return false
     end
 
     -- Récupérer le dernier message de commit
-    local success, last_message = utils.execute_command("git log -1 --format=%B")
+    local success, last_message = utils.execute_command("git log -1 --pretty=%B")
     if not success then
         handle_amend_error(last_message, callback)
         return false
@@ -266,17 +261,15 @@ local function amend_commit_builtin(callback)
         multiline = true
     }, function(message)
         if not message or message:match("^%s*$") then
-            handle_empty_message_error(callback)
-            return false
+            return handle_empty_message_error(callback)
         end
             
         -- Échapper les caractères spéciaux pour git commit
         local escaped_message = escape_commit_message(message, "single")
-        local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
+        local amend_success, output = utils.execute_command(string.format("git commit --amend -m %s", escaped_message))
         
         if not amend_success then
-            handle_amend_error(output, callback)
-            return false
+            return handle_amend_error(output, callback)
         end
         
         ui.show_success(i18n.t('commit.success.amended'))
@@ -287,28 +280,25 @@ local function amend_commit_builtin(callback)
 end
 
 -- Fixup le commit spécifié
-local function fixup_commit(commit_hash, callback)
+function M.fixup_commit(commit_hash, callback)
     if not is_git_repo() then
         ui.show_error(i18n.t('commit.error.not_git_repo'))
         if callback then callback(false) end
         return false
     end
 
-    -- Vérifier si le commit existe
     if not commit_exists(commit_hash) then
         ui.show_error(i18n.t('commit.error.no_commits'))
         if callback then callback(false) end
         return false
     end
 
-    -- Vérifier s'il y a des changements à commiter
     if not has_changes() then
         ui.show_error(i18n.t('commit.error.no_changes'))
         if callback then callback(false) end
         return false
     end
 
-    -- Échapper le hash du commit pour la commande git
     local escaped_hash = utils.escape_string(commit_hash)
     local success, output = utils.execute_command(string.format("git commit --fixup=%s", escaped_hash))
     if not success then
@@ -384,8 +374,7 @@ function M.amend_commit(callback)
         multiline = true
     }, function(message)
         if not message or message:match("^%s*$") then
-            handle_empty_message_error(callback)
-            return false
+            return handle_empty_message_error(callback)
         end
             
         -- Échapper les caractères spéciaux pour git commit
@@ -393,8 +382,7 @@ function M.amend_commit(callback)
         local amend_success, output = utils.execute_command(string.format("git commit --amend -m %s", escaped_message))
         
         if not amend_success then
-            handle_amend_error(output, callback)
-            return false
+            return handle_amend_error(output, callback)
         end
         
         ui.show_success(i18n.t('commit.success.amended'))
