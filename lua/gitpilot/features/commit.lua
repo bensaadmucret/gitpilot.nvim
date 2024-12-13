@@ -136,6 +136,7 @@ end
 local function show_git_status(callback)
     local success, files = get_staged_files()
     if not success then
+        ui.show_error(i18n.t('commit.error.status_failed'))
         return false
     end
 
@@ -146,23 +147,13 @@ local function show_git_status(callback)
 
     -- Utiliser le format spécifique pour les tests
     local content = format_status_for_tests(files)
-    
-    -- S'assurer que le callback est appelé avec le bon contexte
-    local function wrapped_callback(...)
-        if callback then
-            return callback(...) or true
-        end
-        return true
-    end
 
     -- Appeler float_window et retourner true
-    ui.float_window({
+    return ui.float_window({
         title = i18n.t('commit.status.window_title'),
         content = content,
-        callback = wrapped_callback
+        callback = callback
     })
-
-    return true
 end
 
 -- Wrapper pour gérer les messages d'erreur de manière cohérente
@@ -235,7 +226,7 @@ function M.create_commit()
 
     -- Montrer le statut git avant de demander le message
     return show_git_status(function()
-        ui.input({
+        return ui.input({
             prompt = i18n.t("commit.enter_message"),
             multiline = true
         }, function(message)
@@ -250,11 +241,10 @@ function M.create_commit()
                 ui.show_success(i18n.t('commit.success.created'))
                 return true
             else
-                ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
+                ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. output)
                 return false
             end
         end)
-        return true
     end)
 end
 
@@ -306,8 +296,14 @@ function M.fixup_commit(commit_hash)
         return false
     end
 
-    local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
-    if success then
+    local success, files = get_staged_files()
+    if not success or #files == 0 then
+        ui.show_error(i18n.t('commit.error.no_changes'))
+        return false
+    end
+
+    local fixup_success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
+    if fixup_success then
         ui.show_success(i18n.t('commit.success.fixup'))
         return true
     else
