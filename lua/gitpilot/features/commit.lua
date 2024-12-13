@@ -380,11 +380,34 @@ M.create_commit = function(callback)
     end
 end
 
-M.amend_commit = function(callback)
-    if config.commit_editor == "external" then
-        return amend_commit_external(callback)
+-- Amend le dernier commit avec l'éditeur intégré
+function M.amend_commit(callback)
+    if not is_git_repo() then
+        ui.show_error(i18n.t('commit.error.not_git_repo'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Vérifier si un commit existe
+    local success = utils.execute_command("git rev-parse HEAD")
+    if not success then
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
+        return false
+    end
+
+    -- Récupérer le dernier message de commit
+    local success, last_message = utils.execute_command("git log -1 --format=%B")
+    if not success then
+        ui.show_error(i18n.t('commit.error.no_commits'))
+        if callback then callback(false) end
+        return false
+    end
+
+    if config.commit_editor == "builtin" then
+        amend_commit_builtin(last_message, callback)
     else
-        return amend_commit_builtin("", callback)
+        amend_commit_external(callback)
     end
 end
 
