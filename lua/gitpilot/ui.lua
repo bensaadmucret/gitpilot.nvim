@@ -195,28 +195,32 @@ function M.confirm(opts)
     local callback = opts.callback or function(confirmed) end
     local prompt = opts.prompt or i18n.t("confirm.prompt")
     local default = opts.default or config.confirm.default
+    local yes_text = opts.yes_text or i18n.t(config.confirm.yes_text)
+    local no_text = opts.no_text or i18n.t(config.confirm.no_text)
 
     if utils.is_test_env() then
         callback(default)
         return
     end
 
-    local choices = {
-        i18n.t(config.confirm.yes_text),
-        i18n.t(config.confirm.no_text)
-    }
+    local choices = {yes_text, no_text}
+    local choice_str = string.format("%s (%s/%s)", prompt, yes_text, no_text)
 
     vim.ui.select(choices, {
-        prompt = prompt,
+        prompt = choice_str,
         format_item = function(item)
-            return item
+            if item == yes_text then
+                return config.icons.success .. " " .. item
+            else
+                return config.icons.error .. " " .. item
+            end
         end
     }, function(choice)
-        if choice then
-            callback(choice == choices[1])
-        else
-            callback(false)
+        if not choice then
+            callback(default)
+            return
         end
+        callback(choice == yes_text)
     end)
 end
 
