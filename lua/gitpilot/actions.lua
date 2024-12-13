@@ -38,12 +38,18 @@ local handlers = {
             local branches, current = branch.list_branches()
             if not branches then return end
             
-            -- Filtre la branche courante
+            -- Filtre la branche courante et les branches de backup
             local choices = {}
             for _, b in ipairs(branches) do
-                if b ~= current then
+                if b ~= current and not b:match("^backup_%d+$") then
                     table.insert(choices, b)
                 end
+            end
+            
+            -- Vérifie s'il y a des branches disponibles
+            if #choices == 0 then
+                ui.show_info(i18n.t("branch.info.no_other_branches"))
+                return
             end
             
             ui.select(choices, {

@@ -67,6 +67,9 @@ local translations = {
             select_merge = 'Sélectionnez la branche à fusionner',
             select_delete = 'Sélectionnez la branche à supprimer',
             select_rebase = 'Sélectionnez la branche pour le rebase',
+            info = {
+                no_other_branches = 'Aucune autre branche disponible'
+            },
             confirm_delete = 'Voulez-vous vraiment supprimer la branche %{branch} ?',
             confirm_push = 'Voulez-vous pousser la branche %{branch} ?',
             confirm_pull = 'Voulez-vous tirer la branche %{branch} ?',
