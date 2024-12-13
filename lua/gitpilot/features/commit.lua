@@ -68,8 +68,11 @@ end
 local function escape_commit_message(message, quote_type)
     if not message then return "" end
     
+    -- Préserver les sauts de ligne pour les messages multilignes
+    local escaped = message:gsub("\n", "\\n")
+    
     -- Échapper d'abord les backslashes pour éviter les problèmes avec les autres échappements
-    local escaped = message:gsub([[\]], [[\\]])
+    escaped = escaped:gsub([[\]], [[\\]])
     
     -- Échapper les autres caractères spéciaux en fonction du type de guillemets
     if quote_type == "single" then
@@ -77,9 +80,6 @@ local function escape_commit_message(message, quote_type)
     else
         escaped = escaped:gsub('"', [[\\"]])
     end
-    
-    -- Préserver les sauts de ligne pour les messages multilignes
-    escaped = escaped:gsub("\n", "\\n")
     
     -- Ajouter les guillemets appropriés
     if quote_type == "single" then
@@ -209,9 +209,7 @@ local function create_commit_builtin(callback)
                 end
 
                 -- Échapper les caractères spéciaux pour git commit
-                local escaped_message = escape_commit_message(message, "double")
-                local cmd = string.format("git commit -m %s", escaped_message)
-                local success, output = utils.execute_command(cmd)
+                local success, output = utils.execute_command("git commit", {"-m", message})
 
                 if not success then
                     return handle_commit_error(output, callback)
@@ -260,9 +258,7 @@ local function amend_commit_builtin(callback)
         end
 
         -- Échapper les caractères spéciaux pour git commit
-        local escaped_message = escape_commit_message(message, "double")
-        local cmd = string.format("git commit --amend -m %s", escaped_message)
-        local amend_success, output = utils.execute_command(cmd)
+        local amend_success, output = utils.execute_command("git commit", {"--amend", "-m", message})
 
         if not amend_success then
             return handle_amend_error(output, callback)
@@ -293,9 +289,7 @@ function M.fixup_commit(commit_hash, callback)
         return false
     end
 
-    local escaped_hash = utils.escape_string(commit_hash)
-    local cmd = string.format("git commit --fixup=%s", escaped_hash)
-    local success, output = utils.execute_command(cmd)
+    local success, output = utils.execute_command("git commit", {"--fixup=" .. commit_hash})
 
     if not success then
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
@@ -538,8 +532,7 @@ local function create_commit_builtin_test(callback)
                 end
                     
                 -- Échapper les caractères spéciaux pour git commit
-                local escaped_message = escape_commit_message(message, "single")
-                local success, output = utils.execute_command("git commit -m " .. escaped_message)
+                local success, output = utils.execute_command("git commit", {"-m", message})
                 
                 if not success then
                     handle_commit_error(output, callback)
@@ -587,8 +580,7 @@ local function amend_commit_builtin_test(callback)
         end
             
         -- Échapper les caractères spéciaux pour git commit
-        local escaped_message = escape_commit_message(message, "single")
-        local amend_success, output = utils.execute_command("git commit --amend -m " .. escaped_message)
+        local amend_success, output = utils.execute_command("git commit", {"--amend", "-m", message})
         
         if not amend_success then
             handle_amend_error(output, callback)
@@ -622,7 +614,7 @@ local function fixup_commit_test(commit_hash, callback)
         return false
     end
 
-    local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
+    local success, output = utils.execute_command("git commit", {"--fixup=" .. commit_hash})
     if not success then
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
         if callback then callback(false) end
