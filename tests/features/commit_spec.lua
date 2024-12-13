@@ -436,6 +436,7 @@ R  renamed.txt -> new_name.txt
         end)
 
         it("should amend commit successfully with builtin editor", function()
+            commit.setup({ commit_editor = "builtin" })
             local original_execute = mock_utils.execute_command
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
@@ -462,6 +463,7 @@ R  renamed.txt -> new_name.txt
         end)
 
         it("should handle amend with empty message", function()
+            commit.setup({ commit_editor = "builtin" })
             local original_execute = mock_utils.execute_command
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
@@ -486,6 +488,7 @@ R  renamed.txt -> new_name.txt
         end)
 
         it("should handle amend failure gracefully", function()
+            commit.setup({ commit_editor = "builtin" })
             local original_execute = mock_utils.execute_command
             mock_utils.execute_command = mock(function(cmd)
                 if cmd == "git rev-parse --is-inside-work-tree" then
@@ -507,7 +510,7 @@ R  renamed.txt -> new_name.txt
             commit.amend_commit()
 
             assert.spy(mock_utils.execute_command).was_called()
-            assert.spy(mock_ui.show_error).was_called_with('commit.error.amend_failed Erreur d\'amend')
+            assert.spy(mock_ui.show_error).was_called_with('commit.error.amend_failed\nErreur d\'amend')
             mock_utils.execute_command = original_execute
         end)
     end)
