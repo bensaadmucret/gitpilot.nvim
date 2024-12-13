@@ -29,9 +29,9 @@ jobs:
 
     - name: Run Tests
       run: |
-        busted -c -v --lpath="./lua/?.lua;./lua/?/init.lua" --output=utfTerminal tests/features/
+        busted -c -v --lpath="./lua/?.lua;./lua/?/init.lua;./tests/?.lua;./tests/?/init.lua" --output=utfTerminal tests/features/
       env:
-        LUA_PATH: "./lua/?.lua;./lua/?/init.lua;$LUA_PATH"
+        LUA_PATH: "./lua/?.lua;./lua/?/init.lua;./tests/?.lua;./tests/?/init.lua;$LUA_PATH"
 
     - name: Report Coverage
       if: success()
