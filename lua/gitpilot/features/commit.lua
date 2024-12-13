@@ -73,7 +73,12 @@ local function show_git_status(callback)
         elseif status_code:match("^D") or status_code:match("^.D") then
             table.insert(files.deleted, file_path)
         elseif status_code:match("^R") then
-            table.insert(files.renamed, file_path)
+            local old_new = file_path:match("(.*) %-> (.*)")
+            if old_new then
+                table.insert(files.renamed, old_new)
+            else
+                table.insert(files.renamed, file_path)
+            end
         elseif status_code:match("^%?%?") then
             table.insert(files.untracked, file_path)
         end
@@ -99,13 +104,13 @@ local function show_git_status(callback)
     add_category("renamed", "Renamed")
     add_category("untracked", "Untracked")
 
-    ui.float_window({
+    local result = ui.float_window({
         title = i18n.t('commit.status.window_title'),
         content = content,
         callback = callback
     })
 
-    return true
+    return result
 end
 
 -- Échappe les caractères spéciaux dans le message de commit
@@ -129,7 +134,7 @@ local function create_commit_builtin()
     }, function(message)
         if not message or message == "" then
             ui.show_error(i18n.t('commit.error.empty_message'))
-            return
+            return false
         end
             
         -- Échapper les caractères spéciaux pour git commit
@@ -149,32 +154,13 @@ local function create_commit_builtin()
                     end
                 })
             end
+            return true
         else
             ui.show_error(i18n.t('commit.error.create_failed') .. "\n" .. (output or ""))
+            return false
         end
     end)
     return commit_success
-end
-
--- Pousse les modifications vers le dépôt distant
-local function push_changes()
-    local success, output = utils.execute_command("git push")
-    if success then
-        ui.show_success(i18n.t('commit.success.pushed'))
-    else
-        ui.show_error(i18n.t('commit.error.push_failed') .. "\n" .. (output or ""))
-    end
-    return success
-end
-
-function M.push_changes()
-    local success, output = utils.execute_command("git push")
-    if success then
-        ui.show_success(i18n.t('commit.success.pushed'))
-    else
-        ui.show_error(i18n.t('commit.error.push_failed') .. "\n" .. (output or ""))
-    end
-    return success
 end
 
 -- Crée un nouveau commit
@@ -230,7 +216,7 @@ function M.amend_commit()
     }, function(message)
         if not message or message == "" then
             ui.show_error(i18n.t('commit.error.empty_message'))
-            return
+            return false
         end
             
         local escaped_message = escape_commit_message(message, "single")
@@ -248,8 +234,10 @@ function M.amend_commit()
                     end
                 })
             end
+            return true
         else
             ui.show_error(i18n.t('commit.error.amend_failed') .. "\n" .. (output or ""))
+            return false
         end
     end)
 end
@@ -269,10 +257,11 @@ function M.fixup_commit(commit_hash)
     local success, output = utils.execute_command("git commit --fixup=" .. utils.escape_string(commit_hash))
     if success then
         ui.show_success(i18n.t('commit.success.fixup'))
+        return true
     else
         ui.show_error(i18n.t('commit.error.fixup_failed') .. "\n" .. (output or ""))
+        return false
     end
-    return success
 end
 
 -- Revert un commit
@@ -290,10 +279,11 @@ function M.revert_commit(commit_hash)
     local success, output = utils.execute_command("git revert --no-edit " .. utils.escape_string(commit_hash))
     if success then
         ui.show_success(i18n.t('commit.success.reverted'))
+        return true
     else
         ui.show_error(i18n.t('commit.error.revert_failed') .. "\n" .. (output or ""))
+        return false
     end
-    return success
 end
 
 -- Cherry-pick un commit
@@ -311,10 +301,11 @@ function M.cherry_pick_commit(commit_hash)
     local success, output = utils.execute_command("git cherry-pick " .. utils.escape_string(commit_hash))
     if success then
         ui.show_success(i18n.t('commit.success.cherry_picked'))
+        return true
     else
         ui.show_error(i18n.t('commit.error.cherry_pick_failed') .. "\n" .. (output or ""))
+        return false
     end
-    return success
 end
 
 -- Affiche les détails d'un commit
@@ -386,6 +377,16 @@ function M.show_commit_log(callback)
     end)
 
     return true
+end
+
+function M.push_changes()
+    local success, output = utils.execute_command("git push")
+    if success then
+        ui.show_success(i18n.t('commit.success.pushed'))
+    else
+        ui.show_error(i18n.t('commit.error.push_failed') .. "\n" .. (output or ""))
+    end
+    return success
 end
 
 return M
