@@ -41,7 +41,8 @@ local translations = {
             stash = 'Stash',
             search = 'Recherche',
             rebase = 'Rebase',
-            backup = 'Sauvegarde'
+            backup = 'Sauvegarde',
+            help = 'Aide Git'
         },
         ui = {
             select_prompt = 'Sélectionnez une option',
@@ -274,6 +275,16 @@ local translations = {
                 delete_failed = 'Échec de la suppression de la sauvegarde'
             }
         },
+        help = {
+            title = 'Aide Git : %{command}',
+            menu_title = 'Aide Git',
+            command_not_found = 'Aide non disponible pour cette commande',
+            commit = 'Aide sur les commits',
+            branch = 'Aide sur les branches',
+            stash = 'Aide sur les stashs',
+            rebase = 'Aide sur le rebase',
+            tag = 'Aide sur les tags'
+        },
         error = {
             invalid_menu = 'Menu invalide',
             command_failed = 'La commande a échoué',
@@ -285,28 +296,29 @@ local translations = {
 
 -- Get translation for a key
 function M.t(key, vars)
-    local parts = vim.split(key, '.', { plain = true })
+    if not key then return "" end
+    
+    local parts = type(vim) == "table" and vim.split and vim.split(key, '.', { plain = true }) or {}
     local current = translations[current_lang]
     
     for _, part in ipairs(parts) do
-        if current[part] then
-            current = current[part]
-        else
+        if type(current) ~= "table" then
+            return key
+        end
+        current = current[part]
+        if current == nil then
             return key
         end
     end
     
-    if type(current) ~= 'string' then
+    if type(current) ~= "string" then
         return key
     end
     
-    -- Si des variables sont fournies, les substituer dans la traduction
     if vars then
-        local result = current
-        for name, value in pairs(vars) do
-            result = result:gsub("%%{" .. name .. "}", value)
+        for k, v in pairs(vars) do
+            current = current:gsub("%%{" .. k .. "}", tostring(v))
         end
-        return result
     end
     
     return current
