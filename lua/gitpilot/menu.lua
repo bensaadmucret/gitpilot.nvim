@@ -26,7 +26,8 @@ local icons = {
     search = '🔍',
     rebase = '♻️',
     backup = '💾',
-    back = '⬅️'
+    back = '⬅️',
+    help = '❓'
 }
 
 function M.setup(opts)
@@ -48,9 +49,11 @@ local function get_menu_title(menu_type)
     return title
 end
 
+-- Add icon to menu item if configured
 local function add_icon(text, icon)
+    if not text then return "" end
     if config.use_icons and icon then
-        return icon .. ' ' .. text
+        return icon .. " " .. text
     end
     return text
 end
@@ -67,6 +70,7 @@ local function get_menu_items(menu_type)
         table.insert(items, add_icon(i18n.t('menu.search'), icons.search))
         table.insert(items, add_icon(i18n.t('menu.rebase'), icons.rebase))
         table.insert(items, add_icon(i18n.t('menu.backup'), icons.backup))
+        table.insert(items, add_icon(i18n.t('menu.help'), icons.help))
     elseif menu_type == 'branch' then
         table.insert(items, add_icon(i18n.t('branch.create_new'), icons.branch))
         table.insert(items, add_icon(i18n.t('branch.checkout'), icons.branch))
@@ -79,6 +83,13 @@ local function get_menu_items(menu_type)
         table.insert(items, add_icon(i18n.t('menu.back'), icons.back))
     elseif menu_type == 'commit' then
         table.insert(items, add_icon(i18n.t('commit.create'), icons.commit))
+        table.insert(items, add_icon(i18n.t('menu.back'), icons.back))
+    elseif menu_type == 'help' then
+        table.insert(items, add_icon(i18n.t('help.commit'), icons.commit))
+        table.insert(items, add_icon(i18n.t('help.branch'), icons.branch))
+        table.insert(items, add_icon(i18n.t('help.stash'), icons.stash))
+        table.insert(items, add_icon(i18n.t('help.rebase'), icons.rebase))
+        table.insert(items, add_icon(i18n.t('help.tag'), icons.tag))
         table.insert(items, add_icon(i18n.t('menu.back'), icons.back))
     end
     
@@ -118,6 +129,12 @@ local function handle_menu_selection(menu_type, selected, context)
                 M.show_menu('commit', context)
             end)
             return
+        elseif text == i18n.t('menu.help') then
+            current_menu = 'help'
+            vim.schedule(function()
+                M.show_help_menu(context)
+            end)
+            return
         end
     elseif menu_type == 'branch' then
         if text == i18n.t('branch.create_new') then
@@ -140,6 +157,18 @@ local function handle_menu_selection(menu_type, selected, context)
     elseif menu_type == 'commit' then
         if text == i18n.t('commit.create') then
             action = 'create'
+        end
+    elseif menu_type == 'help' then
+        if text == i18n.t('help.commit') then
+            require('gitpilot.features.help').show_help('commit')
+        elseif text == i18n.t('help.branch') then
+            require('gitpilot.features.help').show_help('branch')
+        elseif text == i18n.t('help.stash') then
+            require('gitpilot.features.help').show_help('stash')
+        elseif text == i18n.t('help.rebase') then
+            require('gitpilot.features.help').show_help('rebase')
+        elseif text == i18n.t('help.tag') then
+            require('gitpilot.features.help').show_help('tag')
         end
     end
     
@@ -178,6 +207,18 @@ function M.show_menu(menu_type, context)
         end
     }
     
+    ui.float_window(items, opts)
+end
+
+function M.show_help_menu(context)
+    current_menu = 'help'
+    local items = get_menu_items('help')
+    local opts = {
+        title = i18n.t("help.menu_title"),
+        callback = function(selected)
+            handle_menu_selection('help', selected, context)
+        end
+    }
     ui.float_window(items, opts)
 end
 
