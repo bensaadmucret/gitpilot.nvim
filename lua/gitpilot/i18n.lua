@@ -3,11 +3,11 @@
 local M = {}
 
 -- Default language
-local current_lang = 'fr'
+local current_lang = 'en'
 
 -- Configuration
 local config = {
-    language = 'fr'
+    language = 'en'
 }
 
 -- Setup function
@@ -22,6 +22,276 @@ end
 
 -- Translations
 local translations = {
+    en = {
+        menu = {
+            main_title = 'Main Menu',
+            branch_title = 'Branch Management',
+            commit_title = 'Commit Management',
+            remote_title = 'Remote Management',
+            tag_title = 'Tag Management',
+            stash_title = 'Stash Management',
+            search_title = 'Search',
+            rebase_title = 'Rebase',
+            backup_title = 'Backup',
+            back = 'Back',
+            branches = 'Branch Operations',
+            commits = 'Commit Operations',
+            remotes = 'Remote Operations',
+            tags = 'Tag Operations',
+            stash = 'Stash Operations',
+            search = 'Search',
+            rebase = 'Rebase',
+            backup = 'Backup',
+            help = 'Git Help'
+        },
+        ui = {
+            select_prompt = 'Select an option',
+            input_prompt = 'Enter a value',
+            no_items = 'No items to display'
+        },
+        confirm = {
+            prompt = 'Are you sure?',
+            yes = 'Yes',
+            no = 'No'
+        },
+        branch = {
+            create_new = 'Create a new branch',
+            checkout = 'Switch to a branch',
+            merge = 'Merge a branch',
+            delete = 'Delete a branch',
+            push = 'Push the branch',
+            pull = 'Pull the branch',
+            rebase = 'Rebase the branch',
+            refresh = 'Refresh',
+            enter_name = 'Branch name:',
+            select_checkout = 'Select a branch to switch to',
+            select_merge = 'Select a branch to merge',
+            select_delete = 'Select a branch to delete',
+            select_rebase = 'Select a branch to rebase',
+            info = {
+                no_other_branches = 'No other branches available'
+            },
+            confirm_delete = 'Are you sure you want to delete the branch %{branch}?',
+            confirm_push = 'Are you sure you want to push the branch %{branch}?',
+            confirm_pull = 'Are you sure you want to pull the branch %{branch}?',
+            confirm_rebase = 'Are you sure you want to rebase onto the branch %{branch}?',
+            success = {
+                created = 'Branch "%{branch}" created successfully',
+                checked_out = 'Switched to branch "%{branch}"',
+                merged = 'Branch "%{branch}" merged successfully',
+                deleted = 'Branch "%{branch}" deleted successfully',
+                pushed = 'Branch "%{branch}" pushed successfully',
+                pulled = 'Branch "%{branch}" pulled successfully',
+                rebased = 'Rebase onto branch "%{branch}" successful'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                invalid_name = 'Invalid branch name',
+                already_exists = 'Branch "%{branch}" already exists',
+                not_found = 'Branch "%{branch}" not found',
+                create_failed = 'Failed to create branch "%{branch}"',
+                checkout_failed = 'Failed to switch to branch "%{branch}"',
+                merge_failed = 'Failed to merge branch "%{branch}"',
+                delete_failed = 'Failed to delete branch "%{branch}"',
+                delete_current = 'Cannot delete the current branch',
+                invalid_start_point = 'Start point "%{branch}" does not exist',
+                no_branches = 'No branches found',
+                list_failed = 'Failed to retrieve branch list',
+                unmerged = 'Branch "%{branch}" is not fully merged',
+                uncommitted = 'You have uncommitted changes',
+                no_upstream = 'Branch "%{branch}" has no upstream branch'
+            }
+        },
+        commit = {
+            create = 'Create a commit',
+            amend = 'Amend the last commit',
+            reset = 'Reset a commit',
+            push = 'Push commits',
+            pull = 'Pull commits',
+            status = {
+                title = 'Status of changes',
+                window_title = 'GitPilot - Git Status',
+                modified = 'Modified files',
+                added = 'Added files',
+                deleted = 'Deleted files',
+                renamed = 'Renamed files',
+                untracked = 'Untracked files'
+            },
+            enter_message = 'Commit message:',
+            confirm_amend = 'Are you sure you want to amend the last commit?',
+            confirm_fixup = 'Are you sure you want to fixup commit %{hash}?',
+            confirm_revert = 'Are you sure you want to revert commit %{hash}?',
+            success = {
+                created = 'Commit created successfully',
+                amended = 'Commit amended successfully',
+                reverted = 'Commit reverted successfully',
+                cherry_picked = 'Cherry-pick successful'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                no_changes = 'No changes to commit',
+                create_failed = 'Failed to create commit',
+                no_commits = 'No commits in history',
+                amend_failed = 'Failed to amend the last commit',
+                revert_failed = 'Failed to revert commit',
+                cherry_pick_failed = 'Failed to cherry-pick',
+                invalid_hash = 'Invalid commit hash',
+                not_found = 'Commit not found',
+                empty_message = 'Commit message cannot be empty'
+            }
+        },
+        remote = {
+            add = 'Add a remote',
+            remove = 'Remove a remote',
+            push = 'Push to a remote',
+            pull = 'Pull from a remote',
+            fetch = 'Fetch from a remote',
+            prune = 'Prune remote branches',
+            enter_name = 'Remote name:',
+            enter_url = 'Remote URL:',
+            select_remote = 'Select a remote',
+            confirm_remove = 'Are you sure you want to remove remote %{remote}?',
+            success = {
+                added = 'Remote "%{name}" added successfully',
+                removed = 'Remote "%{name}" removed successfully',
+                fetched = 'Fetched from "%{name}" successfully',
+                pulled = 'Pulled from remote successfully',
+                pushed = 'Pushed to remote successfully',
+                pruned = 'Pruned remote branches successfully'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                list_failed = 'Failed to retrieve remote list',
+                no_remotes = 'No remotes found',
+                invalid_name = 'Invalid remote name',
+                invalid_url = 'Invalid remote URL',
+                already_exists = 'Remote "%{name}" already exists',
+                not_found = 'Remote "%{name}" not found',
+                add_failed = 'Failed to add remote',
+                remove_failed = 'Failed to remove remote',
+                fetch_failed = 'Failed to fetch from remote',
+                pull_failed = 'Failed to pull from remote',
+                push_failed = 'Failed to push to remote',
+                prune_failed = 'Failed to prune remote branches'
+            }
+        },
+        tag = {
+            create = 'Create a tag',
+            delete = 'Delete a tag',
+            push = 'Push a tag',
+            list = 'List tags',
+            enter_name = 'Tag name:',
+            enter_message = 'Tag message:',
+            select_tag = 'Select a tag',
+            confirm_delete = 'Are you sure you want to delete tag %{tag}?',
+            success = {
+                created = 'Tag "%{name}" created successfully',
+                deleted = 'Tag "%{name}" deleted successfully',
+                pushed = 'Tag pushed successfully'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                invalid_name = 'Invalid tag name',
+                not_found = 'Tag not found',
+                already_exists = 'Tag "%{name}" already exists',
+                create_failed = 'Failed to create tag',
+                delete_failed = 'Failed to delete tag',
+                push_failed = 'Failed to push tag'
+            }
+        },
+        stash = {
+            save = 'Save changes',
+            pop = 'Apply and delete a stash',
+            apply = 'Apply a stash',
+            drop = 'Delete a stash',
+            list = 'List stashes',
+            enter_message = 'Stash message:',
+            select_stash = 'Select a stash',
+            confirm_drop = 'Are you sure you want to delete this stash?',
+            success = {
+                saved = 'Changes saved successfully',
+                applied = 'Stash applied successfully',
+                dropped = 'Stash deleted successfully'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                no_changes = 'No changes to save',
+                not_found = 'Stash not found',
+                save_failed = 'Failed to save changes',
+                apply_failed = 'Failed to apply stash',
+                drop_failed = 'Failed to delete stash'
+            }
+        },
+        search = {
+            commits = 'Search commits',
+            files = 'Search files',
+            content = 'Search content',
+            enter_query = 'Search:',
+            success = {
+                found = 'Results found successfully'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                empty_query = 'Search query cannot be empty',
+                no_results = 'No results found',
+                search_failed = 'Failed to search'
+            }
+        },
+        rebase = {
+            interactive = 'Interactive rebase',
+            onto = 'Rebase onto a branch',
+            continue = 'Continue rebase',
+            abort = 'Abort rebase',
+            success = {
+                rebased = 'Rebase successful'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                in_progress = 'A rebase is already in progress',
+                no_changes = 'Nothing to rebase',
+                rebase_failed = 'Failed to rebase'
+            }
+        },
+        backup = {
+            create = 'Create a backup',
+            restore = 'Restore a backup',
+            list = 'List backups',
+            delete = 'Delete a backup',
+            enter_name = 'Backup name:',
+            select_backup = 'Select a backup',
+            confirm_delete = 'Are you sure you want to delete backup %{backup}?',
+            success = {
+                created = 'Backup "%{name}" created successfully',
+                restored = 'Backup "%{name}" restored successfully',
+                deleted = 'Backup "%{name}" deleted successfully'
+            },
+            error = {
+                not_git_repo = 'This is not a Git repository',
+                invalid_name = 'Invalid backup name',
+                not_found = 'Backup not found',
+                already_exists = 'Backup "%{name}" already exists',
+                create_failed = 'Failed to create backup',
+                restore_failed = 'Failed to restore backup',
+                delete_failed = 'Failed to delete backup'
+            }
+        },
+        help = {
+            title = 'Git Help - %{command}',
+            menu_title = 'Git Help',
+            command_not_found = 'Command not found. Please check the command name.',
+            commit = 'Help on commits',
+            branch = 'Help on branches',
+            stash = 'Help on stashes',
+            rebase = 'Help on rebase',
+            tag = 'Help on tags'
+        },
+        error = {
+            invalid_menu = 'Invalid menu',
+            command_failed = 'Command failed',
+            not_git_repo = 'This is not a Git repository',
+            unknown = 'An unknown error occurred'
+        }
+    },
     fr = {
         menu = {
             main_title = 'Menu Principal',
@@ -276,9 +546,9 @@ local translations = {
             }
         },
         help = {
-            title = 'Aide Git : %{command}',
+            title = 'Aide Git - %{command}',
             menu_title = 'Aide Git',
-            command_not_found = 'Aide non disponible pour cette commande',
+            command_not_found = 'Commande non trouvée. Veuillez vérifier le nom de la commande.',
             commit = 'Aide sur les commits',
             branch = 'Aide sur les branches',
             stash = 'Aide sur les stashs',

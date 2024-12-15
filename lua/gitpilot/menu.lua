@@ -62,10 +62,10 @@ local function get_menu_items(menu_type)
     local items = {}
     
     if menu_type == 'main' then
-        table.insert(items, add_icon(i18n.t('menu.branch'), icons.branch))
-        table.insert(items, add_icon(i18n.t('menu.commit'), icons.commit))
-        table.insert(items, add_icon(i18n.t('menu.remote'), icons.remote))
-        table.insert(items, add_icon(i18n.t('menu.tag'), icons.tag))
+        table.insert(items, add_icon(i18n.t('menu.branches'), icons.branch))
+        table.insert(items, add_icon(i18n.t('menu.commits'), icons.commit))
+        table.insert(items, add_icon(i18n.t('menu.remotes'), icons.remote))
+        table.insert(items, add_icon(i18n.t('menu.tags'), icons.tag))
         table.insert(items, add_icon(i18n.t('menu.stash'), icons.stash))
         table.insert(items, add_icon(i18n.t('menu.search'), icons.search))
         table.insert(items, add_icon(i18n.t('menu.rebase'), icons.rebase))

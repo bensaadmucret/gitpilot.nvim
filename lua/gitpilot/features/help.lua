@@ -84,39 +84,49 @@ local git_help = {
 }
 
 function M.show_help(command)
-    if not git_help[command] then
+    local help_info = git_help[command]
+    if not help_info then
         ui.show_error(i18n.t("help.command_not_found"))
         return
     end
 
-    local help_info = git_help[command]
-    local content = {
+    local content = string.format([[
+# %s
+
+%s
+
+## Usage
+%s
+
+## Common Flags
+%s
+
+## Tips
+%s]],
         help_info.title,
-        "=================",
-        "",
         help_info.description,
-        "",
-        "Usage:",
         help_info.usage,
-        "",
-        "Common Flags:",
-    }
+        format_flags(help_info.common_flags),
+        format_tips(help_info.tips)
+    )
 
-    for flag, desc in pairs(help_info.common_flags) do
-        table.insert(content, string.format("%s: %s", flag, desc))
+    ui.float_window(content)
+end
+
+function format_flags(flags)
+    local formatted_flags = {}
+    for flag, desc in pairs(flags) do
+        table.insert(formatted_flags, string.format("* %s: %s", flag, desc))
     end
+    return table.concat(formatted_flags, "\n")
+end
 
-    table.insert(content, "")
-    table.insert(content, "Tips:")
-    for _, tip in ipairs(help_info.tips) do
-        table.insert(content, "• " .. tip)
+function format_tips(tips)
+    local formatted_tips = {}
+    for _, tip in ipairs(tips) do
+        table.insert(formatted_tips, string.format("* %s", tip))
     end
-
-    ui.show_text_window(content, {
-        title = i18n.t("help.title", { command = command }),
-        width = 60,
-        height = 20,
-    })
+    return table.concat(formatted_tips, "\n")
 end
 
 return M
