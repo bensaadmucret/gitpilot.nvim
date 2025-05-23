@@ -58,6 +58,20 @@ Un plugin Neovim puissant pour la gestion Git avec support multilingue (Françai
 - 🔄 Résolution des conflits
 - 👀 Prévisualisation des changements
 
+## 🧪 Tests et Environnement requis
+
+> **Note sur les tests asynchrones :**
+>
+> Les tests automatisés liés à l'exécution asynchrone (notamment `async.lua` et `execute_command_async`) nécessitent d'être lancés dans un environnement Neovim (présence de `vim.loop` ou `vim.fn.system`).
+> 
+> - En CI classique ou dans un shell Lua, ces tests sont automatiquement ignorés (skip) pour éviter les faux négatifs.
+> - Pour valider l'asynchrone en conditions réelles, exécutez les tests dans une session Neovim avec un runner adapté (ex : [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)).
+>
+> **Exemple de lancement sous Neovim :**
+> ```vim
+> :PlenaryBustedDirectory tests/features/
+> ```
+
 ## 📦 Installation
 
 ### Avec [lazy.nvim](https://github.com/folke/lazy.nvim)

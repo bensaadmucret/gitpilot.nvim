@@ -44,6 +44,14 @@ function M.execute_command(cmd)
     return success, output
 end
 
+-- Exécute une commande shell de manière asynchrone (via async.lua)
+-- @param cmd string
+-- @param callback function(success, output)
+function M.execute_command_async(cmd, callback)
+  local async = require('gitpilot.async')
+  async.run_async(cmd, callback)
+end
+
 -- Exécute une commande git de manière asynchrone
 function M.git_async(args, callback, opts)
     opts = vim.tbl_deep_extend("force", {
