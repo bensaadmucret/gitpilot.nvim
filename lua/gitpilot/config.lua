@@ -13,7 +13,7 @@ M.defaults = {
     -- Configuration des sauvegardes
     backup = {
         enabled = true,
-        directory = vim.fn.stdpath('data') .. '/gitpilot/backups',
+        directory = (vim and vim.fn and vim.fn.stdpath and vim.fn.stdpath('data') or '') .. '/gitpilot/backups',
         max_backups = 10,
         auto_backup = true,
         backup_on_save = true
@@ -21,14 +21,14 @@ M.defaults = {
     
     -- Configuration des patches
     patch = {
-        directory = vim.fn.stdpath('data') .. '/gitpilot/patches',
-        template_directory = vim.fn.stdpath('data') .. '/gitpilot/templates/patches'
+        directory = (vim and vim.fn and vim.fn.stdpath and vim.fn.stdpath('data') or '') .. '/gitpilot/patches',
+        template_directory = (vim and vim.fn and vim.fn.stdpath and vim.fn.stdpath('data') or '') .. '/gitpilot/templates/patches'
     },
     
     -- Configuration des issues
     issues = {
-        template_directory = vim.fn.stdpath('data') .. '/gitpilot/templates/issues',
-        cache_directory = vim.fn.stdpath('data') .. '/gitpilot/cache/issues'
+        template_directory = (vim and vim.fn and vim.fn.stdpath and vim.fn.stdpath('data') or '') .. '/gitpilot/templates/issues',
+        cache_directory = (vim and vim.fn and vim.fn.stdpath and vim.fn.stdpath('data') or '') .. '/gitpilot/cache/issues'
     },
     
     -- Configuration UI
@@ -65,16 +65,16 @@ M.defaults = {
     log = {
         enabled = true,
         level = "info",
-        file = vim.fn.stdpath('data') .. '/gitpilot/gitpilot.log'
+        file = (vim and vim.fn and vim.fn.stdpath and vim.fn.stdpath('data') or '') .. '/gitpilot/gitpilot.log'
     }
 }
 
 -- Configuration actuelle
-M.current = vim.deepcopy(M.defaults)
+M.current = (vim and vim.deepcopy or function(tbl) return tbl end)(M.defaults)
 
 -- Met à jour la configuration
 function M.setup(opts)
-    M.current = vim.tbl_deep_extend("force", M.current, opts or {})
+    M.current = (vim and vim.tbl_deep_extend or function(_, t, _) return t end)("force", M.current, opts or {})
 end
 
 -- Récupère une valeur de configuration
