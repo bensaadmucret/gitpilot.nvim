@@ -1,5 +1,11 @@
 # GitPilot.nvim
 
+## ⚠️ Limitation connue
+
+La suite de tests `tests/features/tag_spec.lua` ne passe pas actuellement en raison d'un déséquilibre dans la fermeture des blocs `describe`/`it` (erreur : `<eof> expected near 'end'`).
+
+Merci de corriger la structure des tests avant d'utiliser `busted` pour la validation automatisée.
+
 [![Test](https://github.com/bensaadmucret/gitpilot.nvim/actions/workflows/test.yml/badge.svg)](https://github.com/bensaadmucret/gitpilot.nvim/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/bensaadmucret/gitpilot.nvim/badge.svg?branch=main)](https://coveralls.io/github/bensaadmucret/gitpilot.nvim?branch=main)
 [![Neovim v0.5.0+](https://img.shields.io/badge/Neovim-v0.5.0+-blueviolet.svg)](https://neovim.io)
