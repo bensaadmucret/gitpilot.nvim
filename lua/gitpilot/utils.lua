@@ -2,6 +2,14 @@
 
 local M = {}
 
+-- Helper de validation centralisée pour les arguments critiques
+local function validate_arg(arg, name)
+    if arg == nil or (type(arg) == "string" and arg:match("^%s*$")) then
+        error("Argument invalide : '" .. (name or "?") .. "' (nil ou vide)")
+    end
+    return arg
+end
+
 -- Configuration par défaut
 local config = {
     git = {
@@ -60,7 +68,12 @@ function M.git_async(args, callback, opts)
         cache_key = nil,
         cache_timeout = 5000
     }, opts or {})
-    
+    -- Validation stricte des arguments
+    assert(type(args) == "table" and #args > 0, "args doit être un tableau non vide")
+    for i, v in ipairs(args) do
+        validate_arg(v, "args["..i.."]")
+        args[i] = M.escape_string(v)
+    end
     -- Vérifie le cache
     if opts.cache_key and cache.data[opts.cache_key] then
         local now = vim.loop.now()
@@ -71,12 +84,10 @@ function M.git_async(args, callback, opts)
             return
         end
     end
-    
     -- Prépare la commande
     local cmd = config.git.command
     local stdout = {}
     local stderr = {}
-    
     -- Lance la commande
     local job_id = vim.fn.jobstart({cmd, unpack(args)}, {
         cwd = opts.cwd,
@@ -96,21 +107,18 @@ function M.git_async(args, callback, opts)
             -- Nettoie les sorties
             local out = table.concat(stdout, "\n"):gsub("^%s*(.-)%s*$", "%1")
             local err = table.concat(stderr, "\n"):gsub("^%s*(.-)%s*$", "%1")
-            
             -- Met en cache si nécessaire
             if opts.cache_key and code == 0 then
                 cache.data[opts.cache_key] = out
                 cache.timeout[opts.cache_key] = vim.loop.now() + opts.cache_timeout
                 clean_cache()
             end
-            
             -- Appelle le callback
             vim.schedule(function()
                 callback(code == 0, code == 0 and out or err)
             end)
         end
     })
-    
     -- Configure le timeout
     if job_id > 0 and opts.timeout > 0 then
         vim.defer_fn(function()
@@ -122,8 +130,13 @@ function M.git_async(args, callback, opts)
             end
         end, opts.timeout)
     end
-    
-    return job_id > 0
+    if job_id <= 0 then
+        if type(callback) == "function" then
+            callback(false, "Impossible de lancer la commande git (jobstart échoué)")
+        end
+        return false
+    end
+    return true
 end
 
 -- Exécute une commande git de manière synchrone
@@ -134,7 +147,12 @@ function M.git_sync(args, opts)
         cache_key = nil,
         cache_timeout = 5000
     }, opts or {})
-    
+    -- Validation stricte des arguments
+    assert(type(args) == "table" and #args > 0, "args doit être un tableau non vide")
+    for i, v in ipairs(args) do
+        validate_arg(v, "args["..i.."]")
+        args[i] = M.escape_string(v)
+    end
     -- Vérifie le cache
     if opts.cache_key and cache.data[opts.cache_key] then
         local now = vim and vim.loop.now() or os.time() * 1000
@@ -142,7 +160,6 @@ function M.git_sync(args, opts)
             return true, cache.data[opts.cache_key]
         end
     end
-    
     -- Prépare la commande
     local success, output
     if M.system then
@@ -152,14 +169,15 @@ function M.git_sync(args, opts)
         output = vim.fn.system(cmd)
         success = vim.v.shell_error == 0
     end
-    
     -- Met en cache si nécessaire
     if opts.cache_key and success then
         cache.data[opts.cache_key] = output
         cache.timeout[opts.cache_key] = (vim and vim.loop.now() or os.time() * 1000) + opts.cache_timeout
         clean_cache()
     end
-    
+    if not success then
+        return false, output or "Erreur lors de l'exécution de la commande git (voir logs)"
+    end
     return success, output
 end
 
@@ -209,9 +227,14 @@ end
 -- Vérifie si une branche existe
 function M.branch_exists(branch, path)
     path = path or vim.fn.getcwd()
-    local success = M.git_sync({"show-ref", "--verify", "--quiet", "refs/heads/" .. branch}, {
+    validate_arg(branch, "branch")
+    branch = M.escape_string(branch)
+    local success, output = M.git_sync({"show-ref", "--verify", "--quiet", "refs/heads/" .. branch}, {
         cwd = path
     })
+    if not success then
+        vim.notify("La branche demandée n'existe pas ou la commande a échoué : " .. (output or "Erreur inconnue"), vim.log.levels.WARN)
+    end
     return success
 end
 
@@ -223,20 +246,21 @@ end
 
 -- Lit le contenu d'un fichier
 function M.read_file(path)
+    validate_arg(path, "path")
     local fd = vim.loop.fs_open(path, "r", 438)
     if not fd then
-        return nil
+        return nil, "Impossible d'ouvrir le fichier : " .. tostring(path)
     end
-    
     local stat = vim.loop.fs_fstat(fd)
     if not stat then
         vim.loop.fs_close(fd)
-        return nil
+        return nil, "Impossible de lire les infos du fichier : " .. tostring(path)
     end
-    
     local data = vim.loop.fs_read(fd, stat.size, 0)
     vim.loop.fs_close(fd)
-    
+    if not data then
+        return nil, "Impossible de lire le contenu du fichier : " .. tostring(path)
+    end
     return data
 end
 
