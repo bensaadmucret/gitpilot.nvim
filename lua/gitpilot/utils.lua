@@ -273,7 +273,7 @@ end
 
 -- Function to check if we're in a test environment
 function M.is_test_env()
-    return false
+    return _G.busted ~= nil
 end
 
 return M
