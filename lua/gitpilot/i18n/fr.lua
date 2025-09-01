@@ -99,6 +99,7 @@ return {
     ["menu.rebase"] = "Rebase",
     ["menu.backup"] = "Sauvegarde",
     ["menu.back"] = "Retour",
+    ["menu.pull_requests"] = "Pull Requests",
 
     -- Titres des menus
     ["menu.commits_title"] = "GitPilot - Commits",
@@ -156,8 +157,6 @@ return {
     ["commit.create"] = "Créer un commit",
     ["commit.amend"] = "Modifier le dernier commit",
     ["commit.title"] = "Gestion des commits",
-    ["commit.create"] = "Créer un commit",
-    ["commit.amend"] = "Modifier le dernier commit",
     ["commit.files.none"] = "Aucun fichier à commiter",
     ["commit.files.select"] = "Sélectionnez les fichiers à commiter :",
     ["commit.type.select"] = "Sélectionnez le type de commit :",
@@ -168,7 +167,6 @@ return {
     ["commit.type.refactor"] = "Refactoring de code",
     ["commit.type.test"] = "Tests",
     ["commit.type.chore"] = "Maintenance",
-    ["commit.message.prompt"] = "Message du commit :",
     ["commit.message.empty"] = "Le message du commit ne peut pas être vide",
     ["commit.action.success"] = "Commit créé avec succès",
     ["commit.action.error"] = "Erreur lors de la création du commit",
@@ -195,14 +193,10 @@ return {
     ["commit.success.pushed"] = "Modifications poussées avec succès",
 
     -- Messages d'interaction pour les commits
-    ["commit.enter_message"] = "Message du commit :",
     ["commit.enter_amend_message"] = "Nouveau message du commit (vide pour garder l'ancien) :",
     ["commit.prompt.select"] = "Sélectionnez un commit :",
     ["commit.prompt.revert"] = "Sélectionnez un commit à annuler :",
     ["commit.prompt.cherry_pick"] = "Sélectionnez un commit à appliquer :",
-    ["commit.confirm.amend"] = "Voulez-vous modifier le dernier commit ?",
-    ["commit.confirm.revert"] = "Voulez-vous annuler ce commit ?",
-    ["commit.confirm.cherry_pick"] = "Voulez-vous appliquer ce commit ?",
     ["commit.push_prompt"] = "Voulez-vous pousser les modifications ?",
 
     -- Actions de tag
@@ -273,8 +267,6 @@ return {
     ["rebase.prompt.continue"] = "Continuer le rebase ?",
     ["rebase.prompt.abort"] = "Annuler le rebase ?",
     ["rebase.prompt.skip"] = "Sauter le commit en cours ?",
-    ["rebase.confirm.abort"] = "Êtes-vous sûr de vouloir annuler le rebase ?",
-    ["rebase.confirm.skip"] = "Êtes-vous sûr de vouloir sauter ce commit ?",
 
     -- Actions de dépôt distant
     ["remote.fetch"] = "Récupérer les modifications",
@@ -298,18 +290,21 @@ return {
     ["remote.error.list_failed"] = "Échec de la récupération des dépôts distants",
     ["remote.error.no_remotes"] = "Aucun dépôt distant trouvé",
     ["remote.error.not_found"] = "Dépôt distant non trouvé",
-    ["remote.error.push_failed"] = "Échec de l'envoi des modifications",
-    ["remote.error.pull_failed"] = "Échec de la récupération des modifications",
     ["remote.error.fetch_failed"] = "Échec de la récupération des références distantes",
     ["remote.error.prune_failed"] = "Échec du nettoyage des références obsolètes",
+
+    -- Messages d'avertissement pour les remotes
+    ["remote.warning.uncommitted_changes"] = "Il y a des changements non commités",
+    ["remote.warning.no_tracking"] = "La branche actuelle ne suit aucun remote",
+    ["remote.warning.diverged"] = "La branche locale a divergé du remote",
 
     -- Messages de succès pour les remotes
     ["remote.success.added"] = "Dépôt distant '%{name}' ajouté avec succès",
     ["remote.success.removed"] = "Dépôt distant '%{name}' supprimé avec succès",
-    ["remote.success.pushed"] = "Modifications envoyées avec succès",
-    ["remote.success.pulled"] = "Modifications récupérées avec succès",
-    ["remote.success.fetched"] = "Références distantes récupérées avec succès",
-    ["remote.success.pruned"] = "Références obsolètes nettoyées avec succès",
+    ["remote.success.fetched"] = "Fetch depuis '%{name}' réussi",
+    ["remote.success.pulled"] = "Pull depuis '%{name}' réussi",
+    ["remote.success.pushed"] = "Push vers '%{name}' réussi",
+    ["remote.success.pruned"] = "Nettoyage de '%{name}' réussi",
 
     -- Messages d'interaction pour les remotes
     ["remote.prompt.name"] = "Nom du dépôt distant :",
@@ -318,8 +313,6 @@ return {
     ["remote.prompt.remove"] = "Sélectionnez un dépôt distant à supprimer :",
     ["remote.prompt.push"] = "Sélectionnez un dépôt distant pour l'envoi :",
     ["remote.prompt.pull"] = "Sélectionnez un dépôt distant pour la récupération :",
-    ["remote.confirm.remove"] = "Êtes-vous sûr de vouloir supprimer le dépôt distant '%{name}' ?",
-    ["remote.confirm.push"] = "Voulez-vous envoyer les modifications vers '%{name}' ?",
     ["remote.confirm.pull"] = "Voulez-vous récupérer les modifications depuis '%{name}' ?",
     ["remote.confirm.prune"] = "Voulez-vous nettoyer les références obsolètes de '%{name}' ?",
 
@@ -363,7 +356,6 @@ return {
     ["search.error.files_failed"] = "Échec de la recherche dans les fichiers",
     ["search.error.branches_failed"] = "Échec de la recherche dans les branches",
     ["search.error.tags_failed"] = "Échec de la recherche dans les tags",
-    ["search.error.invalid_query"] = "Requête de recherche invalide",
 
     -- Messages d'information pour la recherche
     ["search.info.no_commits_found"] = "Aucun commit trouvé",
@@ -394,18 +386,8 @@ return {
     -- Message de test
     ["test.message_only_in_english"] = "Message de test",
 
-    -- Titres des menus
-    ["menu.branches_title"] = "GitPilot - Gestion des Branches",
-    ["menu.commits_title"] = "GitPilot - Gestion des Commits",
-    ["menu.remotes_title"] = "GitPilot - Gestion des Dépôts Distants",
-    ["menu.tags_title"] = "GitPilot - Gestion des Tags",
-    ["menu.stash_title"] = "GitPilot - Gestion du Cache",
-    ["menu.rebase_title"] = "GitPilot - Rebase",
-    ["menu.search_title"] = "GitPilot - Recherche",
-
     -- Titres des sections
     ["branch.title"] = "Gestion des branches",
-    ["commit.title"] = "Gestion des commits",
     ["tag.title"] = "Gestion des tags",
     ["stash.title"] = "Gestion du cache",
     ["remote.title"] = "Gestion des dépôts distants",
@@ -423,7 +405,6 @@ return {
     ["branch.delete.confirm"] = "Supprimer la branche '%s' ? Cette action ne peut pas être annulée !",
     ["branch.delete.success"] = "Branche '%s' supprimée avec succès",
     ["branch.delete.error"] = "Erreur lors de la suppression de la branche : %s",
-    ["branch.delete.current"] = "Impossible de supprimer la branche courante",
     ["branch.switch.title"] = "Changer de branche",
     ["branch.switch.prompt"] = "Sélectionnez la branche :",
     ["branch.switch.success"] = "Basculé sur la branche '%s'",
@@ -436,8 +417,6 @@ return {
     -- Gestion des commits
     ["commit.files.none"] = "Aucun fichier à commiter",
     ["commit.files.select"] = "Sélectionnez les fichiers à commiter :",
-    ["commit.message.empty"] = "Le message ne peut pas être vide",
-    ["commit.type.select"] = "Sélectionnez le type de commit :",
     ["commit.type.feat"] = "Nouvelle fonctionnalité",
     ["commit.type.fix"] = "Correction de bug",
     ["commit.type.docs"] = "Documentation",
@@ -463,7 +442,6 @@ return {
     ["tag.create.exists"] = "Le tag existe déjà",
     ["tag.delete.title"] = "Supprimer un tag",
     ["tag.delete.prompt"] = "Sélectionnez le tag à supprimer :",
-    ["tag.delete.confirm"] = "Voulez-vous supprimer ce tag ?",
     ["tag.delete.success"] = "Tag supprimé avec succès",
     ["tag.delete.error"] = "Erreur lors de la suppression du tag",
     ["tag.push.title"] = "Pousser les tags",
@@ -485,7 +463,6 @@ return {
     ["stash.apply.error"] = "Erreur lors de l'application du cache",
     ["stash.delete.title"] = "Supprimer un cache",
     ["stash.delete.prompt"] = "Sélectionnez le cache à supprimer :",
-    ["stash.delete.confirm"] = "Voulez-vous supprimer ce cache ?",
     ["stash.delete.success"] = "Cache supprimé avec succès",
     ["stash.delete.error"] = "Erreur lors de la suppression du cache",
 
@@ -895,6 +872,14 @@ return {
     ["backup.create"] = "Créer une sauvegarde",
     ["backup.restore"] = "Restaurer une sauvegarde",
     ["backup.delete"] = "Supprimer une sauvegarde",
+
+    -- Pull Requests
+    ["pull_request.title"] = "Pull Requests Ouvertes",
+    ["pull_request.no_open_prs"] = "Aucune pull request ouverte.",
+    ["pull_request.error.fetch_failed"] = "Échec de la récupération des pull requests.",
+    ["pull_request.error.parse_failed"] = "Échec de l'analyse des pull requests.",
+    ["pull_request.error.no_repo_info"] = "Impossible de déterminer le propriétaire et le nom du dépôt.",
+
     commit = {
         error = {
             not_git_repo = "Ce n'est pas un dépôt git",
