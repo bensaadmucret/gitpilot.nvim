@@ -22,11 +22,17 @@ local mock_utils = {
         local args = {...}
         vim.schedule(function() cb(table.unpack(args)) end)
     end,
-    escape_string = function(str) return str end
+    escape_string = function(str) return str end,
+    is_test_env = function() return true end
 }
 
 local mock_i18n = {
-    t = function(key) return key end
+    t = function(key, vars)
+        if vars then
+            return key .. " " .. vim.inspect(vars)
+        end
+        return key
+    end
 }
 
 -- Mock de vim
@@ -36,7 +42,8 @@ _G.vim = {
             tbl1[k] = v
         end
         return tbl1
-    end
+    end,
+    schedule = function(cb) cb() end,
 }
 
 -- Configuration des mocks
@@ -47,6 +54,7 @@ package.loaded['gitpilot.i18n'] = mock_i18n
 -- Décharger explicitement le module testé avant d'injecter les mocks
 package.loaded['gitpilot.features.tag'] = nil
 local tag = require('gitpilot.features.tag')
+tag.setup()
 
 -- Reset des spies avant chaque test pour éviter les pollutions croisées
 before_each(function()

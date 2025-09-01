@@ -50,6 +50,10 @@ local config = {
 -- Initialisation du module
 function M.setup(opts)
     config = vim.tbl_deep_extend("force", config, opts or {})
+    if utils.is_test_env() then
+        M.validate_tag_name = validate_tag_name
+        M.validate_callback = validate_callback
+    end
 end
 
 -- Helper asynchrone pour vérifier si le répertoire courant est un dépôt git
@@ -464,11 +468,6 @@ function M.show(tag_name)
         content = details
     })
     return true
-end
-
-if require('gitpilot.utils').is_test_env() then
-    M.validate_tag_name = validate_tag_name
-    M.validate_callback = validate_callback
 end
 
 return M
