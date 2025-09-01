@@ -44,6 +44,7 @@ _G.vim = {
         return tbl1
     end,
     schedule = function(cb) cb() end,
+    inspect = function(v) return "" end
 }
 
 -- Configuration des mocks
