@@ -466,4 +466,9 @@ function M.show(tag_name)
     return true
 end
 
+if utils.is_test_env() then
+    M.validate_tag_name = validate_tag_name
+    M.validate_callback = validate_callback
+end
+
 return M

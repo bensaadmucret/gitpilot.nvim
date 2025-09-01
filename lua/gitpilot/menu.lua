@@ -70,7 +70,6 @@ local function get_menu_items(menu_type)
         table.insert(items, add_icon(i18n.t('menu.search'), icons.search))
         table.insert(items, add_icon(i18n.t('menu.rebase'), icons.rebase))
         table.insert(items, add_icon(i18n.t('menu.backup'), icons.backup))
-        table.insert(items, add_icon(i18n.t('menu.pull_requests'), icons.remote))
         table.insert(items, add_icon(i18n.t('menu.help'), icons.help))
     elseif menu_type == 'branch' then
         table.insert(items, add_icon(i18n.t('branch.create_new'), icons.branch))
@@ -129,9 +128,6 @@ local function handle_menu_selection(menu_type, selected, context)
             vim.schedule(function()
                 M.show_menu('commit', context)
             end)
-            return
-        elseif text == i18n.t('menu.pull_requests') then
-            require('gitpilot.features.pull_request_ui').show_pull_requests()
             return
         elseif text == i18n.t('menu.help') then
             current_menu = 'help'

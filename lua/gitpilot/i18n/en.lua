@@ -753,12 +753,4 @@ return {
 
     -- Error messages
     ["error.invalid_menu"] = "Invalid menu selected",
-
-    -- Pull Requests
-    ["menu.pull_requests"] = "Pull Requests",
-    ["pull_request.title"] = "Open Pull Requests",
-    ["pull_request.no_open_prs"] = "No open pull requests.",
-    ["pull_request.error.fetch_failed"] = "Failed to fetch pull requests.",
-    ["pull_request.error.parse_failed"] = "Failed to parse pull requests.",
-    ["pull_request.error.no_repo_info"] = "Could not determine repository owner and name.",
 }
