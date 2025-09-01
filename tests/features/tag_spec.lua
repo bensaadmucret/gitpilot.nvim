@@ -46,9 +46,6 @@ package.loaded['gitpilot.i18n'] = mock_i18n
 
 -- Décharger explicitement le module testé avant d'injecter les mocks
 package.loaded['gitpilot.features.tag'] = nil
-package.loaded['gitpilot.ui'] = mock_ui
-package.loaded['gitpilot.utils'] = mock_utils
-package.loaded['gitpilot.i18n'] = mock_i18n
 local tag = require('gitpilot.features.tag')
 
 -- Reset des spies avant chaque test pour éviter les pollutions croisées
@@ -63,11 +60,8 @@ end)
 
 -- Tests unitaires pour les helpers internes (validation)
 describe("helpers", function()
-  local validate_tag_name = package.loaded['gitpilot.features.tag'] and package.loaded['gitpilot.features.tag'].__private_validate_tag_name or nil
-  local validate_callback = package.loaded['gitpilot.features.tag'] and package.loaded['gitpilot.features.tag'].__private_validate_callback or nil
-  -- fallback si non exposé : on récupère depuis le module (local function)
-  validate_tag_name = validate_tag_name or require('gitpilot.features.tag').validate_tag_name
-  validate_callback = validate_callback or require('gitpilot.features.tag').validate_callback
+  local validate_tag_name = tag.validate_tag_name
+  local validate_callback = tag.validate_callback
 
   it("rejects nil", function()
     local ok, msg = validate_tag_name(nil)
@@ -119,24 +113,20 @@ describe("async", function()
         return cb(cmd == "git rev-parse --is-inside-work-tree" and false or nil)
       end
       tag.list_async(function(success)
-  assert.is_false(result)
+          assert.is_false(success)
           assert.spy(mock_ui.show_error).was_called_with('tag.error.not_git_repo')
           done()
-        end)
       end)
     end)
     it("calls callback with false if git tag fails", function(done)
       spy.on(mock_ui, "show_error")
-      -- Respect de la signature attendue : cb(success, output)
-mock_utils.execute_command_async = function(cmd, cb)
-    if cmd == "git rev-parse --is-inside-work-tree" then return cb(true, "repo ok")
-    elseif cmd:match("^git tag") then return cb(false, "tag error") end
-end
-      local result
+      mock_utils.execute_command_async = function(cmd, cb)
+        if cmd == "git rev-parse --is-inside-work-tree" then return cb(true, "repo ok")
+        elseif cmd:match("^git tag") then return cb(false, "tag error") end
+      end
       tag.list_async(function(success)
-        result = success
         vim.schedule(function()
-          assert.is_false(result)
+          assert.is_false(success)
           assert.spy(mock_ui.show_error).was_called_with('tag.error.list_failed')
           done()
         end)
@@ -144,16 +134,13 @@ end
     end)
     it("calls callback with false if no tags exist", function(done)
       spy.on(mock_ui, "show_error")
-      -- Respect de la signature attendue : cb(success, output)
-mock_utils.execute_command_async = function(cmd, cb)
-    if cmd == "git rev-parse --is-inside-work-tree" then return cb(true, "repo ok")
-    elseif cmd:match("^git tag") then return cb(true, "") end
-end
-      local result
+      mock_utils.execute_command_async = function(cmd, cb)
+        if cmd == "git rev-parse --is-inside-work-tree" then return cb(true, "repo ok")
+        elseif cmd:match("^git tag") then return cb(true, "") end
+      end
       tag.list_async(function(success)
-        result = success
         vim.schedule(function()
-          assert.is_false(result)
+          assert.is_false(success)
           assert.spy(mock_ui.show_error).was_called_with('tag.error.no_tags')
           done()
         end)
@@ -161,19 +148,16 @@ end
     end)
     it("calls callback with true and tag name on success", function(done)
       spy.on(mock_ui, "select")
-      -- Respect de la signature attendue : cb(success, output)
-mock_utils.execute_command_async = function(cmd, cb)
-    if cmd == "git rev-parse --is-inside-work-tree" then return cb(true, "repo ok")
-    elseif cmd:match("^git tag") then return cb(true, "v1.0.0\nv1.1.0") end
-end
+      mock_utils.execute_command_async = function(cmd, cb)
+        if cmd == "git rev-parse --is-inside-work-tree" then return cb(true, "repo ok")
+        elseif cmd:match("^git tag") then return cb(true, "v1.0.0\nv1.1.0") end
+      end
       mock_ui.select = function(list, opts, cb)
         cb("v1.0.0")
       end
-      local result, choice
-      tag.list_async(function(success, c)
-        result, choice = success, c
+      tag.list_async(function(success, choice)
         vim.schedule(function()
-          assert.is_true(result)
+          assert.is_true(success)
           assert.equals(choice, "v1.0.0")
           assert.spy(mock_ui.select).was_called()
           done()
@@ -181,15 +165,7 @@ end
       end)
     end)
   end)
-end
 
-  -- create_async
-  --
-  -- Pattern Busted compatible pour les tests asynchrones :
-  -- Toujours utiliser un wrapper local pour le callback utilisateur qui capture done,
-  -- fait les assertions et appelle done() dans vim.schedule.
-  -- Ne jamais passer une closure anonyme inline à la fonction asynchrone.
-  --
   describe("create_async", function()
     it("calls callback with false if not in a git repo", function(done)
       spy.on(mock_ui, "show_error")
@@ -266,15 +242,20 @@ end
       end)
     end)
   end)
-end
 
-  -- delete_async
-    --
-            end
-            spy.on(mock_ui, "show_success")
-            tag.delete_async("v1.0.0", function(success, msg)
+  describe("delete_async", function()
+    it("calls callback with false if not in a git repo", function(done)
+        spy.on(mock_ui, "show_error")
+        mock_utils.execute_command_async = function(cmd, cb)
+            if cmd == "git rev-parse --is-inside-work-tree" then cb(false, "not a git repo") end
+        end
+        tag.delete_async("v1.0.0", function(success, msg)
+            vim.schedule(function()
+                assert.is_false(success)
+                assert.spy(mock_ui.show_error).was_called_with('tag.error.not_git_repo')
+                done()
+            end)
         end)
-      end)
     end)
     it("calls callback with false if tag does not exist", function(done)
       spy.on(mock_ui, "show_error")
@@ -306,7 +287,6 @@ end
     end)
   end)
 
-  -- push_async
   describe("push_async", function()
     it("calls callback with false if tag name is invalid", function(done)
       spy.on(mock_ui, "show_error")
@@ -367,21 +347,28 @@ end
     end)
   end)
 
-  -- show_async
   describe("show_async", function()
     it("calls callback with false if not in a git repo", function(done)
-end)
+        mock_utils.execute_command_async = function(cmd, cb)
+            if cmd == "git rev-parse --is-inside-work-tree" then cb(false, "not a git repo") end
+        end
+        tag.show_async("v1.0.0", function(success)
+            vim.schedule(function()
+                assert.is_false(success)
+                assert.spy(mock_ui.show_error).was_called_with('tag.error.not_git_repo')
+                done()
+            end)
+        end)
+    end)
     it("calls callback with false if tag does not exist", function(done)
       spy.on(mock_ui, "show_error")
       mock_utils.execute_command_async = function(cmd, cb)
         if cmd == "git rev-parse --is-inside-work-tree" then cb(true)
         elseif cmd:match("--verify") then cb(false) end
       end
-      local result, err_msg
       tag.show_async("v1.0.0", function(success, msg)
-        result, err_msg = success, msg
         vim.schedule(function()
-          assert.is_false(result)
+          assert.is_false(success)
           assert.spy(mock_ui.show_error).was_called_with('tag.error.not_found', {name = "v1.0.0"})
           done()
         end)
@@ -394,11 +381,9 @@ end)
         elseif cmd:match("--verify") then cb(true)
         elseif cmd:match("^git show") then cb(false) end
       end
-      local result, err_msg
       tag.show_async("v1.0.0", function(success, msg)
-        result, err_msg = success, msg
         vim.schedule(function()
-          assert.is_false(result)
+          assert.is_false(success)
           assert.spy(mock_ui.show_error).was_called_with('tag.error.show_failed')
           done()
         end)
@@ -411,18 +396,17 @@ end)
         elseif cmd:match("--verify") then return cb(true)
         elseif cmd:match("^git show") then return cb(true, "commit abc123") end
       end
-      local result, details
       tag.show_async("v1.0.0", function(success, d)
-        result, details = success, d
         vim.schedule(function()
-          assert.is_true(result)
-          assert.equals(details, "commit abc123")
+          assert.is_true(success)
+          assert.equals(d, "commit abc123")
           assert.spy(mock_ui.show_preview).was_called()
           done()
         end)
       end)
     end)
   end)
+end)
 
 describe("tag", function()
     local original_execute_command
